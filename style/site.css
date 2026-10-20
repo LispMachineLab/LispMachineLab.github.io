@@ -59,6 +59,7 @@ h3 {
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /* The navigation bar, translucent over the page. */
