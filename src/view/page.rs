@@ -215,7 +215,7 @@ fn footer() -> Html {
                 }) }
                 <li>{ outward(ORGANIZATION, "", "LispMachineLab") }</li>
             </ul>
-            <p>{ "Free software, under the GNU General Public License, version 3 or later." }</p>
+            <p>{ "Free software, under the GNU Affero General Public License, version 3 or later." }</p>
             <p class="credits">{ CREDITS }</p>
         </footer>
     }

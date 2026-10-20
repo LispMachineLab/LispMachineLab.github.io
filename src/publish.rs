@@ -217,7 +217,7 @@ pub fn llms_txt() -> String {
          - [LispMachineLab on GitHub]({ORGANIZATION})\n\
          - [The film]({SITE}{}): {}\n\
          - [Model servers for LispM Agent]({BACKENDS})\n\n\
-         All three projects are free software, under the GNU General Public License, version 3 or later. {CREDITS}",
+         All three projects are free software, under the GNU Affero General Public License, version 3 or later. {CREDITS}",
         FILM.video, FILM.description,
     );
     out

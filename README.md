@@ -56,5 +56,5 @@ Every push to `main` is built, checked (`cargo fmt --check`, `cargo clippy` deny
 
 ## License
 
-GPL-3.0-or-later, as the LispM projects are. See [LICENSE](LICENSE). The photographs in the film
+AGPL-3.0-or-later, as the LispM projects are. See [LICENSE](LICENSE). The photographs in the film
 are from Wikimedia Commons; their authors and licenses are credited at its end.
