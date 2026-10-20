@@ -4,8 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
-/// Where the site is served; the tags name the card by its address there.
-const SITE: &str = "https://lispmachinelab.github.io/";
+use crate::content::SITE;
 
 fn root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))

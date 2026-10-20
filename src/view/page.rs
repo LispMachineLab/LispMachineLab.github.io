@@ -5,7 +5,7 @@ use yew::prelude::*;
 
 use crate::content::{
     Anchor, BACKENDS, CREDITS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, ORGANIZATION, PROJECTS,
-    Point, Project, SUMMARY, TAGLINE,
+    Point, Project, SUMMARY, Spotlight, TAGLINE,
 };
 
 use crate::effects;
@@ -100,6 +100,17 @@ fn idea() -> Html {
     }
 }
 
+/// Returns a feature told at length: its headline and paragraph over its points.
+fn spotlight(spotlight: &Spotlight) -> Html {
+    html! {
+        <div class="spotlight">
+            <h3>{ spotlight.headline }</h3>
+            <p>{ spotlight.text }</p>
+            { points(spotlight.points) }
+        </div>
+    }
+}
+
 fn project(project: &Project) -> Html {
     html! {
         <section class="section project" id={project.anchor.id()}>
@@ -115,6 +126,7 @@ fn project(project: &Project) -> Html {
                     <div class="screen"><Loop clip={stage.clip} /></div>
                 </div>
             }) }
+            { for project.spotlight.iter().map(spotlight) }
             { points(project.points) }
             <div class="actions">
                 <a class="button primary" href={Anchor::Start.href()}>{ "Install" }</a>

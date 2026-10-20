@@ -1,0 +1,6 @@
+# After each build, write the page into the staged index.html, so it reads
+# before WebAssembly loads, and write llms.txt beside it.
+[[hooks]]
+stage = "post_build"
+command = "cargo"
+command_arguments = ["run", "--quiet", "--bin", "prerender"]

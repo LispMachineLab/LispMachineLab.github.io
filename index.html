@@ -42,23 +42,12 @@
     <link rel="apple-touch-icon" href="assets/lispm-lambda.png" />
     <link data-trunk rel="css" href="style/site.css" />
     <link data-trunk rel="copy-dir" href="assets" />
-    <link data-trunk rel="rust" data-wasm-opt="z" />
+    <link data-trunk rel="copy-file" href="static/robots.txt" />
+    <link data-trunk rel="copy-file" href="static/sitemap.xml" />
+    <link data-trunk rel="rust" data-bin="lispm-site" data-wasm-opt="z" />
   </head>
   <body>
-    <noscript>
-      <div class="no-script">
-        <h1>LispM — a Lisp Machine for agents</h1>
-        <p>
-          AI agents that run inside Emacs. Their conversations are org documents, their tools are
-          Lisp, and Emacs itself is the harness.
-        </p>
-        <ul>
-          <li><a href="https://github.com/LispMachineLab/lispm-agent">LispM Agent</a>: AI agents that run inside Emacs.</li>
-          <li><a href="https://github.com/LispMachineLab/lispm-desktop">LispM Desktop</a>: Emacs laid out as Mac OS 9's desktop, a workspace for agents.</li>
-          <li><a href="https://github.com/LispMachineLab/lispm-browser">LispM Browser</a>: a WebKit browser in Emacs.</li>
-        </ul>
-        <p><a href="assets/video/lispm-film.mp4">Watch the film</a> (57 seconds).</p>
-      </div>
-    </noscript>
+    <!-- prerender writes the page in here after each build; the browser hydrates it. -->
+    <div id="app"></div>
   </body>
 </html>

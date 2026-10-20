@@ -1,0 +1,246 @@
+//! What is written beside the page for crawlers and language models, all
+//! from [`crate::content`]: the page rendered into index.html before
+//! WebAssembly loads, JSON-LD describing the site and its projects, and
+//! llms.txt, the page as Markdown.
+
+use std::fmt::{self, Write as _};
+
+use crate::content::{
+    BACKENDS, CREDITS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, LICENSE, ORGANIZATION, PROJECTS,
+    Point, Project, SITE, SUMMARY, TAGLINE,
+};
+
+/// The id of the element the page is rendered into and hydrated in.
+pub const ROOT_ID: &str = "app";
+
+/// Why the page could not be put into index.html.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PublishError {
+    /// index.html has no empty `<div id="app"></div>` to render into.
+    NoRoot,
+    /// index.html has no `</head>` to put the JSON-LD before.
+    NoHead,
+}
+
+impl fmt::Display for PublishError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PublishError::NoRoot => {
+                write!(f, "index.html has no empty <div id=\"{ROOT_ID}\"></div>")
+            }
+            PublishError::NoHead => write!(f, "index.html has no </head>"),
+        }
+    }
+}
+
+impl std::error::Error for PublishError {}
+
+/// Returns `index` with `page` in its root element and `head` before `</head>`.
+///
+/// Pre: `index` holds one empty root element and a `</head>`.
+/// Post: the result differs from `index` only by `page` and `head`, inserted there.
+pub fn insert_page(index: &str, page: &str, head: &str) -> Result<String, PublishError> {
+    let root = format!("<div id=\"{ROOT_ID}\"></div>");
+    let (before_root, after_root) = index.split_once(&root).ok_or(PublishError::NoRoot)?;
+    let (before_head, after_head) = before_root
+        .split_once("</head>")
+        .ok_or(PublishError::NoHead)?;
+    Ok(format!(
+        "{before_head}{head}</head>{after_head}<div id=\"{ROOT_ID}\">{page}</div>{after_root}"
+    ))
+}
+
+/// Returns `text` as a JSON string, safe inside an HTML `<script>` too.
+fn json_string(text: &str) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push('"');
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            // `<` and `>` escaped, a `</script>` in the text cannot end the element.
+            '<' => out.push_str("\\u003c"),
+            '>' => out.push_str("\\u003e"),
+            c if u32::from(c) < 0x20 => {
+                let _ = write!(out, "\\u{:04x}", u32::from(c));
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
+}
+
+/// Returns a JSON array of `items`, each already JSON.
+fn json_array(items: impl Iterator<Item = String>) -> String {
+    format!("[{}]", items.collect::<Vec<_>>().join(","))
+}
+
+/// Returns a project as a schema.org SoftwareSourceCode.
+fn source_code(project: &Project) -> String {
+    format!(
+        "{{\"@type\":\"SoftwareSourceCode\",\"name\":{},\"description\":{},\"codeRepository\":{},\
+         \"programmingLanguage\":{},\"license\":{},\"runtimePlatform\":\"GNU Emacs\"}}",
+        json_string(project.name),
+        json_string(project.lead),
+        json_string(project.repository),
+        json_array(
+            project
+                .languages
+                .iter()
+                .map(|language| json_string(language))
+        ),
+        json_string(LICENSE),
+    )
+}
+
+/// Returns the JSON-LD describing the site and its three projects.
+pub fn json_ld() -> String {
+    format!(
+        "{{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"LispM\",\"url\":{},\
+         \"headline\":{},\"description\":{},\"publisher\":{{\"@type\":\"Organization\",\
+         \"name\":\"LispMachineLab\",\"url\":{}}},\"about\":{}}}",
+        json_string(SITE),
+        json_string(TAGLINE),
+        json_string(SUMMARY),
+        json_string(ORGANIZATION),
+        json_array(PROJECTS.iter().map(source_code)),
+    )
+}
+
+/// Returns what prerender puts before `</head>`: the JSON-LD.
+pub fn head() -> String {
+    format!(
+        "<script type=\"application/ld+json\">{}</script>",
+        json_ld()
+    )
+}
+
+/// Returns `points` as a Markdown list.
+fn markdown_points(points: &[Point]) -> String {
+    points
+        .iter()
+        .map(|point| {
+            format!(
+                "- **{}**: {}\n",
+                point.title.trim_end_matches('.'),
+                point.text
+            )
+        })
+        .collect()
+}
+
+/// Returns a project as a Markdown section.
+fn markdown_project(project: &Project) -> String {
+    let mut out = format!(
+        "## {}: {}\n\n{}\n\n",
+        project.name, project.headline, project.lead
+    );
+    for stage in project.stages {
+        let _ = writeln!(out, "- **{}** {}", stage.headline, stage.text);
+    }
+    out.push('\n');
+    if let Some(spotlight) = &project.spotlight {
+        let _ = writeln!(out, "### {}\n\n{}\n", spotlight.headline, spotlight.text);
+        out.push_str(&markdown_points(spotlight.points));
+        out.push('\n');
+    }
+    out.push_str(&markdown_points(project.points));
+    let _ = writeln!(
+        out,
+        "\n{}\n\n```{}\n{}\n```\n\nRepository: {}\n",
+        project.audience,
+        project.install.language.fence(),
+        project.install.code,
+        project.repository,
+    );
+    out
+}
+
+/// Returns llms.txt: the page as Markdown, after llmstxt.org.
+pub fn llms_txt() -> String {
+    let mut out = format!("# LispM\n\n> {TAGLINE} {SUMMARY}\n\n## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
+    out.push_str(&markdown_points(&IDEA_POINTS));
+    out.push('\n');
+    for project in &PROJECTS {
+        out.push_str(&markdown_project(project));
+    }
+    let _ = writeln!(
+        out,
+        "## Links\n\n\
+         - [LispMachineLab on GitHub]({ORGANIZATION})\n\
+         - [The film]({SITE}{}): {}\n\
+         - [Model servers for LispM Agent]({BACKENDS})\n\n\
+         All three projects are free software, under the GNU General Public License, version 3 or later. {CREDITS}",
+        FILM.video, FILM.description,
+    );
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const INDEX: &str =
+        "<html><head><title>t</title></head><body><div id=\"app\"></div></body></html>";
+
+    #[test]
+    fn insert_page_fills_the_root_and_the_head() {
+        let html = insert_page(INDEX, "<main>page</main>", "<script>x</script>");
+        assert_eq!(
+            html.as_deref(),
+            Ok(
+                "<html><head><title>t</title><script>x</script></head><body><div id=\"app\"><main>page</main></div></body></html>"
+            )
+        );
+    }
+
+    #[test]
+    fn insert_page_needs_an_empty_root_and_a_head() {
+        assert_eq!(
+            insert_page("<head></head><body></body>", "", ""),
+            Err(PublishError::NoRoot)
+        );
+        assert_eq!(
+            insert_page("<div id=\"app\"></div>", "", ""),
+            Err(PublishError::NoHead)
+        );
+        let rendered = insert_page(INDEX, "x", "").unwrap_or_default();
+        assert_eq!(insert_page(&rendered, "x", ""), Err(PublishError::NoRoot));
+    }
+
+    #[test]
+    fn json_strings_cannot_end_a_script() {
+        assert_eq!(json_string("a \"b\" \\ c"), "\"a \\\"b\\\" \\\\ c\"");
+        assert_eq!(json_string("</script>"), "\"\\u003c/script\\u003e\"");
+        assert_eq!(json_string("a\nb\u{1}"), "\"a\\nb\\u0001\"");
+    }
+
+    #[test]
+    fn the_json_ld_names_every_project_and_no_script_ends_in_it() {
+        let ld = json_ld();
+        for project in PROJECTS {
+            assert!(
+                ld.contains(&json_string(project.repository)),
+                "{}",
+                project.name
+            );
+        }
+        assert!(!head().trim_end_matches("</script>").contains("</script"));
+        assert_eq!(ld.matches('{').count(), ld.matches('}').count());
+        assert_eq!(ld.matches('[').count(), ld.matches(']').count());
+    }
+
+    #[test]
+    fn llms_txt_tells_every_project_and_how_to_install_it() {
+        let text = llms_txt();
+        assert!(text.starts_with("# LispM\n\n> "));
+        for project in PROJECTS {
+            assert!(text.contains(project.headline), "{}", project.name);
+            assert!(text.contains(project.install.code), "{}", project.name);
+        }
+        assert!(text.contains("Chrome extensions, inside Emacs."));
+        assert!(text.ends_with('\n'));
+    }
+}

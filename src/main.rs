@@ -1,20 +1,26 @@
-//! LispM's website: what LispM is, told with its films. A headline and the
-//! film, the idea, then LispM Agent, LispM Desktop and LispM Browser, each
-//! with clips from the films, and how to install them.
-//!
-//! [`content`] holds the page's words and media as data, [`copy`] the copy
-//! buttons' states, both pure and tested natively. [`effects`] is the
-//! boundary with the browser. [`view`] draws the page with Yew.
+//! The page in the browser. It hydrates the page prerender wrote into
+//! index.html's `#app`, so the words are there before WebAssembly loads;
+//! without that element it draws the page afresh.
 
 #![deny(missing_docs)]
 
-mod content;
-mod copy;
-mod effects;
-#[cfg(test)]
-mod share_card;
-mod view;
-
+#[cfg(target_arch = "wasm32")]
 fn main() {
-    yew::Renderer::<view::page::App>::new().render();
+    use lispm_site::view::page::App;
+
+    let root = web_sys::window()
+        .and_then(|window| window.document())
+        .and_then(|document| document.get_element_by_id(lispm_site::publish::ROOT_ID));
+    match root {
+        Some(root) => {
+            yew::Renderer::<App>::with_root(root).hydrate();
+        }
+        None => {
+            yew::Renderer::<App>::new().render();
+        }
+    }
 }
+
+/// Natively there is no page: the site is built with Trunk, see the README.
+#[cfg(not(target_arch = "wasm32"))]
+fn main() {}
