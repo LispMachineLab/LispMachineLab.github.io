@@ -2,7 +2,7 @@
 name = "lispm-site"
 version = "0.3.0"
 edition = "2024"
-license = "GPL-3.0-or-later"
+license = "AGPL-3.0-or-later"
 description = "LispM's website: what LispM is, told with its films, built with Yew"
 repository = "https://github.com/LispMachineLab/LispMachineLab.github.io"
 publish = false

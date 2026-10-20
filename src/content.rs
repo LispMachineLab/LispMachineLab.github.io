@@ -473,7 +473,7 @@ pub const OWN_EMACS_HEADLINE: &str = "Already use Emacs?";
 pub const OWN_EMACS: &str = "Each project also stands on its own, in your own Emacs.";
 
 /// The licence the projects are free software under.
-pub const LICENSE: &str = "https://www.gnu.org/licenses/gpl-3.0.html";
+pub const LICENSE: &str = "https://www.gnu.org/licenses/agpl-3.0.html";
 
 /// The organization on GitHub.
 pub const ORGANIZATION: &str = "https://github.com/LispMachineLab";
