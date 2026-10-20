@@ -9,7 +9,10 @@ use web_sys::{
     HtmlVideoElement, IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit,
 };
 
+use std::rc::Rc;
+
 use crate::copy::CopyError;
+use crate::playback::PlayError;
 
 /// The share of a clip that must be in sight for it to play.
 const IN_SIGHT: f64 = 0.25;
@@ -59,13 +62,21 @@ pub async fn copy(text: &str) -> Result<(), CopyError> {
         .map_err(|_| CopyError::Refused)
 }
 
-/// Starts `video`. A browser may refuse, saving data or waiting for a
-/// gesture; the video then shows its poster and its controls, as before.
-pub fn play(video: &HtmlVideoElement) {
-    if let Ok(started) = video.play() {
-        spawn_local(async move {
-            let _ = JsFuture::from(started).await;
-        });
+/// Starts `video`, then calls `settled` with whether it plays. A browser
+/// may refuse, saving power or data or waiting for a gesture: Safari in Low
+/// Power Mode starts no video on its own, muted or not.
+pub fn play(video: &HtmlVideoElement, settled: impl FnOnce(Result<(), PlayError>) + 'static) {
+    match video.play() {
+        Ok(started) => spawn_local(async move {
+            settled(
+                JsFuture::from(started)
+                    .await
+                    .map(drop)
+                    .map_err(|_| PlayError::Refused),
+            );
+        }),
+        // A browser without promises from play() throws when it refuses.
+        Err(_) => settled(Err(PlayError::Refused)),
     }
 }
 
@@ -84,16 +95,22 @@ impl Drop for InSight {
 
 /// Returns a watch playing `video` while a quarter of it is in sight, or
 /// nothing if the browser cannot watch, the video then staying on its poster.
-pub fn play_in_sight(video: &HtmlVideoElement) -> Option<InSight> {
+/// Each start it tries is told to `settled`, see [`play`].
+pub fn play_in_sight(
+    video: &HtmlVideoElement,
+    settled: impl Fn(Result<(), PlayError>) + 'static,
+) -> Option<InSight> {
     // A second handle on the same element, for the callback to own.
     let watched = video.clone();
+    let settled = Rc::new(settled);
     let changed = Closure::<dyn FnMut(js_sys::Array)>::new(move |entries: js_sys::Array| {
         let seen = entries
             .iter()
             .filter_map(|entry| entry.dyn_into::<IntersectionObserverEntry>().ok())
             .any(|entry| entry.is_intersecting());
         if seen {
-            play(&watched);
+            let settled = Rc::clone(&settled);
+            play(&watched, move |result| settled(result));
         } else {
             // Pausing a video cannot fail in a way worth telling: it stays as it was.
             let _ = watched.pause();

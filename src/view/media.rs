@@ -1,9 +1,12 @@
 //! The film under the headline and the clips beside each project's story.
 
+use std::rc::Rc;
+
 use yew::prelude::*;
 
 use crate::content::Clip;
 use crate::effects;
+use crate::playback::{Event, Playback};
 
 /// The properties of a [`Loop`] or the [`Film`].
 #[derive(Properties, PartialEq)]
@@ -12,8 +15,23 @@ pub struct ClipProps {
     pub clip: Clip,
 }
 
+/// A looping clip's playback, for [`use_reducer`]: what it shows, moved on
+/// by what happens to it.
+#[derive(Clone, Copy, Default, PartialEq)]
+struct Shown(Playback);
+
+impl Reducible for Shown {
+    type Action = Event;
+
+    fn reduce(self: Rc<Self>, event: Event) -> Rc<Self> {
+        Rc::new(Shown(self.0.next(event)))
+    }
+}
+
 /// A clip, muted and looped, playing while in sight. With less motion asked
-/// for, it waits on its poster with its controls.
+/// for, it waits on its poster with its controls. When the browser will not
+/// start it on its own, saving power or data, it waits on its poster with a
+/// play button, so that it reads as a video and a click starts it.
 ///
 /// It is drawn without asking the browser anything, as prerender draws it
 /// at build time; the motion the visitor prefers is read once it is in the
@@ -21,25 +39,50 @@ pub struct ClipProps {
 #[function_component(Loop)]
 pub fn clip_loop(props: &ClipProps) -> Html {
     let video = use_node_ref();
-    let still = use_state_eq(|| false);
+    let shown = use_reducer_eq(Shown::default);
     {
         let video = video.clone();
-        let still = still.clone();
+        let shown = shown.dispatcher();
         use_effect_with((), move |_| {
             let reduced = effects::prefers_reduced_motion();
-            still.set(reduced);
+            shown.dispatch(Event::Motion { reduced });
             let watch = video
                 .cast::<web_sys::HtmlVideoElement>()
                 .filter(|_| !reduced)
-                .and_then(|element| effects::play_in_sight(&element));
+                .and_then(|element| {
+                    effects::play_in_sight(&element, move |result| {
+                        shown.dispatch(Event::Played(result));
+                    })
+                });
             move || drop(watch)
         });
     }
+    let start = {
+        let video = video.clone();
+        let shown = shown.dispatcher();
+        Callback::from(move |_: MouseEvent| {
+            if let Some(element) = video.cast::<web_sys::HtmlVideoElement>() {
+                let shown = shown.clone();
+                effects::play(&element, move |result| {
+                    shown.dispatch(Event::Clicked(result));
+                });
+            }
+        })
+    };
     let clip = props.clip;
+    let playback = shown.0;
     html! {
-        <video ref={video} class="clip" src={clip.video} poster={clip.poster}
-               muted=true loop=true playsinline=true preload="none" controls={*still}
-               aria-label={clip.description} />
+        <>
+            <video ref={video} class="clip" src={clip.video} poster={clip.poster}
+                   muted=true loop=true playsinline=true preload="none" controls={playback.controls()}
+                   aria-label={clip.description} />
+            if playback.offers_play() {
+                <button type="button" class="play" onclick={start}>
+                    <span class="play-icon" aria-hidden="true" />
+                    <span>{ "Play" }</span>
+                </button>
+            }
+        </>
     }
 }
 
@@ -54,7 +97,9 @@ pub fn film(props: &ClipProps) -> Html {
         let started = started.clone();
         Callback::from(move |_: MouseEvent| {
             if let Some(element) = video.cast::<web_sys::HtmlVideoElement>() {
-                effects::play(&element);
+                // Started by a click, it plays; refused all the same, its
+                // controls show, as they do once it is started.
+                effects::play(&element, drop);
             }
             started.set(true);
         })
