@@ -701,6 +701,10 @@ code {
   font-size: clamp(17px, 2vw, 20px);
 }
 
+.spotlight > .screen {
+  margin-top: clamp(28px, 4vw, 40px);
+}
+
 .spotlight .points {
   margin-top: 32px;
 }

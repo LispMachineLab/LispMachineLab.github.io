@@ -101,12 +101,16 @@ fn idea() -> Html {
     }
 }
 
-/// Returns a feature told at length: its headline and paragraph over its points.
+/// Returns a feature told at length: its headline and paragraph over its
+/// clip, if it has one, and its points.
 fn spotlight(spotlight: &Spotlight) -> Html {
     html! {
         <div class="spotlight">
             <h3>{ spotlight.headline }</h3>
             <p>{ spotlight.text }</p>
+            { for spotlight.clip.map(|clip| html! {
+                <div class="screen"><Loop {clip} /></div>
+            }) }
             { points(spotlight.points) }
         </div>
     }
