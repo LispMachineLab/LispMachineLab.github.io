@@ -11,6 +11,8 @@
 mod content;
 mod copy;
 mod effects;
+#[cfg(test)]
+mod share_card;
 mod view;
 
 fn main() {

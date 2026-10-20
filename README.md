@@ -16,6 +16,9 @@ with clips from the films, and how to install them. It is written in Rust with
 - `src/view/` draws the page: `page.rs` its sections, `media.rs` the film and the clips,
   `code.rs` the snippets.
 - `style/site.css` is the films' keynote look.
+- `assets/social/lispm-card.png` is the card shared links show, 1200 by 630, its words clear of
+  X's 2:1 crop; `index.html` names it in its Open Graph and Twitter tags, and
+  `src/share_card.rs` tests that the tags agree and the file is that size.
 - `assets/video/` holds the film and the clips cut from it and from the longer LispM Desktop film,
   each with its poster. The model line some frames of the agent's chat showed is covered in
   them, so no model server is named.
