@@ -441,7 +441,9 @@ pub const REQUIREMENTS: &str = "macOS 11 or later, on Apple silicon or Intel. Fr
 /// The installer, served beside the page; it runs lispm-desktop's.
 pub const INSTALLER: &str = "install.sh";
 
-/// The installer the served one runs, to read before running it.
+/// The installer the served one runs, to read before running it: the
+/// served one runs it as of lispm-desktop's latest release, main's before
+/// the first.
 pub const INSTALLER_SOURCE: &str =
     "https://github.com/LispMachineLab/lispm-desktop/blob/main/install.sh";
 
@@ -597,8 +599,13 @@ mod tests {
         assert!(served.starts_with("#!/bin/sh\n"));
         let source = INSTALLER_SOURCE
             .replace("github.com", "raw.githubusercontent.com")
-            .replace("/blob/", "/");
+            .replace("/blob/main/", "/${release:-main}/");
         assert!(served.contains(&source), "{source}");
+        assert!(
+            served.contains(
+                "https://api.github.com/repos/LispMachineLab/lispm-desktop/releases/latest"
+            )
+        );
         let index = std::fs::read_to_string(root.join("index.html")).unwrap_or_default();
         assert!(index.contains(&format!("rel=\"copy-file\" href=\"static/{INSTALLER}\"")));
         assert!(INSTALLER_SOURCE.starts_with(ORGANIZATION));
