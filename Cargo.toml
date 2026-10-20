@@ -1,0 +1,43 @@
+[package]
+name = "lispm-site"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+description = "LispM's website: a Mac OS 9 desktop in the browser, built with Yew"
+repository = "https://github.com/LispMachineLab/LispMachineLab.github.io"
+publish = false
+
+[dependencies]
+gloo-events = "0.2"
+gloo-timers = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+    "Document",
+    "Element",
+    "Event",
+    "EventTarget",
+    "KeyboardEvent",
+    "Location",
+    "MouseEvent",
+    "PointerEvent",
+    "ScrollBehavior",
+    "ScrollIntoViewOptions",
+    "Window",
+] }
+yew = { version = "0.23", features = ["csr"] }
+
+[lints.rust]
+missing_docs = "deny"
+
+[lints.clippy]
+expect_used = "deny"
+indexing_slicing = "deny"
+panic = "deny"
+todo = "deny"
+unimplemented = "deny"
+unwrap_used = "deny"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "z"
