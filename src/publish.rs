@@ -6,8 +6,9 @@
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    BACKENDS, CREDITS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, LICENSE, ORGANIZATION, PROJECTS,
-    Point, Project, SITE, SUMMARY, TAGLINE,
+    BACKENDS, CREDITS, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
+    INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE, ORGANIZATION, OWN_EMACS,
+    OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -95,7 +96,20 @@ fn source_code(project: &Project) -> String {
     )
 }
 
-/// Returns the JSON-LD describing the site and its three projects.
+/// Returns LispM.app as a schema.org SoftwareApplication.
+fn application() -> String {
+    format!(
+        "{{\"@type\":\"SoftwareApplication\",\"name\":\"LispM\",\"description\":{},\
+         \"applicationCategory\":\"DeveloperApplication\",\"operatingSystem\":{},\
+         \"downloadUrl\":{},\"isAccessibleForFree\":true,\"license\":{}}}",
+        json_string(DOWNLOAD_LEAD),
+        json_string(REQUIREMENTS),
+        json_string(&format!("{SITE}{INSTALLER}")),
+        json_string(LICENSE),
+    )
+}
+
+/// Returns the JSON-LD describing the site, LispM.app and the three projects.
 pub fn json_ld() -> String {
     format!(
         "{{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"LispM\",\"url\":{},\
@@ -105,7 +119,7 @@ pub fn json_ld() -> String {
         json_string(TAGLINE),
         json_string(SUMMARY),
         json_string(ORGANIZATION),
-        json_array(PROJECTS.iter().map(source_code)),
+        json_array(std::iter::once(application()).chain(PROJECTS.iter().map(source_code))),
     )
 }
 
@@ -158,11 +172,42 @@ fn markdown_project(project: &Project) -> String {
     out
 }
 
+/// Returns how to install LispM.app, as a Markdown section.
+fn markdown_download() -> String {
+    let mut out = format!("## Download LispM for Mac\n\n{DOWNLOAD_LEAD} {REQUIREMENTS}\n\n");
+    for (number, step) in DOWNLOAD_STEPS.iter().enumerate() {
+        let _ = write!(out, "{}. **{}**", number + 1, step.title);
+        if !step.text.is_empty() {
+            let _ = write!(out, " {}", step.text);
+        }
+        out.push('\n');
+        if let Some(snippet) = step.snippet {
+            let _ = writeln!(
+                out,
+                "\n   ```{}\n   {}\n   ```\n",
+                snippet.language.fence(),
+                snippet.code
+            );
+        }
+    }
+    let _ = writeln!(
+        out,
+        "\nThe line runs [install.sh]({INSTALLER_SOURCE}), which{INSTALLER_DOES}\n"
+    );
+    out
+}
+
 /// Returns llms.txt: the page as Markdown, after llmstxt.org.
 pub fn llms_txt() -> String {
-    let mut out = format!("# LispM\n\n> {TAGLINE} {SUMMARY}\n\n## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
+    let mut out = format!("# LispM\n\n> {TAGLINE} {SUMMARY}\n\n");
+    out.push_str(&markdown_download());
+    let _ = write!(out, "## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
     out.push_str(&markdown_points(&IDEA_POINTS));
     out.push('\n');
+    let _ = write!(
+        out,
+        "## {OWN_EMACS_HEADLINE}\n\n{OWN_EMACS} Each project's section ends with how.\n\n"
+    );
     for project in &PROJECTS {
         out.push_str(&markdown_project(project));
     }
@@ -181,6 +226,7 @@ pub fn llms_txt() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::content::INSTALL;
 
     const INDEX: &str =
         "<html><head><title>t</title></head><body><div id=\"app\"></div></body></html>";
@@ -227,6 +273,7 @@ mod tests {
                 project.name
             );
         }
+        assert!(ld.contains("\"downloadUrl\":\"https://lispmachinelab.github.io/install.sh\""));
         assert!(!head().trim_end_matches("</script>").contains("</script"));
         assert_eq!(ld.matches('{').count(), ld.matches('}').count());
         assert_eq!(ld.matches('[').count(), ld.matches(']').count());
@@ -241,6 +288,9 @@ mod tests {
             assert!(text.contains(project.install.code), "{}", project.name);
         }
         assert!(text.contains("Chrome extensions, inside Emacs."));
+        let download = text.find(INSTALL.code).unwrap_or(usize::MAX);
+        let idea = text.find(IDEA_HEADLINE).unwrap_or(0);
+        assert!(download < idea, "the download comes first");
         assert!(text.ends_with('\n'));
     }
 }

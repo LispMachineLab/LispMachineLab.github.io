@@ -15,7 +15,7 @@ pub enum Anchor {
     Desktop,
     /// LispM Browser.
     Browser,
-    /// How to install them.
+    /// How to install LispM, and each project on its own.
     Start,
 }
 
@@ -53,7 +53,7 @@ impl Anchor {
             Anchor::Agent => "Agent",
             Anchor::Desktop => "Desktop",
             Anchor::Browser => "Browser",
-            Anchor::Start => "Get started",
+            Anchor::Start => "Download",
         }
     }
 }
@@ -92,6 +92,8 @@ pub struct Point {
 /// The language a snippet is written in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Language {
+    /// A line for macOS's Terminal, named after it for those who know no shell.
+    Terminal,
     /// A shell's.
     Shell,
     /// Emacs Lisp, for an init file.
@@ -102,6 +104,7 @@ impl Language {
     /// Returns the language's name, as the snippet's caption shows it.
     pub const fn name(self) -> &'static str {
         match self {
+            Language::Terminal => "Terminal",
             Language::Shell => "Shell",
             Language::EmacsLisp => "Emacs Lisp",
         }
@@ -110,7 +113,7 @@ impl Language {
     /// Returns the language's name after a Markdown code fence.
     pub const fn fence(self) -> &'static str {
         match self {
-            Language::Shell => "sh",
+            Language::Terminal | Language::Shell => "sh",
             Language::EmacsLisp => "elisp",
         }
     }
@@ -123,6 +126,17 @@ pub struct Snippet {
     pub language: Language,
     /// The code, its lines joined by newlines.
     pub code: &'static str,
+}
+
+/// A step of installing LispM: what to do, and the line to paste, if any.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Step {
+    /// What to do.
+    pub title: &'static str,
+    /// How, when it needs saying.
+    pub text: &'static str,
+    /// The line to paste.
+    pub snippet: Option<Snippet>,
 }
 
 /// A feature told at length, after a project's story: a headline, a
@@ -370,7 +384,7 @@ pub const PROJECTS: [Project; 3] = [
         stages: &DESKTOP_STAGES,
         spotlight: None,
         points: &DESKTOP_POINTS,
-        audience: "Everything, ready from the first start: Emacs 30.1 or later with SVG, git and curl, on macOS or GNU/Linux.",
+        audience: "What LispM.app runs, in your own Emacs 30.1 or later with SVG, git and curl, on macOS or GNU/Linux.",
         install: Snippet {
             language: Language::Shell,
             code: "git clone https://github.com/LispMachineLab/lispm-desktop ~/lispm-desktop\nemacs --init-directory ~/lispm-desktop",
@@ -399,6 +413,63 @@ pub const PROJECTS: [Project; 3] = [
 
 /// Where the site is served.
 pub const SITE: &str = "https://lispmachinelab.github.io/";
+
+/// The headline of the download.
+pub const DOWNLOAD_HEADLINE: &str = "Get LispM.";
+
+/// The paragraph under it, for those who have never heard of Emacs.
+pub const DOWNLOAD_LEAD: &str = "LispM is a Mac app. Emacs, the editor it is made of, comes inside it: \
+     you need not know Emacs to begin.";
+
+/// LispM.app's icon.
+pub const APP_ICON: &str = "assets/lispm-app.png";
+
+/// What LispM.app runs on.
+pub const REQUIREMENTS: &str = "macOS 11 or later, on Apple silicon or Intel. Free.";
+
+/// The installer, served beside the page; it runs lispm-desktop's.
+pub const INSTALLER: &str = "install.sh";
+
+/// The installer the served one runs, to read before running it.
+pub const INSTALLER_SOURCE: &str =
+    "https://github.com/LispMachineLab/lispm-desktop/blob/main/install.sh";
+
+/// The line that installs LispM.app, or updates it.
+pub const INSTALL: Snippet = Snippet {
+    language: Language::Terminal,
+    code: "curl -fsSL https://lispmachinelab.github.io/install.sh | sh",
+};
+
+/// Installing LispM.app, step by step.
+pub const DOWNLOAD_STEPS: [Step; 3] = [
+    Step {
+        title: "Open Terminal.",
+        text: "It is in Applications, in the Utilities folder; or press Command-Space and type Terminal.",
+        snippet: None,
+    },
+    Step {
+        title: "Paste this line, and press Return.",
+        text: "",
+        snippet: Some(INSTALL),
+    },
+    Step {
+        title: "LispM opens.",
+        text: "A few minutes later, once Emacs and LispM are in. From then on it is in Applications \
+               with your other apps.",
+        snippet: None,
+    },
+];
+
+/// What the line does, after the link to the installer.
+pub const INSTALLER_DOES: &str = " installs Apple's command line tools if they are missing, puts \
+     LispM.app in Applications and LispM's files in ~/.lispm. Run the line again to update; delete \
+     both to uninstall.";
+
+/// The headline over the projects' own installs.
+pub const OWN_EMACS_HEADLINE: &str = "Already use Emacs?";
+
+/// The paragraph under it.
+pub const OWN_EMACS: &str = "Each project also stands on its own, in your own Emacs.";
 
 /// The licence the projects are free software under.
 pub const LICENSE: &str = "https://www.gnu.org/licenses/gpl-3.0.html";
@@ -502,6 +573,36 @@ mod tests {
             assert!(!project.stages.is_empty(), "{}", project.name);
             assert!(!project.points.is_empty(), "{}", project.name);
         }
+    }
+
+    #[test]
+    fn the_install_line_runs_the_installer_served_here() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        assert_eq!(INSTALL.code, format!("curl -fsSL {SITE}{INSTALLER} | sh"));
+        let served =
+            std::fs::read_to_string(root.join("static").join(INSTALLER)).unwrap_or_default();
+        assert!(served.starts_with("#!/bin/sh\n"));
+        let source = INSTALLER_SOURCE
+            .replace("github.com", "raw.githubusercontent.com")
+            .replace("/blob/", "/");
+        assert!(served.contains(&source), "{source}");
+        let index = std::fs::read_to_string(root.join("index.html")).unwrap_or_default();
+        assert!(index.contains(&format!("rel=\"copy-file\" href=\"static/{INSTALLER}\"")));
+        assert!(INSTALLER_SOURCE.starts_with(ORGANIZATION));
+    }
+
+    #[test]
+    fn the_steps_hold_the_install_line_once() {
+        let lines = DOWNLOAD_STEPS
+            .iter()
+            .filter_map(|step| step.snippet)
+            .collect::<Vec<_>>();
+        assert_eq!(lines, [INSTALL]);
+        assert!(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(APP_ICON)
+                .is_file()
+        );
     }
 
     #[test]
