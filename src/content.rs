@@ -203,11 +203,12 @@ pub const SUMMARY: &str = "AI agents that run inside Emacs. Their conversations 
      their tools are Lisp, and Emacs itself is the harness.";
 
 /// The headline of the idea.
-pub const IDEA_HEADLINE: &str = "The editor and the system, one again.";
+pub const IDEA_HEADLINE: &str = "The editor and its agents, one world.";
 
 /// The paragraph under it.
 pub const IDEA: &str = "On a Lisp Machine everything was a live Lisp object, and the editor and the \
-     system were one. Its inhabitants were programs. LispM makes room in it for agents.";
+     system were one. Its inhabitants were programs. Emacs kept that way of working, if not the \
+     machine; LispM makes room in it for agents.";
 
 /// What makes LispM's agents what they are.
 pub const IDEA_POINTS: [Point; 4] = [
