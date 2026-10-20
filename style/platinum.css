@@ -1,0 +1,774 @@
+/* LispM's website in Mac OS 9's Platinum, the Lavender variation.
+   Greys, bevels and sizes follow LispM Desktop's platinum theme and
+   lispm-desktop-platinum.el, which were sampled from Mac OS 9.0.4. */
+
+:root {
+  --white: #ffffff;
+  --black: #000000;
+  --platinum: #dddddd;
+  --platinum-light: #eeeeee;
+  --title: #cccccc;
+  --lit: #ffffff;
+  --shade: #999999;
+  --edge: #aaaaaa;
+  --ridge: #777777;
+  --frame: #555555;
+  --muted: #777777;
+  --text-soft: #333333;
+  --highlight: #333399;
+  --highlight-text: #ffffff;
+  --thumb: #9999ff;
+  --thumb-light: #ccccff;
+  --thumb-dark: #6666cc;
+  --focus: #6666cc;
+  --desktop: #6666aa;
+  --chrome-font: "Charcoal", "Charcoal CY", "ChicagoFLF", "Chicago", "Geneva", "Lucida Grande",
+    "Helvetica Neue", Arial, sans-serif;
+  --text-font: "Geneva", "Lucida Grande", "Helvetica Neue", Arial, sans-serif;
+  --code-font: "Monaco", "Menlo", "DejaVu Sans Mono", monospace;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--desktop);
+  color: var(--black);
+  font: 13px/1.5 var(--text-font);
+  -webkit-text-size-adjust: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.menu-bar,
+.title-bar,
+.icon {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The screen. */
+
+.desktop-layout {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.stacked-layout {
+  min-height: 100%;
+}
+
+/* The menu bar: platinum, lit along its top, over a black line. */
+
+.menu-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 20px;
+  display: flex;
+  justify-content: space-between;
+  background: var(--platinum);
+  border-bottom: 1px solid var(--black);
+  box-shadow: inset 0 1px 0 var(--lit);
+  font: bold 12px/19px var(--chrome-font);
+}
+
+.stacked-layout .menu-bar {
+  position: sticky;
+}
+
+.menus,
+.status {
+  display: flex;
+  align-items: stretch;
+}
+
+.menus {
+  padding-left: 6px;
+}
+
+.menu {
+  position: relative;
+}
+
+.menu-title {
+  height: 19px;
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: default;
+}
+
+.menu.lambda .menu-title {
+  padding: 0 10px;
+}
+
+.menu.open > .menu-title {
+  background: var(--highlight);
+  color: var(--highlight-text);
+}
+
+.menu-list {
+  position: absolute;
+  top: 19px;
+  left: 0;
+  min-width: 190px;
+  margin: 0;
+  padding: 2px 0 3px;
+  list-style: none;
+  background: var(--platinum);
+  border: 1px solid var(--black);
+  box-shadow: inset 1px 1px 0 var(--lit), inset -1px -1px 0 var(--shade), 2px 2px 0 rgb(0 0 0 / 0.35);
+}
+
+.menu-list button {
+  display: block;
+  width: 100%;
+  height: 19px;
+  padding: 0 24px 0 18px;
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: 19px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.menu-list button:not(:disabled):hover,
+.menu-list button:focus-visible {
+  outline: none;
+  background: var(--highlight);
+  color: var(--highlight-text);
+}
+
+.menu-list button:disabled {
+  color: var(--shade);
+}
+
+.menu-list .separator {
+  height: 2px;
+  margin: 4px 1px;
+  border-top: 1px solid var(--shade);
+  border-bottom: 1px solid var(--lit);
+}
+
+.status {
+  padding-right: 4px;
+}
+
+.clock {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.application {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px 0 10px;
+  border-left: 1px solid var(--shade);
+  box-shadow: inset 1px 0 0 var(--lit);
+}
+
+/* The desk, under and below the menu bar; windows are placed on the viewport. */
+
+.desktop-layout .desk {
+  position: absolute;
+  inset: 0;
+}
+
+.stacked-layout .desk {
+  padding: 12px 16px 24px;
+}
+
+.icons {
+  position: absolute;
+  top: 28px;
+  right: 4px;
+  bottom: 10px;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.icons .corner {
+  margin-top: auto;
+}
+
+.stacked-layout .icons {
+  position: static;
+  width: auto;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 2px;
+  margin-bottom: 14px;
+}
+
+.stacked-layout .icons .corner {
+  display: none;
+}
+
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: 96px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+}
+
+.stacked-layout .icon {
+  width: auto;
+  min-width: 64px;
+  padding: 0 4px;
+}
+
+.icon img {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.icon .label {
+  padding: 0 3px;
+  background: var(--white);
+  color: var(--black);
+  font: 11px/14px var(--text-font);
+  white-space: nowrap;
+}
+
+.icon.selected img {
+  filter: brightness(0.5);
+}
+
+.icon.selected .label {
+  background: var(--black);
+  color: var(--white);
+}
+
+.icon:focus-visible {
+  outline: none;
+}
+
+.icon:focus-visible .label {
+  outline: 2px solid var(--focus);
+}
+
+/* A window: a black outline and drop shadow, a band lit from the top left,
+   then the content's own black line. */
+
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--title);
+  border: 1px solid var(--black);
+  box-shadow: 1px 1px 0 var(--black);
+}
+
+.window:not(.active) {
+  background: var(--platinum);
+  border-color: var(--frame);
+}
+
+.stacked-layout .window {
+  position: relative;
+  margin: 0 0 16px;
+  scroll-margin-top: 28px;
+}
+
+.title-bar {
+  flex: 0 0 auto;
+  height: 21px;
+  display: flex;
+  align-items: flex-start;
+  padding: 0 7px;
+  border-bottom: 1px solid var(--black);
+  background:
+    linear-gradient(var(--lit), var(--lit)) top / 100% 1px no-repeat,
+    linear-gradient(var(--shade), var(--shade)) bottom / 100% 1px no-repeat,
+    var(--title);
+  box-shadow: inset 1px 0 0 var(--lit), inset -1px 0 0 var(--shade);
+  cursor: default;
+}
+
+.window.rolled .title-bar {
+  height: 20px;
+  border-bottom: 0;
+}
+
+.window:not(.active) .title-bar {
+  justify-content: center;
+  border-bottom-color: var(--frame);
+  background: var(--platinum);
+  box-shadow: none;
+}
+
+.title {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0 6px;
+  overflow: hidden;
+  font: bold 12px/20px var(--chrome-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.window:not(.active) .title {
+  color: var(--muted);
+}
+
+/* Six ridges, each a lit line over a shaded one, the lit line a pixel
+   further left and the shaded one a pixel further right. */
+.ridges {
+  flex: 1 1 0;
+  height: 12px;
+  margin: 3px 4px 0;
+  background:
+    repeating-linear-gradient(to bottom, var(--lit) 0 1px, transparent 1px 2px) left top / calc(100% - 1px) 12px no-repeat,
+    repeating-linear-gradient(to bottom, transparent 0 1px, var(--ridge) 1px 2px) right top / calc(100% - 1px) 12px no-repeat;
+}
+
+.title-box {
+  flex: 0 0 13px;
+  width: 13px;
+  height: 13px;
+  margin-top: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+}
+
+.title-box svg {
+  display: block;
+}
+
+.title-box.collapse {
+  margin-left: 4px;
+}
+
+.window-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  padding: 0 4px 4px;
+  box-shadow: inset 1px 0 0 var(--lit), inset -1px -1px 0 var(--shade);
+}
+
+.window:not(.active) .window-body {
+  box-shadow: none;
+}
+
+.window-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: auto;
+  border: 1px solid var(--black);
+  border-top: 0;
+  box-shadow: -1px 0 0 var(--shade), 1px 1px 0 var(--lit);
+}
+
+.window:not(.active) .window-content {
+  border-color: var(--frame);
+  box-shadow: none;
+}
+
+.stacked-layout .window-content {
+  overflow: visible;
+}
+
+.window-content.panel {
+  padding: 16px 22px 18px;
+  background: var(--platinum);
+}
+
+.window-content.document {
+  background: var(--white);
+}
+
+/* Scroll bars: a recessed track and a thumb in the Lavender variation. */
+
+.window-content::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+.window-content::-webkit-scrollbar-track {
+  background: var(--platinum-light);
+  border-left: 1px solid var(--black);
+  box-shadow: inset 1px 1px 0 var(--edge);
+}
+
+.window-content::-webkit-scrollbar-thumb {
+  background: var(--thumb);
+  border: 1px solid var(--black);
+  box-shadow: inset 1px 1px 0 var(--thumb-light), inset -1px -1px 0 var(--thumb-dark);
+}
+
+.window-content::-webkit-scrollbar-corner {
+  background: var(--platinum);
+}
+
+/* An inactive window shows its empty track. */
+.window:not(.active) .window-content::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .window-content {
+    scrollbar-color: var(--thumb) var(--platinum-light);
+  }
+}
+
+/* The outline a dragged window leaves: two pixels a side, every other
+   pixel inverted, as Mac OS 9 drew it in XOR. */
+
+.drag-outline {
+  position: absolute;
+  z-index: 900;
+  pointer-events: none;
+}
+
+.drag-outline .edge {
+  position: absolute;
+  background: repeating-conic-gradient(var(--white) 0 25%, var(--black) 0 50%) 0 0 / 2px 2px;
+  mix-blend-mode: difference;
+}
+
+.drag-outline .top,
+.drag-outline .bottom {
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.drag-outline .top {
+  top: 0;
+}
+
+.drag-outline .bottom {
+  bottom: 0;
+}
+
+.drag-outline .left,
+.drag-outline .right {
+  top: 2px;
+  bottom: 2px;
+  width: 2px;
+}
+
+.drag-outline .left {
+  left: 0;
+}
+
+.drag-outline .right {
+  right: 0;
+}
+
+/* What windows hold. */
+
+.window-content p {
+  max-width: 66ch;
+  margin: 0 0 12px;
+}
+
+.masthead {
+  margin: 2px 0 14px;
+  text-align: center;
+}
+
+.masthead .logo {
+  display: block;
+  margin: 0 auto 8px;
+}
+
+.masthead h1 {
+  margin: 0;
+  font: bold 26px/1.1 var(--chrome-font);
+}
+
+.tagline {
+  margin: 4px auto 0;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.lead {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.note {
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+.stacked-layout .desktop-only {
+  display: none;
+}
+
+/* A group box: an engraved line, its title breaking the top. */
+.group {
+  min-width: 0;
+  margin: 18px 0 14px;
+  padding: 10px 14px 4px;
+  border: 1px solid #888888;
+  box-shadow: 1px 1px 0 var(--lit), inset 1px 1px 0 var(--lit);
+}
+
+.group legend {
+  margin-left: 2px;
+  padding: 0 4px;
+  background: var(--platinum);
+  font: bold 12px/16px var(--chrome-font);
+}
+
+.group ul {
+  margin: 0 0 8px;
+  padding-left: 18px;
+}
+
+.group li {
+  margin: 0 0 4px;
+}
+
+.projects {
+  display: grid;
+  gap: 10px;
+  padding: 2px 0 8px !important;
+  list-style: none;
+}
+
+.projects li {
+  display: grid;
+  grid-template-columns: 172px 1fr;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.stacked-layout .projects li {
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.opens {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: bold 13px var(--chrome-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.opens span {
+  text-decoration: underline;
+  text-decoration-color: var(--thumb-dark);
+  text-underline-offset: 2px;
+}
+
+.opens:hover span {
+  color: var(--highlight);
+}
+
+.what {
+  color: var(--text-soft);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 108px 1fr;
+  gap: 4px 12px;
+  margin: 2px 0 8px;
+}
+
+.facts dt {
+  font: bold 12px/1.6 var(--chrome-font);
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.stacked-layout .facts {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.stacked-layout .facts dd {
+  margin-bottom: 6px;
+}
+
+/* An edit text field holding code: recessed, white. */
+.field {
+  margin: 8px 0 10px;
+  padding: 6px 8px;
+  overflow-x: auto;
+  background: var(--white);
+  border: 1px solid;
+  border-color: var(--shade) var(--lit) var(--lit) var(--shade);
+  box-shadow: inset 1px 1px 0 var(--black);
+  font: 12px/1.5 var(--code-font);
+  white-space: pre;
+}
+
+code,
+kbd {
+  font-family: var(--code-font);
+  font-size: 12px;
+}
+
+kbd {
+  padding: 0 4px;
+  background: var(--platinum-light);
+  border: 1px solid var(--frame);
+  border-radius: 3px;
+  box-shadow: inset -1px -1px 0 var(--shade);
+}
+
+.demo {
+  margin: 14px 0;
+}
+
+.demo video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--black);
+  border: 1px solid var(--black);
+}
+
+.demo figcaption {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 12px;
+}
+
+/* Push buttons: rounded, outlined, lit inside along the top and left. */
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.push-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 20px;
+  padding: 0 14px;
+  border: 1px solid var(--black);
+  border-radius: 4px;
+  background: var(--platinum);
+  color: var(--black);
+  font: bold 12px/18px var(--chrome-font);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+  box-shadow: inset 1px 1px 0 var(--lit), inset -1px -1px 0 var(--ridge), inset -2px -2px 0 var(--edge);
+}
+
+.push-button:active {
+  background: #666666;
+  color: var(--white);
+  box-shadow: inset 1px 1px 0 #444444, inset -1px -1px 0 #888888;
+}
+
+.default-ring {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--black);
+  border-radius: 7px;
+  background: var(--platinum);
+  box-shadow: inset 1px 1px 0 var(--edge), inset -1px -1px 0 var(--ridge);
+}
+
+/* The Read Me, a SimpleText document. */
+
+.read-me {
+  padding: 12px 20px 18px;
+}
+
+.read-me h3 {
+  margin: 18px 0 4px;
+  font: bold 13px/1.4 var(--chrome-font);
+}
+
+.read-me a {
+  color: var(--highlight);
+}
+
+/* The Trash, a Finder window: its count header, then nothing. */
+
+.header-strip {
+  height: 22px;
+  border-bottom: 1px solid var(--black);
+  background:
+    linear-gradient(var(--lit), var(--lit)) top / 100% 1px no-repeat,
+    linear-gradient(var(--edge), var(--edge)) bottom / 100% 1px no-repeat,
+    var(--platinum);
+  font: 11px/21px var(--text-font);
+  text-align: center;
+}
+
+.empty {
+  margin: 40px 0 0 !important;
+  max-width: none !important;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Without scripts, a plain page. */
+
+.no-script {
+  max-width: 640px;
+  margin: 40px auto;
+  padding: 24px;
+  background: var(--platinum);
+  border: 1px solid var(--black);
+}
