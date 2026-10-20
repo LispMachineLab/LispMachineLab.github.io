@@ -1,28 +1,28 @@
 # LispMachineLab.github.io
 
-LispM's website, at https://lispmachinelab.github.io/: a Mac OS 9 desktop in the browser, drawn in
-Platinum as [LispM Desktop](https://github.com/LispMachineLab/lispm-desktop) draws Emacs, its
-windows introducing the three LispM projects. It is written in Rust with
+LispM's website, at https://lispmachinelab.github.io/: what LispM is, told with its films. A
+headline and the 57-second film, the idea, then LispM Agent, LispM Desktop and LispM Browser, each
+with clips from the films, and how to install them. It is written in Rust with
 [Yew](https://yew.rs) and built with [Trunk](https://trunk-rs.github.io/trunk/).
-
-On a wide screen the windows float over the desk: double-click an icon to open it, drag a window
-by its title bar (a dotted outline follows the pointer and the window moves once, when let go, as
-Mac OS 9's did), and use its close, zoom and collapse boxes. On a narrow screen the windows stand
-one under another down the page, and a tap on an icon scrolls to its window.
 
 ## Layout
 
-- `src/model/` is pure and tested natively: the geometry, the windows, the desktop's state machine
-  (`Desktop::apply`, every transition `Desktop -> Event -> Desktop`), the menus and icons, the
-  clock, and the title bar boxes as pixel maps ported from LispM Desktop's
-  `lispm-desktop-platinum-draw-box`.
-- `src/effects.rs` is the only code that touches the browser: the viewport, the time, pointer
-  capture, visiting a page, scrolling to a window.
-- `src/view/` draws the state with Yew and turns what the visitor does into events.
-- `style/platinum.css` holds Platinum's greys, bevels and sizes, from LispM Desktop's platinum
-  theme.
-- `assets/` holds the icons (LispM Desktop's), the rainbow λ and the demo recording (LispM
-  Agent's).
+- `src/content.rs` holds the page's words and media as data: the sections, the clips, each
+  project's story, points and install snippet. Its tests check, among other things, that every
+  clip and poster it names is in `assets/`.
+- `src/copy.rs` is the copy buttons' states, pure and tested.
+- `src/effects.rs` is the only code that touches the browser beyond Yew's rendering: the
+  clipboard, the motion the visitor prefers, playing a clip while it is in sight.
+- `src/view/` draws the page: `page.rs` its sections, `media.rs` the film and the clips,
+  `code.rs` the snippets.
+- `style/site.css` is the films' keynote look.
+- `assets/video/` holds the film and the clips cut from it and from the longer LispM Desktop film,
+  each with its poster. The model line some frames of the agent's chat showed is covered in
+  them, so no model server is named.
+
+Clips play muted and looped while a quarter of them is in sight, and only then load; with less
+motion asked for, they wait on their posters with their controls. The film, with sound, starts
+when asked.
 
 ## Working on it
 
@@ -32,7 +32,7 @@ Needs Rust with the `wasm32-unknown-unknown` target, and Trunk:
 rustup target add wasm32-unknown-unknown
 cargo install trunk --locked
 trunk serve            # http://127.0.0.1:8080, rebuilt on every change
-cargo test             # the model's tests
+cargo test             # the content's and the copy buttons' tests
 ```
 
 Every push to `main` is built, checked (`cargo fmt --check`, `cargo clippy` denying `unwrap`,
@@ -41,4 +41,5 @@ Every push to `main` is built, checked (`cargo fmt --check`, `cargo clippy` deny
 
 ## License
 
-GPL-3.0-or-later, as the LispM projects are. See [LICENSE](LICENSE).
+GPL-3.0-or-later, as the LispM projects are. See [LICENSE](LICENSE). The photographs in the film
+are from Wikimedia Commons; their authors and licenses are credited at its end.
