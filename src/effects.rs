@@ -1,112 +1,111 @@
-//! The site's boundary with the browser: the viewport and the time are read
-//! here, pages are visited and windows revealed here, and nowhere else.
+//! The site's boundary with the browser: the clipboard, the motion the
+//! visitor prefers, and playing videos. Nothing else touches the page
+//! but Yew's rendering.
 
-use gloo_events::EventListener;
-use web_sys::wasm_bindgen::JsCast;
-use web_sys::{Element, KeyboardEvent, PointerEvent, ScrollBehavior, ScrollIntoViewOptions};
+use wasm_bindgen_futures::{JsFuture, spawn_local};
+use web_sys::wasm_bindgen::closure::Closure;
+use web_sys::wasm_bindgen::{JsCast, JsValue};
+use web_sys::{
+    HtmlVideoElement, IntersectionObserver, IntersectionObserverEntry, IntersectionObserverInit,
+};
 
-use crate::model::clock::ClockTime;
-use crate::model::command::Link;
-use crate::model::geometry::{Point, Viewport};
-use crate::model::window::WindowId;
+use crate::copy::CopyError;
 
-/// Returns `value` as whole pixels: truncated toward zero, saturating at
-/// `i32`'s bounds, and zero for a value that is not a number.
-fn pixels(value: f64) -> i32 {
-    // Rust's float-to-integer `as` is total: it saturates and maps NaN to 0.
-    value as i32
+/// The share of a clip that must be in sight for it to play.
+const IN_SIGHT: f64 = 0.25;
+
+/// Returns whether the visitor asked for less motion.
+pub fn prefers_reduced_motion() -> bool {
+    web_sys::window()
+        .and_then(|window| {
+            window
+                .match_media("(prefers-reduced-motion: reduce)")
+                .ok()
+                .flatten()
+        })
+        .is_some_and(|query| query.matches())
 }
 
-/// Returns the browser's viewport, or an empty one outside a browser.
-pub fn viewport() -> Viewport {
-    let extent = |read: Result<web_sys::wasm_bindgen::JsValue, _>| {
-        read.ok().and_then(|value| value.as_f64()).map_or(0, pixels)
-    };
-    web_sys::window().map_or(Viewport::new(0, 0), |window| {
-        Viewport::new(extent(window.inner_width()), extent(window.inner_height()))
-    })
-}
-
-/// Calls `changed` with the new viewport whenever the browser's is resized,
-/// for as long as the listener returned is kept.
-pub fn on_resize(changed: impl Fn(Viewport) + 'static) -> Option<EventListener> {
-    let window = web_sys::window()?;
-    Some(EventListener::new(&window, "resize", move |_| {
-        changed(viewport())
-    }))
-}
-
-/// Calls `pressed` whenever Escape is pressed, for as long as the listener
-/// returned is kept.
-pub fn on_escape(pressed: impl Fn() + 'static) -> Option<EventListener> {
-    let window = web_sys::window()?;
-    Some(EventListener::new(&window, "keydown", move |event| {
-        let escape = event
-            .dyn_ref::<KeyboardEvent>()
-            .is_some_and(|key| key.key() == "Escape");
-        if escape {
-            pressed();
-        }
-    }))
-}
-
-/// Returns the local time, if the browser can tell it.
-pub fn now() -> Option<ClockTime> {
-    let date = js_sys::Date::new_0();
-    ClockTime::new(date.get_hours(), date.get_minutes())
-}
-
-/// Returns where `event` happened on the viewport.
-pub fn pointer(event: &PointerEvent) -> Point {
-    Point::new(event.client_x(), event.client_y())
-}
-
-/// Returns whether `event` is the primary button's, the one that drags.
-pub fn is_primary(event: &PointerEvent) -> bool {
-    event.button() == 0
-}
-
-/// Sends the pointer's later events to the element `event` pressed, so a
-/// drag follows the pointer beyond it.
-///
-/// Yew listens for events at the page's root, so the element pressed, not
-/// the listener, takes the capture; its events still reach the listener,
-/// which Yew finds among the element's ancestors.
-pub fn capture_pointer(event: &PointerEvent) {
-    let pressed = event
-        .target()
-        .and_then(|target| target.dyn_into::<Element>().ok());
-    if let Some(element) = pressed {
-        // A pointer the browser no longer tracks cannot be captured; the
-        // drag then follows it only while it is over the element.
-        let _ = element.set_pointer_capture(event.pointer_id());
-    }
-}
-
-/// Visits `link` in a new tab, or in this one if new tabs are blocked.
-pub fn visit(link: Link) {
+/// Scrolls to the section the address names after `#`, if any. The browser
+/// looks for it before the page is drawn, so it is looked for again after.
+pub fn reveal_addressed_section() {
     let Some(window) = web_sys::window() else {
         return;
     };
-    let opened = window
-        .open_with_url_and_target(link.url(), "_blank")
+    let id = window
+        .location()
+        .hash()
         .ok()
-        .flatten();
-    if opened.is_none() {
-        // Leaving the page is the last resort; if even that fails, the page
-        // stays as it was, which is all there is to keep.
-        let _ = window.location().set_href(link.url());
+        .and_then(|hash| hash.strip_prefix('#').map(str::to_owned));
+    let section = id
+        .filter(|id| !id.is_empty())
+        .and_then(|id| window.document()?.get_element_by_id(&id));
+    if let Some(section) = section {
+        section.scroll_into_view();
     }
 }
 
-/// Scrolls the page until `window` is in sight, for the stacked layout.
-pub fn reveal(window: WindowId) {
-    let element = web_sys::window()
-        .and_then(|page| page.document())
-        .and_then(|document| document.get_element_by_id(window.element_id()));
-    if let Some(element) = element {
-        let options = ScrollIntoViewOptions::new();
-        options.set_behavior(ScrollBehavior::Smooth);
-        element.scroll_into_view_with_scroll_into_view_options(&options);
+/// Puts `text` on the clipboard.
+pub async fn copy(text: &str) -> Result<(), CopyError> {
+    let window = web_sys::window().ok_or(CopyError::Unavailable)?;
+    // The clipboard exists only in a secure context; asking for it elsewhere throws.
+    if !window.is_secure_context() {
+        return Err(CopyError::Unavailable);
     }
+    let written = window.navigator().clipboard().write_text(text);
+    JsFuture::from(written)
+        .await
+        .map(drop)
+        .map_err(|_| CopyError::Refused)
+}
+
+/// Starts `video`. A browser may refuse, saving data or waiting for a
+/// gesture; the video then shows its poster and its controls, as before.
+pub fn play(video: &HtmlVideoElement) {
+    if let Ok(started) = video.play() {
+        spawn_local(async move {
+            let _ = JsFuture::from(started).await;
+        });
+    }
+}
+
+/// Plays a video while it is in sight and pauses it out of sight, for as
+/// long as it is kept; dropping it stops watching.
+pub struct InSight {
+    observer: IntersectionObserver,
+    _changed: Closure<dyn FnMut(js_sys::Array)>,
+}
+
+impl Drop for InSight {
+    fn drop(&mut self) {
+        self.observer.disconnect();
+    }
+}
+
+/// Returns a watch playing `video` while a quarter of it is in sight, or
+/// nothing if the browser cannot watch, the video then staying on its poster.
+pub fn play_in_sight(video: &HtmlVideoElement) -> Option<InSight> {
+    // A second handle on the same element, for the callback to own.
+    let watched = video.clone();
+    let changed = Closure::<dyn FnMut(js_sys::Array)>::new(move |entries: js_sys::Array| {
+        let seen = entries
+            .iter()
+            .filter_map(|entry| entry.dyn_into::<IntersectionObserverEntry>().ok())
+            .any(|entry| entry.is_intersecting());
+        if seen {
+            play(&watched);
+        } else {
+            // Pausing a video cannot fail in a way worth telling: it stays as it was.
+            let _ = watched.pause();
+        }
+    });
+    let options = IntersectionObserverInit::new();
+    options.set_threshold(&JsValue::from_f64(IN_SIGHT));
+    let observer =
+        IntersectionObserver::new_with_options(changed.as_ref().unchecked_ref(), &options).ok()?;
+    observer.observe(video);
+    Some(InSight {
+        observer,
+        _changed: changed,
+    })
 }

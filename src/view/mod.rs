@@ -1,9 +1,6 @@
-//! The site's view: Yew components drawing the desktop's state in Mac OS 9's
-//! Platinum and turning what the visitor does into the desktop's events.
+//! The page, drawn with Yew: static sections from [`crate::content`], and the
+//! few components that keep state, the film, the clips and the copy buttons.
 
-pub mod app;
-mod content;
-mod controls;
-mod icon;
-mod menu_bar;
-mod window;
+mod code;
+mod media;
+pub mod page;

@@ -1,16 +1,18 @@
-//! LispM's website: a Mac OS 9 desktop in the browser, drawn in Platinum as
-//! LispM Desktop draws Emacs, its windows introducing the three projects.
+//! LispM's website: what LispM is, told with its films. A headline and the
+//! film, the idea, then LispM Agent, LispM Desktop and LispM Browser, each
+//! with clips from the films, and how to install them.
 //!
-//! The crate is three layers. [`model`] is pure: the desktop's state and its
-//! transitions, tested natively. [`effects`] is the boundary with the browser.
-//! [`view`] draws the state with Yew and turns what the visitor does into events.
+//! [`content`] holds the page's words and media as data, [`copy`] the copy
+//! buttons' states, both pure and tested natively. [`effects`] is the
+//! boundary with the browser. [`view`] draws the page with Yew.
 
 #![deny(missing_docs)]
 
+mod content;
+mod copy;
 mod effects;
-mod model;
 mod view;
 
 fn main() {
-    yew::Renderer::<view::app::App>::new().render();
+    yew::Renderer::<view::page::App>::new().render();
 }
