@@ -1,11 +1,23 @@
 [package]
 name = "lispm-site"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 license = "GPL-3.0-or-later"
 description = "LispM's website: what LispM is, told with its films, built with Yew"
 repository = "https://github.com/LispMachineLab/LispMachineLab.github.io"
 publish = false
+default-run = "lispm-site"
+
+# The page in the browser: hydrates what prerender wrote.
+[[bin]]
+name = "lispm-site"
+path = "src/main.rs"
+
+# Run by Trunk after each build, natively: writes the page into index.html,
+# so it reads before WebAssembly loads, and writes llms.txt.
+[[bin]]
+name = "prerender"
+path = "src/bin/prerender.rs"
 
 [dependencies]
 gloo-timers = "0.4"
@@ -25,7 +37,14 @@ web-sys = { version = "0.3", features = [
     "Navigator",
     "Window",
 ] }
-yew = { version = "0.23", features = ["csr"] }
+yew = "0.23"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+yew = { version = "0.23", features = ["csr", "hydration"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["rt"] }
+yew = { version = "0.23", features = ["ssr"] }
 
 [lints.rust]
 missing_docs = "deny"

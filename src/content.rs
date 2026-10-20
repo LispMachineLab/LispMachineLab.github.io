@@ -106,6 +106,14 @@ impl Language {
             Language::EmacsLisp => "Emacs Lisp",
         }
     }
+
+    /// Returns the language's name after a Markdown code fence.
+    pub const fn fence(self) -> &'static str {
+        match self {
+            Language::Shell => "sh",
+            Language::EmacsLisp => "elisp",
+        }
+    }
 }
 
 /// Code to paste.
@@ -115,6 +123,18 @@ pub struct Snippet {
     pub language: Language,
     /// The code, its lines joined by newlines.
     pub code: &'static str,
+}
+
+/// A feature told at length, after a project's story: a headline, a
+/// paragraph, and its points.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Spotlight {
+    /// The headline.
+    pub headline: &'static str,
+    /// The paragraph under it.
+    pub text: &'static str,
+    /// What it comes to, point by point.
+    pub points: &'static [Point],
 }
 
 /// One of the three projects.
@@ -130,6 +150,8 @@ pub struct Project {
     pub lead: &'static str,
     /// Its story, each step with a clip.
     pub stages: &'static [Stage],
+    /// A feature told at length after the story, if it has one.
+    pub spotlight: Option<Spotlight>,
     /// The points under the story.
     pub points: &'static [Point],
     /// Who installs it, and why, in the Get started section.
@@ -138,6 +160,8 @@ pub struct Project {
     pub install: Snippet,
     /// Its repository.
     pub repository: &'static str,
+    /// The languages it is written in, the most used first.
+    pub languages: &'static [&'static str],
 }
 
 /// Returns the clip playing `video`, `poster` before it, described by `description`.
@@ -276,14 +300,37 @@ const BROWSER_STAGES: [Stage; 1] = [Stage {
     ),
 }];
 
-const BROWSER_POINTS: [Point; 4] = [
+const EXTENSION_POINTS: [Point; 4] = [
+    Point {
+        title: "From the Web Store",
+        text: "Open the Chrome Web Store in a tab and add an extension from its page: its signature is checked, and what it may do is asked first.",
+    },
+    Point {
+        title: "Or from a folder",
+        text: "Load an unpacked extension, as Chrome's developer mode does, or add one by its store link or id.",
+    },
+    Point {
+        title: "Its button, from the keyboard",
+        text: "M-e presses an extension's button for the page in front, and its popup hangs from the page's top right.",
+    },
+    Point {
+        title: "Kept in Emacs",
+        text: "List them to press, open their options, turn them on and off, reload or remove them; their questions are asked in the minibuffer.",
+    },
+];
+
+const BROWSER_SPOTLIGHT: Spotlight = Spotlight {
+    headline: "Chrome extensions, inside Emacs.",
+    text: "On macOS 15.4 and later, WebKit runs Chrome extensions itself, as Safari runs its own. \
+           The APIs WebKit lacks are filled in, so even heavy extensions work: the Rabby wallet runs \
+           its worker, its page provider and its popup, and its approvals open in windows of their own.",
+    points: &EXTENSION_POINTS,
+};
+
+const BROWSER_POINTS: [Point; 3] = [
     Point {
         title: "Tabs",
         text: "Every page a tab, with its icon, history and bookmarks kept as Emacs keeps them.",
-    },
-    Point {
-        title: "Chrome extensions",
-        text: "On macOS 15.4 and later, run by WebKit itself, wallets such as Rabby among them.",
     },
     Point {
         title: "Steady",
@@ -304,6 +351,7 @@ pub const PROJECTS: [Project; 3] = [
         lead: "Talk to an agent in a chat laid out like Claude Code's. Underneath, the chat is an org \
                document, its tools are Elisp, and it can evaluate Lisp in the Emacs you are using.",
         stages: &AGENT_STAGES,
+        spotlight: None,
         points: &AGENT_POINTS,
         audience: "The agents, in your own Emacs 30.1 or later. Then M-x lispm in any project.",
         install: Snippet {
@@ -311,6 +359,7 @@ pub const PROJECTS: [Project; 3] = [
             code: "(use-package lispm\n  :vc (:url \"https://github.com/LispMachineLab/lispm-agent\" :rev :newest)\n  :config (lispm-mode-line-mode 1))",
         },
         repository: "https://github.com/LispMachineLab/lispm-agent",
+        languages: &["Emacs Lisp"],
     },
     Project {
         anchor: Anchor::Desktop,
@@ -319,6 +368,7 @@ pub const PROJECTS: [Project; 3] = [
         lead: "An Emacs distribution built around LispM Agent, laid out as Mac OS 9's desktop and \
                ready from the first start.",
         stages: &DESKTOP_STAGES,
+        spotlight: None,
         points: &DESKTOP_POINTS,
         audience: "Everything, ready from the first start: Emacs 30.1 or later with SVG, git and curl, on macOS or GNU/Linux.",
         install: Snippet {
@@ -326,6 +376,7 @@ pub const PROJECTS: [Project; 3] = [
             code: "git clone https://github.com/LispMachineLab/lispm-desktop ~/lispm-desktop\nemacs --init-directory ~/lispm-desktop",
         },
         repository: "https://github.com/LispMachineLab/lispm-desktop",
+        languages: &["Emacs Lisp", "Rust"],
     },
     Project {
         anchor: Anchor::Browser,
@@ -334,6 +385,7 @@ pub const PROJECTS: [Project; 3] = [
         lead: "A WebKit browser in Emacs: tabs, history and bookmarks, the keyboard as Vimium uses \
                pages, and Chrome extensions.",
         stages: &BROWSER_STAGES,
+        spotlight: Some(BROWSER_SPOTLIGHT),
         points: &BROWSER_POINTS,
         audience: "The browser, in an Emacs 30.1 or later built with xwidgets.",
         install: Snippet {
@@ -341,8 +393,15 @@ pub const PROJECTS: [Project; 3] = [
             code: "(package-vc-install \"https://github.com/LispMachineLab/lispm-browser\")\n(require 'lispm-browser)\n(lispm-browser-setup)",
         },
         repository: "https://github.com/LispMachineLab/lispm-browser",
+        languages: &["Swift", "Emacs Lisp"],
     },
 ];
+
+/// Where the site is served.
+pub const SITE: &str = "https://lispmachinelab.github.io/";
+
+/// The licence the projects are free software under.
+pub const LICENSE: &str = "https://www.gnu.org/licenses/gpl-3.0.html";
 
 /// The organization on GitHub.
 pub const ORGANIZATION: &str = "https://github.com/LispMachineLab";

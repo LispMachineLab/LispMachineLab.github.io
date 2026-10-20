@@ -14,17 +14,23 @@ pub struct ClipProps {
 
 /// A clip, muted and looped, playing while in sight. With less motion asked
 /// for, it waits on its poster with its controls.
+///
+/// It is drawn without asking the browser anything, as prerender draws it
+/// at build time; the motion the visitor prefers is read once it is in the
+/// page.
 #[function_component(Loop)]
 pub fn clip_loop(props: &ClipProps) -> Html {
     let video = use_node_ref();
-    let still = use_state(effects::prefers_reduced_motion);
+    let still = use_state_eq(|| false);
     {
         let video = video.clone();
-        let still = *still;
+        let still = still.clone();
         use_effect_with((), move |_| {
+            let reduced = effects::prefers_reduced_motion();
+            still.set(reduced);
             let watch = video
                 .cast::<web_sys::HtmlVideoElement>()
-                .filter(|_| !still)
+                .filter(|_| !reduced)
                 .and_then(|element| effects::play_in_sight(&element));
             move || drop(watch)
         });

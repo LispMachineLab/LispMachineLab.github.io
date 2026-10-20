@@ -561,3 +561,37 @@ code {
   margin: 64px auto;
   padding: 0 var(--gutter);
 }
+
+/* A feature told at length: a panel lit along its edge in the λ's rainbow. */
+.spotlight {
+  position: relative;
+  margin-top: clamp(48px, 7vw, 88px);
+  padding: clamp(28px, 4vw, 48px);
+  border-radius: 24px;
+  background:
+    linear-gradient(var(--raised), var(--raised)) padding-box,
+    var(--rainbow) border-box;
+  border: 1px solid transparent;
+}
+
+.spotlight > h3 {
+  max-width: 720px;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.spotlight > p {
+  max-width: 760px;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: clamp(17px, 2vw, 20px);
+}
+
+.spotlight .points {
+  margin-top: 32px;
+}
+
+.spotlight .points li {
+  background: var(--ground);
+}
