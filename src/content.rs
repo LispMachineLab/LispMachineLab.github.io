@@ -140,13 +140,15 @@ pub struct Step {
 }
 
 /// A feature told at length, after a project's story: a headline, a
-/// paragraph, and its points.
+/// paragraph, a clip if it has one, and its points.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Spotlight {
     /// The headline.
     pub headline: &'static str,
     /// The paragraph under it.
     pub text: &'static str,
+    /// What plays under the paragraph, if anything does.
+    pub clip: Option<Clip>,
     /// What it comes to, point by point.
     pub points: &'static [Point],
 }
@@ -318,19 +320,19 @@ const BROWSER_STAGES: [Stage; 1] = [Stage {
 const EXTENSION_POINTS: [Point; 4] = [
     Point {
         title: "From the Web Store",
-        text: "Open the Chrome Web Store in a tab and add an extension from its page: its signature is checked, and what it may do is asked first.",
+        text: "The puzzle piece opens the Chrome Web Store; Add to LispM on an extension's page adds it: its signature is checked, and what it may do is asked first.",
     },
     Point {
-        title: "Or from a folder",
-        text: "Load an unpacked extension, as Chrome's developer mode does, or add one by its store link or id.",
+        title: "On the toolbar",
+        text: "Each pinned extension has its button there, badge and all: a click opens its popup under it, a right click its menu.",
     },
     Point {
-        title: "Its button, from the keyboard",
-        text: "M-e presses an extension's button for the page in front, and its popup hangs from the page's top right.",
+        title: "A page of their own",
+        text: "lispm://extensions, like chrome://extensions: turn them on and off, see what they may do, reload, remove, or load an unpacked one.",
     },
     Point {
-        title: "Kept in Emacs",
-        text: "List them to press, open their options, turn them on and off, reload or remove them; their questions are asked in the minibuffer.",
+        title: "And from the keyboard",
+        text: "M-e presses an extension's button for the page in front, and every action is a command, its questions asked in the minibuffer.",
     },
 ];
 
@@ -339,6 +341,14 @@ const BROWSER_SPOTLIGHT: Spotlight = Spotlight {
     text: "On macOS 15.4 and later, WebKit runs Chrome extensions itself, as Safari runs its own. \
            The APIs WebKit lacks are filled in, so even heavy extensions work: the Rabby wallet runs \
            its worker, its page provider and its popup, and its approvals open in windows of their own.",
+    clip: Some(clip(
+        "assets/video/extensions.mp4",
+        "assets/video/extensions.jpg",
+        "The puzzle piece on the browser's toolbar opens the Chrome Web Store in a tab, Add to \
+         LispM on Dark Reader's page adds it once the question in the minibuffer is answered, \
+         the Lisp machine article turns dark, and Dark Reader's own toolbar button opens its \
+         popup under it.",
+    )),
     points: &EXTENSION_POINTS,
 };
 
@@ -501,11 +511,13 @@ mod tests {
     ];
 
     fn clips() -> impl Iterator<Item = Clip> {
-        std::iter::once(FILM).chain(
-            PROJECTS
-                .iter()
-                .flat_map(|p| p.stages.iter().map(|s| s.clip)),
-        )
+        std::iter::once(FILM)
+            .chain(
+                PROJECTS
+                    .iter()
+                    .flat_map(|p| p.stages.iter().map(|s| s.clip)),
+            )
+            .chain(PROJECTS.iter().filter_map(|p| p.spotlight?.clip))
     }
 
     #[test]
