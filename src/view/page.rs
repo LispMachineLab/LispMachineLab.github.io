@@ -4,8 +4,9 @@
 use yew::prelude::*;
 
 use crate::content::{
-    Anchor, BACKENDS, CREDITS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, ORGANIZATION, PROJECTS,
-    Point, Project, SUMMARY, Spotlight, TAGLINE,
+    APP_ICON, Anchor, BACKENDS, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM,
+    IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALLER_DOES, INSTALLER_SOURCE, ORGANIZATION, OWN_EMACS,
+    OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE,
 };
 
 use crate::effects;
@@ -66,7 +67,7 @@ fn hero() -> Html {
             <h1>{ TAGLINE }</h1>
             <p class="summary">{ SUMMARY }</p>
             <div class="actions">
-                <a class="button primary" href={Anchor::Start.href()}>{ "Get started" }</a>
+                <a class="button primary" href={Anchor::Start.href()}>{ "Download for Mac" }</a>
                 { outward(ORGANIZATION, "button", "View on GitHub") }
             </div>
             <div class="stage" id={Anchor::Film.id()}>
@@ -136,11 +137,48 @@ fn project(project: &Project) -> Html {
     }
 }
 
+/// Returns a step of installing LispM.app.
+fn step(step: &Step) -> Html {
+    html! {
+        <li>
+            <h4>{ step.title }</h4>
+            if !step.text.is_empty() {
+                <p>{ step.text }</p>
+            }
+            { for step.snippet.map(|snippet| html! { <Code {snippet} /> }) }
+        </li>
+    }
+}
+
+/// LispM.app, for everyone: its icon and what it runs on beside the steps
+/// that install it.
+fn download() -> Html {
+    html! {
+        <div class="download">
+            <div class="app">
+                <img src={APP_ICON} alt="LispM's icon, the rainbow λ" width="128" height="128" />
+                <h3>{ "LispM for Mac" }</h3>
+                <p>{ REQUIREMENTS }</p>
+            </div>
+            <ol class="steps">
+                { for DOWNLOAD_STEPS.iter().map(step) }
+            </ol>
+            <p class="installer">
+                { "The line runs " }{ outward(INSTALLER_SOURCE, "", "install.sh") }{ ", which" }
+                { INSTALLER_DOES }
+            </p>
+        </div>
+    }
+}
+
 fn start() -> Html {
     html! {
         <section class="section start" id={Anchor::Start.id()}>
-            <h2>{ "Get started." }</h2>
-            <p class="lead">{ "Each project stands on its own. Start with the one you want." }</p>
+            <h2>{ DOWNLOAD_HEADLINE }</h2>
+            <p class="lead">{ DOWNLOAD_LEAD }</p>
+            { download() }
+            <h3 class="own-emacs">{ OWN_EMACS_HEADLINE }</h3>
+            <p class="lead">{ OWN_EMACS }</p>
             <div class="installs">
                 { for PROJECTS.iter().map(|project| html! {
                     <article class="install">
@@ -153,9 +191,11 @@ fn start() -> Html {
                 }) }
             </div>
             <p class="model">
-                { "Then give the agents a model. With " }<code>{ "OPENAI_API_KEY" }</code>{ " or " }
-                <code>{ "ANTHROPIC_API_KEY" }</code>
-                { " set in Emacs's environment nothing more is needed; for any other server, local or hosted, see " }
+                { "Then give the agents a model. Claude Code, Codex and Hermes, once installed, \
+                   show beside LispM's own agents, which need only " }
+                <code>{ "OPENAI_API_KEY" }</code>{ " or " }<code>{ "ANTHROPIC_API_KEY" }</code>
+                { " set in your shell's profile, where LispM.app reads it, or in your own Emacs's \
+                   environment. For any other server, local or hosted, see " }
                 { outward(BACKENDS, "", "Backends") }{ "." }
             </p>
         </section>

@@ -400,7 +400,119 @@ h3 {
   margin-top: 40px;
 }
 
-/* Get started. */
+/* Get started: LispM.app first, for everyone. */
+
+.download {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 28px 40px;
+  margin-top: 48px;
+  padding: clamp(24px, 4vw, 40px);
+  border-radius: 24px;
+  background: var(--raised);
+}
+
+.download .app {
+  align-self: start;
+  text-align: center;
+}
+
+.download .app img {
+  display: block;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 14px;
+}
+
+.download .app h3 {
+  font-size: 24px;
+}
+
+.download .app p {
+  margin: 8px auto 0;
+  max-width: 240px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* No wider than its column: the line to paste scrolls in its own box. */
+.steps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+/* Each step numbered in a ring, its words beside the number. */
+.steps li {
+  position: relative;
+  min-height: 32px;
+  padding-left: 48px;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  top: -2px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* A line as tall as the ring is round, less its border, so the two centre. */
+.steps h4 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.steps p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.steps .code {
+  margin-top: 12px;
+}
+
+.steps .code pre {
+  font-size: 14px;
+}
+
+.installer {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .download {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.own-emacs {
+  margin-top: clamp(72px, 10vw, 112px);
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: -0.02em;
+}
 
 .installs {
   display: grid;
