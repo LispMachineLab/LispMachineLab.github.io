@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://lispmachinelab.github.io/sitemap.xml
+Sitemap: https://lispm.ai/sitemap.xml
