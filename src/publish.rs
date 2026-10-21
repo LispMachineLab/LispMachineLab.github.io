@@ -273,7 +273,7 @@ mod tests {
                 project.name
             );
         }
-        assert!(ld.contains("\"downloadUrl\":\"https://lispmachinelab.github.io/install.sh\""));
+        assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
         assert!(!head().trim_end_matches("</script>").contains("</script"));
         assert_eq!(ld.matches('{').count(), ld.matches('}').count());
         assert_eq!(ld.matches('[').count(), ld.matches(']').count());

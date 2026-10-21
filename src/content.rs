@@ -423,7 +423,7 @@ pub const PROJECTS: [Project; 3] = [
 ];
 
 /// Where the site is served.
-pub const SITE: &str = "https://lispmachinelab.github.io/";
+pub const SITE: &str = "https://lispm.ai/";
 
 /// The headline of the download.
 pub const DOWNLOAD_HEADLINE: &str = "Get LispM.";
@@ -450,7 +450,7 @@ pub const INSTALLER_SOURCE: &str =
 /// The line that installs LispM.app, or updates it.
 pub const INSTALL: Snippet = Snippet {
     language: Language::Terminal,
-    code: "curl -fsSL https://lispmachinelab.github.io/install.sh | sh",
+    code: "curl -fsSL https://lispm.ai/install.sh | sh",
 };
 
 /// Installing LispM.app, step by step.

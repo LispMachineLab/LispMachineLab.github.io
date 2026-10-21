@@ -1,7 +1,7 @@
 #!/bin/sh
 # Install LispM on macOS, or bring it up to date:
 #
-#   curl -fsSL https://lispmachinelab.github.io/install.sh | sh
+#   curl -fsSL https://lispm.ai/install.sh | sh
 #
 # The installer is lispm-desktop's install.sh, which says what it does;
 # this runs the one of LispM's latest release, so that this address always

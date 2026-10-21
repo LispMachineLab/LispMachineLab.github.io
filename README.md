@@ -1,6 +1,6 @@
 # LispMachineLab.github.io
 
-LispM's website, at https://lispmachinelab.github.io/: what LispM is, told with its films. A
+LispM's website, at https://lispm.ai/: what LispM is, told with its films. A
 headline and the 57-second film, the idea, then LispM Agent, LispM Desktop and LispM Browser, each
 with clips from the films, and how to install them. It is written in Rust with
 [Yew](https://yew.rs) and built with [Trunk](https://trunk-rs.github.io/trunk/).
@@ -52,7 +52,9 @@ cargo test             # the content's, copy buttons', publishing's and share ca
 
 Every push to `main` is built, checked (`cargo fmt --check`, `cargo clippy` denying `unwrap`,
 `expect`, `panic` and unchecked indexing, `cargo test`) and deployed to GitHub Pages by
-`.github/workflows/pages.yml`; pull requests are built and checked only.
+`.github/workflows/pages.yml`; pull requests are built and checked only. The domain lispm.ai is
+set in the repository's Pages settings (an Actions deployment ignores a `CNAME` file); its DNS,
+at Cloudflare, points to GitHub Pages unproxied, so GitHub can issue the HTTPS certificate.
 
 ## License
 
