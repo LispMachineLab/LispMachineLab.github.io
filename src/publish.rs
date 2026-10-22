@@ -6,9 +6,10 @@
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    BACKENDS, CREDITS, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE, ORGANIZATION, OWN_EMACS,
-    OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE,
+    BACKENDS, CREDITS, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK,
+    EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
+    INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE, ORGANIZATION,
+    OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -194,6 +195,12 @@ fn markdown_download() -> String {
         out,
         "\nThe line runs [install.sh]({INSTALLER_SOURCE}), which{INSTALLER_DOES}\n"
     );
+    let _ = writeln!(
+        out,
+        "### {EXPERIMENTAL_HEADLINE}\n\n{EXPERIMENTAL}\n\n```{}\n{}\n```\n\n{EXPERIMENTAL_BACK} `{INSTALL_BACK}`\n",
+        INSTALL_EXPERIMENTAL.language.fence(),
+        INSTALL_EXPERIMENTAL.code
+    );
     out
 }
 
@@ -288,6 +295,7 @@ mod tests {
             assert!(text.contains(project.install.code), "{}", project.name);
         }
         assert!(text.contains("Chrome extensions, inside Emacs."));
+        assert!(text.contains(INSTALL_EXPERIMENTAL.code));
         let download = text.find(INSTALL.code).unwrap_or(usize::MAX);
         let idea = text.find(IDEA_HEADLINE).unwrap_or(0);
         assert!(download < idea, "the download comes first");
