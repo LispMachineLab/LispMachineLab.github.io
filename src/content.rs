@@ -436,7 +436,8 @@ pub const DOWNLOAD_LEAD: &str = "LispM is a Mac app. Emacs, the editor it is mad
 pub const APP_ICON: &str = "assets/lispm-app.png";
 
 /// What LispM.app runs on.
-pub const REQUIREMENTS: &str = "macOS 11 or later, on Apple silicon or Intel. Free.";
+pub const REQUIREMENTS: &str =
+    "macOS 11 or later, on Apple silicon or Intel. On GNU Emacs 31.1. Free.";
 
 /// The installer, served beside the page; it runs lispm-desktop's.
 pub const INSTALLER: &str = "install.sh";
@@ -472,6 +473,26 @@ pub const DOWNLOAD_STEPS: [Step; 3] = [
         snippet: None,
     },
 ];
+
+/// The headline of the experimental LispM.app.
+pub const EXPERIMENTAL_HEADLINE: &str = "LispM Experimental";
+
+/// What it is, and who it is for.
+pub const EXPERIMENTAL: &str = "The same LispM on GNU Emacs 32, still in development, for what \
+     only Emacs 32 can do, as OpenGL drawn in a buffer. Expect rough edges.";
+
+/// The line that installs the experimental LispM.app, updates it, or moves
+/// LispM.app onto it.
+pub const INSTALL_EXPERIMENTAL: Snippet = Snippet {
+    language: Language::Terminal,
+    code: "curl -fsSL https://lispm.ai/install.sh | LISPM_EMACS=32 sh",
+};
+
+/// How to leave it, before the line that does.
+pub const EXPERIMENTAL_BACK: &str = "Run it again to update. Back to LispM on Emacs 31:";
+
+/// The line that moves LispM.app back onto Emacs 31.
+pub const INSTALL_BACK: &str = "curl -fsSL https://lispm.ai/install.sh | LISPM_EMACS=31 sh";
 
 /// What the line does, after the link to the installer.
 pub const INSTALLER_DOES: &str = " installs Apple's command line tools if they are missing, puts \
@@ -587,6 +608,18 @@ mod tests {
         for project in PROJECTS {
             assert!(!project.stages.is_empty(), "{}", project.name);
             assert!(!project.points.is_empty(), "{}", project.name);
+        }
+    }
+
+    #[test]
+    fn the_experimental_lines_are_the_install_line_choosing_an_emacs() {
+        for (emacs, line) in [("32", INSTALL_EXPERIMENTAL.code), ("31", INSTALL_BACK)] {
+            assert_eq!(
+                line,
+                INSTALL
+                    .code
+                    .replace("| sh", &format!("| LISPM_EMACS={emacs} sh"))
+            );
         }
     }
 

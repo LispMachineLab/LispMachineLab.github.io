@@ -4,8 +4,9 @@
 use yew::prelude::*;
 
 use crate::content::{
-    APP_ICON, Anchor, BACKENDS, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM,
-    IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALLER_DOES, INSTALLER_SOURCE, ORGANIZATION, OWN_EMACS,
+    APP_ICON, Anchor, BACKENDS, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
+    EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
+    INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES, INSTALLER_SOURCE, ORGANIZATION, OWN_EMACS,
     OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE,
 };
 
@@ -175,12 +176,31 @@ fn download() -> Html {
     }
 }
 
+/// The experimental LispM.app, on Emacs 32: who it is for beside its line,
+/// as the projects' own installs are laid out.
+fn experimental() -> Html {
+    html! {
+        <article class="install experimental">
+            <div>
+                <p class="eyebrow">{ "Experimental" }</p>
+                <h3>{ EXPERIMENTAL_HEADLINE }</h3>
+                <p>{ EXPERIMENTAL }</p>
+            </div>
+            <div>
+                <Code snippet={INSTALL_EXPERIMENTAL} />
+                <p class="back">{ EXPERIMENTAL_BACK }{ " " }<code>{ INSTALL_BACK }</code></p>
+            </div>
+        </article>
+    }
+}
+
 fn start() -> Html {
     html! {
         <section class="section start" id={Anchor::Start.id()}>
             <h2>{ DOWNLOAD_HEADLINE }</h2>
             <p class="lead">{ DOWNLOAD_LEAD }</p>
             { download() }
+            { experimental() }
             <h3 class="own-emacs">{ OWN_EMACS_HEADLINE }</h3>
             <p class="lead">{ OWN_EMACS }</p>
             <div class="installs">
