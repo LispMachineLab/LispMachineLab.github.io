@@ -41,6 +41,8 @@ jobs:
         run: cargo test --all-targets
       - name: Build
         run: trunk build --release
+      - name: LispM Remote's page
+        run: scripts/remote-page.sh dist/remote
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
