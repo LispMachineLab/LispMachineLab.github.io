@@ -28,6 +28,10 @@ The crate is a library and two binaries: `src/main.rs`, the page in the browser,
   `code.rs` the snippets.
 - `style/site.css` is the films' keynote look.
 - `static/` holds `robots.txt` and `sitemap.xml`, copied to the site's root.
+- `scripts/remote-page.sh` puts [LispM Remote](https://github.com/LispMachineLab/lispm-remote)'s
+  page at `/remote/`, where LispM's QR code points: it downloads the page's release, pinned by
+  version and SHA-256, and unpacks it into `dist/remote` after Trunk's build. To publish a new
+  page, pin the new release there.
 - `assets/social/lispm-card.png` is the card shared links show, 1200 by 630, its words clear of
   X's 2:1 crop; `index.html` names it in its Open Graph and Twitter tags, and
   `src/share_card.rs` tests that the tags agree and the file is that size.
