@@ -95,6 +95,7 @@ h3 {
 
 .navigation a {
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .navigation a:hover {
@@ -111,7 +112,8 @@ h3 {
   font-size: 17px;
 }
 
-@media (max-width: 640px) {
+/* Below this width the links no longer fit beside the brand and GitHub. */
+@media (max-width: 800px) {
   .navigation ul {
     display: none;
   }
@@ -221,6 +223,12 @@ h3 {
   height: auto;
   aspect-ratio: 16 / 9;
   background: #0a0a0a;
+}
+
+.screen .still {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .play {

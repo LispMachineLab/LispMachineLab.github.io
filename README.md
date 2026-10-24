@@ -1,8 +1,8 @@
 # LispMachineLab.github.io
 
 LispM's website, at https://lispm.ai/: what LispM is, told with its films. A
-headline and the 57-second film, the idea, then LispM Agent, LispM Desktop and LispM Browser, each
-with clips from the films, and how to install them. Its blog, at https://lispm.ai/blog/, holds
+headline and the 57-second film, the idea, then LispM Agent, LispM Desktop, LispM Browser, the App
+Store and LispM Remote, each with clips from the films or stills, and how to install them. Its blog, at https://lispm.ai/blog/, holds
 LispM's Articles from X. It is written in Rust with [Yew](https://yew.rs) and built with
 [Trunk](https://trunk-rs.github.io/trunk/).
 
@@ -19,9 +19,10 @@ WebAssembly, and writes `sitemap.xml`, which lists them.
 The crate is a library and two binaries: `src/main.rs`, the page in the browser, and
 `src/bin/prerender.rs`, run natively after each build.
 
-- `src/content.rs` holds the page's words and media as data: the sections, the clips, each
-  project's story, points and install snippet. Its tests check, among other things, that every
-  clip and poster it names is in `assets/`.
+- `src/content.rs` holds the page's words and media as data: the sections, the clips and
+  stills, each project's story, points and install snippet, if it has one of its own. Its tests
+  check, among other things, that every clip and poster it names is in `assets/`, and that every
+  still is there at the size the page gives it.
 - `src/copy.rs` is the copy buttons' states, pure and tested.
 - `src/publish.rs` is what is written beside the page, pure and tested: the rendered page put
   into `index.html`, the JSON-LD, and `llms.txt`, all from `content.rs`.
@@ -48,9 +49,10 @@ The crate is a library and two binaries: `src/main.rs`, the page in the browser,
 - `assets/social/lispm-card.png` is the card shared links show, 1200 by 630, its words clear of
   X's 2:1 crop; `index.html` names it in its Open Graph and Twitter tags, and
   `src/share_card.rs` tests that the tags agree and the file is that size.
-- `assets/video/` holds the film and the clips cut from it and from the longer LispM Desktop film,
-  each with its poster. The model line some frames of the agent's chat showed is covered in
-  them, so no model server is named.
+- `assets/video/` holds the film and the clips cut from it, from the longer LispM Desktop film,
+  from the LispM Remote film and from the Classic AI film, each with its poster. The model line
+  some frames of the agent's chat showed is covered in them, so no model server is named. The
+  stills beside some steps are the blog's own pictures, under `assets/blog/`.
 
 Clips play muted and looped while a quarter of them is in sight, and only then load; with less
 motion asked for, they wait on their posters with their controls. The film, with sound, starts

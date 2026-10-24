@@ -1,10 +1,11 @@
-//! The film under the headline and the clips beside each project's story.
+//! The film under the headline, and the clips and stills beside each
+//! project's story.
 
 use std::rc::Rc;
 
 use yew::prelude::*;
 
-use crate::content::Clip;
+use crate::content::{Clip, Picture};
 use crate::effects;
 use crate::playback::{Event, Playback};
 
@@ -83,6 +84,25 @@ pub fn clip_loop(props: &ClipProps) -> Html {
                 </button>
             }
         </>
+    }
+}
+
+/// The properties of a [`Still`].
+#[derive(Properties, PartialEq)]
+pub struct PictureProps {
+    /// The picture.
+    pub picture: Picture,
+}
+
+/// A still, sized before it loads so the page does not move, and loaded
+/// only as it nears the screen.
+#[function_component(Still)]
+pub fn still(props: &PictureProps) -> Html {
+    let picture = props.picture;
+    html! {
+        <img class="still" src={picture.image} alt={picture.description}
+             width={picture.width.to_string()} height={picture.height.to_string()}
+             loading="lazy" decoding="async" />
     }
 }
 

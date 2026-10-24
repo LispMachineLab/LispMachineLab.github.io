@@ -1,6 +1,6 @@
-//! What the page says, as data: its sections, the clips from the films, the
-//! points each project makes, and the code to install them. The words
-//! follow the three projects' READMEs.
+//! What the page says, as data: its sections, the clips from the films and
+//! the pictures beside them, the points each project makes, and the code to
+//! install them. The words follow the projects' READMEs and release notes.
 
 /// A section of the page, the target of a link.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -15,16 +15,22 @@ pub enum Anchor {
     Desktop,
     /// LispM Browser.
     Browser,
+    /// LispM's App Store.
+    Store,
+    /// LispM Remote.
+    Remote,
     /// How to install LispM, and each project on its own.
     Start,
 }
 
 impl Anchor {
     /// The sections the navigation bar links to, left to right.
-    pub const NAVIGATION: [Anchor; 4] = [
+    pub const NAVIGATION: [Anchor; 6] = [
         Anchor::Agent,
         Anchor::Desktop,
         Anchor::Browser,
+        Anchor::Store,
+        Anchor::Remote,
         Anchor::Start,
     ];
 
@@ -36,6 +42,8 @@ impl Anchor {
             Anchor::Agent => "agent",
             Anchor::Desktop => "desktop",
             Anchor::Browser => "browser",
+            Anchor::Store => "store",
+            Anchor::Remote => "remote",
             Anchor::Start => "start",
         }
     }
@@ -53,6 +61,8 @@ impl Anchor {
             Anchor::Agent => "Agent",
             Anchor::Desktop => "Desktop",
             Anchor::Browser => "Browser",
+            Anchor::Store => "App Store",
+            Anchor::Remote => "Remote",
             Anchor::Start => "Download",
         }
     }
@@ -69,15 +79,39 @@ pub struct Clip {
     pub description: &'static str,
 }
 
-/// A step of a project's story: a headline, a sentence, and a clip.
+/// A still, where a moment says it better than a clip, or where there is no
+/// film of it yet.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Picture {
+    /// The image's address.
+    pub image: &'static str,
+    /// Its width in pixels.
+    pub width: u32,
+    /// Its height in pixels.
+    pub height: u32,
+    /// What it shows, for those who cannot see it.
+    pub description: &'static str,
+}
+
+/// What shows beside a step of a project's story.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Media {
+    /// A clip, looping.
+    Loop(Clip),
+    /// A still.
+    Picture(Picture),
+}
+
+/// A step of a project's story: a headline, a sentence, and a clip or a
+/// picture.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Stage {
     /// The headline.
     pub headline: &'static str,
     /// The sentence under it.
     pub text: &'static str,
-    /// What plays beside them.
-    pub clip: Clip,
+    /// What shows beside them.
+    pub media: Media,
 }
 
 /// A short point: a title and a sentence.
@@ -153,7 +187,7 @@ pub struct Spotlight {
     pub points: &'static [Point],
 }
 
-/// One of the three projects.
+/// One of LispM's projects.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Project {
     /// Its section.
@@ -170,10 +204,11 @@ pub struct Project {
     pub spotlight: Option<Spotlight>,
     /// The points under the story.
     pub points: &'static [Point],
-    /// Who installs it, and why, in the Get started section.
+    /// Who installs it, and why, in the Get started section; or, for a
+    /// project that comes with LispM, where it is found.
     pub audience: &'static str,
-    /// How to install it.
-    pub install: Snippet,
+    /// How to install it in your own Emacs, if it stands on its own there.
+    pub install: Option<Snippet>,
     /// Its repository.
     pub repository: &'static str,
     /// The languages it is written in, the most used first.
@@ -187,6 +222,12 @@ const fn clip(video: &'static str, poster: &'static str, description: &'static s
         poster,
         description,
     }
+}
+
+/// Returns a looping clip playing `video`, `poster` before it, described by
+/// `description`.
+const fn shown(video: &'static str, poster: &'static str, description: &'static str) -> Media {
+    Media::Loop(clip(video, poster, description))
 }
 
 /// The film, with sound, under the headline.
@@ -232,16 +273,60 @@ pub const IDEA_POINTS: [Point; 4] = [
     },
 ];
 
-const AGENT_STAGES: [Stage; 1] = [Stage {
-    headline: "Ask, and it works in your project.",
-    text: "It reads the code, asks before it runs a command or changes a file, writes the fix and runs the tests.",
-    clip: clip(
-        "assets/video/agent.mp4",
-        "assets/video/agent.jpg",
-        "An agent is asked to fix a failing test: it reads the code, asks first, writes the fix, \
-         the tests pass, and it writes Emacs Lisp to open two files side by side.",
-    ),
-}];
+const AGENT_STAGES: [Stage; 2] = [
+    Stage {
+        headline: "Ask, and it works in your project.",
+        text: "It reads the code, asks before it runs a command or changes a file, writes the fix and runs the tests.",
+        media: shown(
+            "assets/video/agent.mp4",
+            "assets/video/agent.jpg",
+            "An agent is asked to fix a failing test: it reads the code, asks first, writes the fix, \
+             the tests pass, and it writes Emacs Lisp to open two files side by side.",
+        ),
+    },
+    Stage {
+        headline: "Agents that talk to each other.",
+        text: "Claude Code, Codex and Hermes are peers of LispM's agents: any of them asks another for a \
+               review and gets the answer as its next message. They use LispM's skills and tools too, \
+               which ask you before they write or run anything.",
+        media: Media::Picture(Picture {
+            image: "assets/blog/your-agents-can-talk-to-each-other/claude-asks-codex.webp",
+            width: 2000,
+            height: 1121,
+            description: "LispM's classic-style desktop with Claude Code and Codex side by side, both \
+                          running. Claude Code asks Codex to review a function; Codex gets the request \
+                          as its next message, and its reply comes back to Claude Code as one.",
+        }),
+    },
+];
+
+const AGENT_SPOTLIGHT_POINTS: [Point; 4] = [
+    Point {
+        title: "Out of your way",
+        text: "The field drops under the menu bar, and your keyboard never leaves the window you were in.",
+    },
+    Point {
+        title: "It knows the desktop",
+        text: "The desktop and its apps teach it, as skills: change the look or the language, open a window, find and install an app.",
+    },
+    Point {
+        title: "It asks first",
+        text: "Installing, uninstalling and lowering the sandbox always wait for your yes.",
+    },
+    Point {
+        title: "Memory that keeps itself",
+        text: "Long sessions are summed up while you are idle, and a memory grown large consolidates itself, one git commit at a time.",
+    },
+];
+
+const AGENT_SPOTLIGHT: Spotlight = Spotlight {
+    headline: "LispM itself, one field away.",
+    text: "M-x ai, or the magnifying glass in the desktop's menu bar, opens one field for the whole \
+           computer. As you type, it finds apps, control panels, skills and tools; anything else goes \
+           to LispM, a standing agent of the whole computer that keeps one conversation across restarts.",
+    clip: None,
+    points: &AGENT_SPOTLIGHT_POINTS,
+};
 
 const AGENT_POINTS: [Point; 4] = [
     Point {
@@ -249,16 +334,16 @@ const AGENT_POINTS: [Point; 4] = [
         text: "Any endpoint speaking the OpenAI Chat Completions API or the Anthropic Messages API, local or hosted.",
     },
     Point {
-        title: "Many agents",
-        text: "Run several in a project, each in a session you can come back to.",
+        title: "Skills on demand",
+        text: "Agents search tools, MCP servers and skills, the manuals apps bring, and load what a task needs.",
     },
     Point {
-        title: "Tools on demand",
-        text: "A core set of tools, and the rest, MCP servers among them, found when a session needs them.",
+        title: "A sandbox",
+        text: "Commands and MCP servers run in a sandbox the operating system enforces, at the level you choose or by rules of your own.",
     },
     Point {
-        title: "Woken by Emacs",
-        text: "Hooks and timers start agents, and agents delegate work to each other.",
+        title: "Checked against Emacs",
+        text: "Code in a reply that names a function or a file this Emacs lacks is underlined, and says why.",
     },
 ];
 
@@ -266,16 +351,16 @@ const DESKTOP_STAGES: [Stage; 3] = [
     Stage {
         headline: "Every project, a workspace.",
         text: "A desktop, a Finder for your files, and an editor with a workspace for each project, its files, agents and shells together.",
-        clip: clip(
+        media: shown(
             "assets/video/desktop.mp4",
             "assets/video/desktop.jpg",
-            "LispM Desktop starts on a Mac OS 9 desktop, opens a project in Emacs, and shows its workspaces.",
+            "LispM Desktop starts on its classic-style desktop, opens a project in Emacs, and shows its workspaces.",
         ),
     },
     Stage {
         headline: "Every agent, one sidebar.",
         text: "LispM's agents, Claude Code, Codex and Hermes work side by side, every session listed in the sidebar to resume where it ran.",
-        clip: clip(
+        media: shown(
             "assets/video/agents.mp4",
             "assets/video/agents.jpg",
             "Claude Code, Codex and Hermes open beside a LispM agent, all running at once, listed in one sidebar.",
@@ -284,7 +369,7 @@ const DESKTOP_STAGES: [Stage; 3] = [
     Stage {
         headline: "Make it yours.",
         text: "Drag windows off the desktop, hide it and bring it back in a click, and change the look from the Control Strip.",
-        clip: clip(
+        media: shown(
             "assets/video/windows.mp4",
             "assets/video/windows.jpg",
             "A window is dragged off the desktop, the desktop hides and comes back, and the theme turns to Dracula.",
@@ -292,25 +377,57 @@ const DESKTOP_STAGES: [Stage; 3] = [
     },
 ];
 
-const DESKTOP_POINTS: [Point; 3] = [
+const FOCUS_POINTS: [Point; 4] = [
+    Point {
+        title: "Sessions",
+        text: "LispM itself, then every agent alive and every recorded session, each marked at work or waiting for you.",
+    },
+    Point {
+        title: "The who line",
+        text: "The time, the project and agent, what it is doing, its model and sandbox, and which other agent waits for you.",
+    },
+    Point {
+        title: "No function keys",
+        text: "Every action has a key, and none of them is a function key.",
+    },
+    Point {
+        title: "Start in it",
+        text: "LispM can start in Focus Mode, with no desktop built at all, and the console runs in a text terminal too.",
+    },
+];
+
+const DESKTOP_SPOTLIGHT: Spotlight = Spotlight {
+    headline: "Focus Mode, a Lisp Machine's console.",
+    text: "Press C-c T, or ask LispM, and the desktop gives way to LispM's terminal: sessions on the \
+           left, a listener on the right and a who line along the bottom, all from the keyboard, as a \
+           Lisp Machine's console was. Leave it, and the desktop is exactly as it was.",
+    clip: None,
+    points: &FOCUS_POINTS,
+};
+
+const DESKTOP_POINTS: [Point; 4] = [
     Point {
         title: "Ready at once",
         text: "The first start asks for vim or Emacs keys and an appearance, then installs the rest.",
     },
     Point {
-        title: "Two appearances",
-        text: "Platinum, Mac OS 9's own greys, and Dracula.",
+        title: "Five looks",
+        text: "From Platinum greys to glowing phosphor and neon behind glass, each with colours and icons of its own.",
     },
     Point {
-        title: "Leaves yours alone",
-        text: "Try it with its own init directory; your configuration is not touched.",
+        title: "Seven languages",
+        text: "English (US and UK), German, French, Japanese, and Simplified and Traditional Chinese. The agents follow.",
+    },
+    Point {
+        title: "Apps of their own",
+        text: "Each app opens as a Mac app of its own, from Launchpad, Spotlight or the Dock, with its own Dock tile and menu bar.",
     },
 ];
 
 const BROWSER_STAGES: [Stage; 1] = [Stage {
     headline: "Browse from the keyboard.",
     text: "The location field takes an address or a search; f labels every link in sight, and typing a label follows it.",
-    clip: clip(
+    media: shown(
         "assets/video/browser.mp4",
         "assets/video/browser.jpg",
         "LispM Browser opens a page, goes to an address from the location field, and labels the links to follow them from the keyboard.",
@@ -352,10 +469,14 @@ const BROWSER_SPOTLIGHT: Spotlight = Spotlight {
     points: &EXTENSION_POINTS,
 };
 
-const BROWSER_POINTS: [Point; 3] = [
+const BROWSER_POINTS: [Point; 4] = [
     Point {
         title: "Tabs",
-        text: "Every page a tab, with its icon, history and bookmarks kept as Emacs keeps them.",
+        text: "Every page a tab, with its icon and a close button; history and bookmarks kept as Emacs keeps them.",
+    },
+    Point {
+        title: "Through a proxy",
+        text: "HTTP or SOCKS5, handed to WebKit itself, and set in the Network control panel.",
     },
     Point {
         title: "Steady",
@@ -367,8 +488,108 @@ const BROWSER_POINTS: [Point; 3] = [
     },
 ];
 
-/// The three projects, in the order the page shows them.
-pub const PROJECTS: [Project; 3] = [
+const STORE_STAGES: [Stage; 2] = [
+    Stage {
+        headline: "Every app, a page of its own.",
+        text: "What it does, who made it, its licence and what it needs. Get installs it with whatever it \
+               needs, from Homebrew or Cargo, and uninstalling takes those away when nothing else uses them.",
+        media: Media::Picture(Picture {
+            image: "assets/blog/three-old-ais-running-again/app-store-shrdlu.webp",
+            width: 2000,
+            height: 1125,
+            description: "The App Store on LispM's classic-style desktop: its categories, from News to \
+                          Classic AI, and SHRDLU's page, with its banner, what it does, and its \
+                          Uninstall and Open buttons.",
+        }),
+    },
+    Stage {
+        headline: "Three old AIs, running again.",
+        text: "Classic AI holds Doctor from 1966, SHRDLU from 1970, moving its blocks as you talk to it, \
+               and MYCIN from the 1970s, which shows the rule it is trying when you ask why.",
+        media: shown(
+            "assets/video/classic-ai.mp4",
+            "assets/video/classic-ai.jpg",
+            "SHRDLU in LispM: told to find a block taller than the one it holds and put it into the \
+             box, it plans the moves, and its hand carries the blocks across the table.",
+        ),
+    },
+];
+
+const STORE_POINTS: [Point; 4] = [
+    Point {
+        title: "Skills come with apps",
+        text: "Install an app and its skill comes too: agents read feeds, play music, stick notes, chat on IRC, Slack and Telegram, and check security.",
+    },
+    Point {
+        title: "AI Harness",
+        text: "Hermes, Holon and OpenClaw, agents of their own, join Claude Code and Codex in the editor.",
+    },
+    Point {
+        title: "For every day",
+        text: "Stickies, a feed reader, music and YouTube, a calendar, IRC, Slack and Telegram, and 1Password.",
+    },
+    Point {
+        title: "And games",
+        text: "Tetris, Solitaire, Life and Dunnet, and Doom, drawn with OpenGL on the experimental LispM.",
+    },
+];
+
+const REMOTE_STAGES: [Stage; 3] = [
+    Stage {
+        headline: "Pair once.",
+        text: "LispM shows a QR code, your phone scans it at lispm.ai/remote, and both screens show the \
+               same code for you to approve. Nothing to install on the phone, no port to open.",
+        media: shown(
+            "assets/video/remote-pair.mp4",
+            "assets/video/remote-pair.jpg",
+            "LispM Remote shows a QR code on the desktop, a phone scans it, both screens show the \
+             fingerprint 3981-CF90, and LispM approves the phone.",
+        ),
+    },
+    Stage {
+        headline: "Approve from anywhere.",
+        text: "Each agent is a chat on the phone: watch its calls as they run, Allow, Always or Deny the \
+               ones it waits on, then tell it what's next.",
+        media: shown(
+            "assets/video/remote-approve.mp4",
+            "assets/video/remote-approve.jpg",
+            "On the phone, an agent works through a fix and asks to run make test; Allow is tapped, \
+             and all three tests pass.",
+        ),
+    },
+    Stage {
+        headline: "Every window, too.",
+        text: "LispM's windows come along, redrawn on the phone, not streamed as video.",
+        media: shown(
+            "assets/video/remote-windows.mp4",
+            "assets/video/remote-windows.jpg",
+            "The phone opens slug.el from LispM's windows, redrawn there, and the film says: no \
+             server in between, peer to peer over Rings, sealed end to end.",
+        ),
+    },
+];
+
+const REMOTE_POINTS: [Point; 4] = [
+    Point {
+        title: "No server in between",
+        text: "LispM and your phone find each other on Rings Network, peer to peer, by their addresses.",
+    },
+    Point {
+        title: "Sealed end to end",
+        text: "Noise keys every session: the nodes relaying a message see who talks to whom, and nothing of what is said.",
+    },
+    Point {
+        title: "Back by itself",
+        text: "When the network drops and comes back, the phone reconnects, with no new scan.",
+    },
+    Point {
+        title: "From the App Store",
+        text: "One click installs it, its Rings node downloaded for your computer and checked against the checksum it pins.",
+    },
+];
+
+/// LispM's projects, in the order the page shows them.
+pub const PROJECTS: [Project; 5] = [
     Project {
         anchor: Anchor::Agent,
         name: "LispM Agent",
@@ -376,13 +597,13 @@ pub const PROJECTS: [Project; 3] = [
         lead: "Talk to an agent in a chat laid out like Claude Code's. Underneath, the chat is an org \
                document, its tools are Elisp, and it can evaluate Lisp in the Emacs you are using.",
         stages: &AGENT_STAGES,
-        spotlight: None,
+        spotlight: Some(AGENT_SPOTLIGHT),
         points: &AGENT_POINTS,
         audience: "The agents, in your own Emacs 30.1 or later. Then M-x lispm in any project.",
-        install: Snippet {
+        install: Some(Snippet {
             language: Language::EmacsLisp,
             code: "(use-package lispm\n  :vc (:url \"https://github.com/LispMachineLab/lispm-agent\" :rev :newest)\n  :config (lispm-mode-line-mode 1))",
-        },
+        }),
         repository: "https://github.com/LispMachineLab/lispm-agent",
         languages: &["Emacs Lisp"],
     },
@@ -390,16 +611,16 @@ pub const PROJECTS: [Project; 3] = [
         anchor: Anchor::Desktop,
         name: "LispM Desktop",
         headline: "A desktop for your agents.",
-        lead: "An Emacs distribution built around LispM Agent, laid out as Mac OS 9's desktop and \
+        lead: "An Emacs distribution built around LispM Agent, laid out as a classic-style desktop and \
                ready from the first start.",
         stages: &DESKTOP_STAGES,
-        spotlight: None,
+        spotlight: Some(DESKTOP_SPOTLIGHT),
         points: &DESKTOP_POINTS,
         audience: "What LispM.app runs, in your own Emacs 30.1 or later with SVG, git and curl, on macOS or GNU/Linux.",
-        install: Snippet {
+        install: Some(Snippet {
             language: Language::Shell,
             code: "git clone https://github.com/LispMachineLab/lispm-desktop ~/lispm-desktop\nemacs --init-directory ~/lispm-desktop",
-        },
+        }),
         repository: "https://github.com/LispMachineLab/lispm-desktop",
         languages: &["Emacs Lisp", "Rust"],
     },
@@ -413,12 +634,42 @@ pub const PROJECTS: [Project; 3] = [
         spotlight: Some(BROWSER_SPOTLIGHT),
         points: &BROWSER_POINTS,
         audience: "The browser, in an Emacs 30.1 or later built with xwidgets.",
-        install: Snippet {
+        install: Some(Snippet {
             language: Language::EmacsLisp,
             code: "(package-vc-install \"https://github.com/LispMachineLab/lispm-browser\")\n(require 'lispm-browser)\n(lispm-browser-setup)",
-        },
+        }),
         repository: "https://github.com/LispMachineLab/lispm-browser",
         languages: &["Swift", "Emacs Lisp"],
+    },
+    Project {
+        anchor: Anchor::Store,
+        name: "LispM App Store",
+        headline: "Apps your agents can drive.",
+        lead: "Apps, games and other projects' agents, each a click away. An app brings its manual, a \
+               skill, so LispM's agents can work it for you; ask for something no app does yet, and \
+               LispM finds one and asks before it installs it.",
+        stages: &STORE_STAGES,
+        spotlight: None,
+        points: &STORE_POINTS,
+        audience: "Comes with LispM. Its catalog is plain data, in a repository of its own.",
+        install: None,
+        repository: "https://github.com/LispMachineLab/lispm-store",
+        languages: &["Emacs Lisp"],
+    },
+    Project {
+        anchor: Anchor::Remote,
+        name: "LispM Remote",
+        headline: "Your agents, in your pocket.",
+        lead: "Scan a QR code once. Then, from your phone, follow every agent, approve what it waits on, \
+               send it the next task and open LispM's windows, wherever you are. Peer to peer over \
+               Rings, sealed end to end.",
+        stages: &REMOTE_STAGES,
+        spotlight: None,
+        points: &REMOTE_POINTS,
+        audience: "In LispM's App Store; the phone needs only its browser.",
+        install: None,
+        repository: "https://github.com/LispMachineLab/lispm-remote",
+        languages: &["Rust", "Emacs Lisp", "TypeScript"],
     },
 ];
 
@@ -499,14 +750,15 @@ pub const INSTALL_BACK: &str = "curl -fsSL https://lispm.ai/install.sh | LISPM_E
 
 /// What the line does, after the link to the installer.
 pub const INSTALLER_DOES: &str = " installs Apple's command line tools if they are missing, puts \
-     LispM.app in Applications and LispM's files in ~/.lispm. Run the line again to update; delete \
-     both to uninstall.";
+     LispM.app in Applications and LispM's files in ~/.lispm. From then on Software Update brings \
+     each release by itself, and the line run again does too; delete both to uninstall.";
 
 /// The headline over the projects' own installs.
 pub const OWN_EMACS_HEADLINE: &str = "Already use Emacs?";
 
 /// The paragraph under it.
-pub const OWN_EMACS: &str = "Each project also stands on its own, in your own Emacs.";
+pub const OWN_EMACS: &str = "LispM Agent, LispM Desktop and LispM Browser also stand on their own, \
+     in your own Emacs.";
 
 /// The licence the projects are free software under.
 pub const LICENSE: &str = "https://www.gnu.org/licenses/agpl-3.0.html";
@@ -527,23 +779,52 @@ mod tests {
     use std::path::Path;
 
     /// Every section, top to bottom.
-    const ALL: [Anchor; 6] = [
+    const ALL: [Anchor; 8] = [
         Anchor::Film,
         Anchor::Idea,
         Anchor::Agent,
         Anchor::Desktop,
         Anchor::Browser,
+        Anchor::Store,
+        Anchor::Remote,
         Anchor::Start,
     ];
 
+    fn media() -> impl Iterator<Item = Media> {
+        PROJECTS
+            .iter()
+            .flat_map(|p| p.stages.iter().map(|s| s.media))
+    }
+
     fn clips() -> impl Iterator<Item = Clip> {
         std::iter::once(FILM)
-            .chain(
-                PROJECTS
-                    .iter()
-                    .flat_map(|p| p.stages.iter().map(|s| s.clip)),
-            )
+            .chain(media().filter_map(|m| match m {
+                Media::Loop(clip) => Some(clip),
+                Media::Picture(_) => None,
+            }))
             .chain(PROJECTS.iter().filter_map(|p| p.spotlight?.clip))
+    }
+
+    fn pictures() -> impl Iterator<Item = Picture> {
+        media().filter_map(|m| match m {
+            Media::Picture(picture) => Some(picture),
+            Media::Loop(_) => None,
+        })
+    }
+
+    /// Returns the canvas of an extended WebP, the kind the pictures are:
+    /// its width and height, each stored less one in three bytes.
+    fn webp_size(bytes: &[u8]) -> Option<(u32, u32)> {
+        if bytes.get(..4)? != b"RIFF" || bytes.get(8..16)? != b"WEBPVP8X" {
+            return None;
+        }
+        let side = |at: usize| match bytes.get(at..at + 3)? {
+            [low, middle, high] => {
+                Some(1 + (u32::from(*high) << 16 | u32::from(*middle) << 8 | u32::from(*low)))
+            }
+            _ => None,
+        };
+        Some((side(24)?, side(27)?))
     }
 
     #[test]
@@ -584,6 +865,24 @@ mod tests {
     }
 
     #[test]
+    fn every_picture_is_in_the_assets_at_its_size() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let mut seen = 0;
+        for picture in pictures() {
+            let bytes = std::fs::read(root.join(picture.image)).unwrap_or_default();
+            assert_eq!(
+                webp_size(&bytes),
+                Some((picture.width, picture.height)),
+                "{}",
+                picture.image
+            );
+            assert!(!picture.description.is_empty());
+            seen += 1;
+        }
+        assert!(seen > 0);
+    }
+
+    #[test]
     fn links_stay_in_the_organization() {
         for link in PROJECTS
             .iter()
@@ -597,12 +896,14 @@ mod tests {
     #[test]
     fn snippets_install_from_their_own_repository() {
         for project in PROJECTS {
-            assert!(
-                project.install.code.contains(project.repository),
-                "{}",
-                project.name
-            );
-            assert!(!project.install.code.ends_with('\n'), "{}", project.name);
+            if let Some(install) = project.install {
+                assert!(
+                    install.code.contains(project.repository),
+                    "{}",
+                    project.name
+                );
+                assert!(!install.code.ends_with('\n'), "{}", project.name);
+            }
         }
     }
 
