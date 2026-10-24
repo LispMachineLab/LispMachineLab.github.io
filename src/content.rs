@@ -425,6 +425,9 @@ pub const PROJECTS: [Project; 3] = [
 /// Where the site is served.
 pub const SITE: &str = "https://lispm.ai/";
 
+/// The blog's path on the site, its posts under it.
+pub const BLOG: &str = "/blog/";
+
 /// The headline of the download.
 pub const DOWNLOAD_HEADLINE: &str = "Get LispM.";
 

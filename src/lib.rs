@@ -9,9 +9,15 @@
 //! is the boundary with the browser. [`view`] draws the page with Yew: in
 //! the browser it hydrates what the prerender binary wrote into index.html
 //! from the same components at build time.
+//!
+//! `blog` holds the blog's posts, LispM's Articles from X, and makes their
+//! pages; prerender draws them at build time as plain pages, so it is built
+//! natively only.
 
 #![deny(missing_docs)]
 
+#[cfg(not(target_arch = "wasm32"))]
+pub mod blog;
 pub mod content;
 pub mod copy;
 pub mod effects;

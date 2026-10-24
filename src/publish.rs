@@ -53,7 +53,7 @@ pub fn insert_page(index: &str, page: &str, head: &str) -> Result<String, Publis
 }
 
 /// Returns `text` as a JSON string, safe inside an HTML `<script>` too.
-fn json_string(text: &str) -> String {
+pub(crate) fn json_string(text: &str) -> String {
     let mut out = String::with_capacity(text.len() + 2);
     out.push('"');
     for c in text.chars() {
