@@ -1,15 +1,15 @@
 //! The page, top to bottom: the navigation bar, the headline and film, the
-//! idea, LispM's projects, how to start, and the footer. The blog's pages
+//! idea, the chapters, how to start, and the footer. The blog's pages
 //! share its navigation bar and footer.
 
 use yew::prelude::*;
 
 use crate::content::{
-    APP_ICON, Anchor, BACKENDS, BLOG, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
-    EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES, INSTALLER_SOURCE, Media, ORGANIZATION,
-    OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SUMMARY, Spotlight,
-    Step, TAGLINE,
+    APP_ICON, Anchor, BACKENDS, BLOG, CHAPTERS, CREDITS, Chapter, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD,
+    DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
+    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES,
+    INSTALLER_SOURCE, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point,
+    REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -50,7 +50,7 @@ pub fn app() -> Html {
             <main>
                 { hero() }
                 { idea() }
-                { for PROJECTS.iter().map(project) }
+                { for CHAPTERS.iter().map(chapter) }
                 { start() }
             </main>
             { footer(Place::Home) }
@@ -87,6 +87,9 @@ pub(crate) fn navigation(place: Place) -> Html {
                     </li>
                 </ul>
                 { outward(ORGANIZATION, "github", "GitHub") }
+                <a href={X} class="x" target="_blank" rel="noopener" aria-label="LispM on X">
+                    { "X" }
+                </a>
             </nav>
         </header>
     }
@@ -110,10 +113,12 @@ fn hero() -> Html {
     }
 }
 
-/// Returns `points` as a grid of tiles.
+/// Returns `points` as a grid of tiles: in rows of three when they fill
+/// rows of three but not of four.
 fn points(points: &[Point]) -> Html {
+    let thirds = points.len().is_multiple_of(3) && !points.len().is_multiple_of(4);
     html! {
-        <ul class="points">
+        <ul class={classes!("points", thirds.then_some("thirds"))}>
             { for points.iter().map(|point| html! {
                 <li>
                     <h3>{ point.title }</h3>
@@ -143,7 +148,7 @@ fn media(media: Media) -> Html {
 }
 
 /// Returns a feature told at length: its headline and paragraph over its
-/// clip, if it has one, and its points.
+/// clip, if it has one, and its points, if it has any.
 fn spotlight(spotlight: &Spotlight) -> Html {
     html! {
         <div class="spotlight">
@@ -152,18 +157,22 @@ fn spotlight(spotlight: &Spotlight) -> Html {
             { for spotlight.clip.map(|clip| html! {
                 <div class="screen"><Loop {clip} /></div>
             }) }
-            { points(spotlight.points) }
+            if !spotlight.points.is_empty() {
+                { points(spotlight.points) }
+            }
         </div>
     }
 }
 
-fn project(project: &Project) -> Html {
+/// Returns a chapter: its eyebrow, headline and lead, its story, the
+/// features it tells at length, its points, and where to go from it.
+fn chapter(chapter: &Chapter) -> Html {
     html! {
-        <section class="section project" id={project.anchor.id()}>
-            <p class="eyebrow">{ project.name }</p>
-            <h2>{ project.headline }</h2>
-            <p class="lead">{ project.lead }</p>
-            { for project.stages.iter().map(|stage| html! {
+        <section class="section chapter" id={chapter.anchor.id()}>
+            <p class="eyebrow">{ chapter.eyebrow }</p>
+            <h2>{ chapter.headline }</h2>
+            <p class="lead">{ chapter.lead }</p>
+            { for chapter.stages.iter().map(|stage| html! {
                 <div class="story">
                     <div class="words">
                         <h3>{ stage.headline }</h3>
@@ -172,13 +181,11 @@ fn project(project: &Project) -> Html {
                     <div class="screen">{ media(stage.media) }</div>
                 </div>
             }) }
-            { for project.spotlight.iter().map(spotlight) }
-            { points(project.points) }
+            { for chapter.spotlights.iter().map(spotlight) }
+            { points(chapter.points) }
             <div class="actions">
-                <a class="button primary" href={Anchor::Start.href()}>
-                    { if project.install.is_some() { "Install" } else { "Get LispM" } }
-                </a>
-                { outward(project.repository, "button", "View on GitHub") }
+                <a class="button primary" href={Anchor::Start.href()}>{ "Get LispM" }</a>
+                { outward(chapter.repository, "button", "View on GitHub") }
             </div>
         </section>
     }
@@ -247,14 +254,14 @@ fn start() -> Html {
             <p class="lead">{ OWN_EMACS }</p>
             <div class="installs">
                 { for PROJECTS.iter().filter_map(|project| {
-                    let snippet = project.install?;
+                    let install = project.install?;
                     Some(html! {
                         <article class="install">
                             <div>
                                 <h3>{ project.name }</h3>
-                                <p>{ project.audience }</p>
+                                <p>{ install.audience }</p>
                             </div>
-                            <Code {snippet} />
+                            <Code snippet={install.snippet} />
                         </article>
                     })
                 }) }
@@ -284,6 +291,7 @@ pub(crate) fn footer(place: Place) -> Html {
                     <li>{ outward(project.repository, "", project.name) }</li>
                 }) }
                 <li>{ outward(ORGANIZATION, "", "LispMachineLab") }</li>
+                <li>{ outward(X, "", "@lispm_ai on X") }</li>
                 <li><a href={BLOG}>{ "Blog" }</a></li>
             </ul>
             <p>{ "Free software, under the GNU Affero General Public License, version 3 or later." }</p>
