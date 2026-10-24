@@ -157,7 +157,7 @@ pub static POSTS: [Post; 3] = [
                   \"Request R1 from claude\" and \"Message from holon\" on the arrows between them.",
         },
         card: "/assets/blog/your-agents-can-talk-to-each-other/card.png",
-        on_x: None,
+        on_x: Some("https://x.com/lispm_ai/status/2113998019578273891"),
         body: include_str!("../../blog/your-agents-can-talk-to-each-other.md"),
     },
     Post {
