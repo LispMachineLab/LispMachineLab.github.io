@@ -1,10 +1,11 @@
 //! The page, top to bottom: the navigation bar, the headline and film, the
-//! idea, the three projects, how to start, and the footer.
+//! idea, the three projects, how to start, and the footer. The blog's pages
+//! share its navigation bar and footer.
 
 use yew::prelude::*;
 
 use crate::content::{
-    APP_ICON, Anchor, BACKENDS, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
+    APP_ICON, Anchor, BACKENDS, BLOG, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
     EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
     INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES, INSTALLER_SOURCE, ORGANIZATION, OWN_EMACS,
     OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE,
@@ -15,8 +16,28 @@ use crate::effects;
 use super::code::Code;
 use super::media::{Film, Loop};
 
-/// The rainbow λ, LispM's mark.
-const LOGO: &str = "assets/lispm-lambda.png";
+/// The rainbow λ, LispM's mark, from the root, as the blog's pages are deeper.
+const LOGO: &str = "/assets/lispm-lambda.png";
+
+/// The page a navigation bar is on: the home page reaches its sections by
+/// their ids, the blog's pages through the home page.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Place {
+    /// The home page.
+    Home,
+    /// The blog, or a post in it.
+    Blog,
+}
+
+impl Place {
+    /// Returns the link to the home page's `anchor` from here.
+    pub(crate) fn href(self, anchor: Anchor) -> String {
+        match self {
+            Place::Home => anchor.href(),
+            Place::Blog => format!("/{}", anchor.href()),
+        }
+    }
+}
 
 /// The site.
 #[function_component(App)]
@@ -24,35 +45,45 @@ pub fn app() -> Html {
     use_effect_with((), |_| effects::reveal_addressed_section());
     html! {
         <>
-            { navigation() }
+            { navigation(Place::Home) }
             <main>
                 { hero() }
                 { idea() }
                 { for PROJECTS.iter().map(project) }
                 { start() }
             </main>
-            { footer() }
+            { footer(Place::Home) }
         </>
     }
 }
 
 /// Returns a link opening `href` in a new tab.
-fn outward(href: &'static str, class: &'static str, label: &'static str) -> Html {
+pub(crate) fn outward(href: &'static str, class: &'static str, label: &'static str) -> Html {
     html! { <a {href} {class} target="_blank" rel="noopener">{ label }</a> }
 }
 
-fn navigation() -> Html {
+/// Returns the navigation bar of a page at `place`.
+pub(crate) fn navigation(place: Place) -> Html {
+    let home = match place {
+        Place::Home => "#top",
+        Place::Blog => "/",
+    };
     html! {
         <header class="navigation">
             <nav aria-label="LispM">
-                <a class="brand" href="#top">
+                <a class="brand" href={home}>
                     <img src={LOGO} alt="" width="22" height="22" />
                     <span>{ "LispM" }</span>
                 </a>
                 <ul>
                     { for Anchor::NAVIGATION.iter().map(|anchor| html! {
-                        <li><a href={anchor.href()}>{ anchor.name() }</a></li>
+                        <li><a href={place.href(*anchor)}>{ anchor.name() }</a></li>
                     }) }
+                    <li>
+                        <a href={BLOG} aria-current={(place == Place::Blog).then_some("true")}>
+                            { "Blog" }
+                        </a>
+                    </li>
                 </ul>
                 { outward(ORGANIZATION, "github", "GitHub") }
             </nav>
@@ -226,7 +257,8 @@ fn start() -> Html {
     }
 }
 
-fn footer() -> Html {
+/// Returns the footer of a page at `place`; the home page's credits its film.
+pub(crate) fn footer(place: Place) -> Html {
     html! {
         <footer class="footer">
             <div class="brand">
@@ -238,9 +270,12 @@ fn footer() -> Html {
                     <li>{ outward(project.repository, "", project.name) }</li>
                 }) }
                 <li>{ outward(ORGANIZATION, "", "LispMachineLab") }</li>
+                <li><a href={BLOG}>{ "Blog" }</a></li>
             </ul>
             <p>{ "Free software, under the GNU Affero General Public License, version 3 or later." }</p>
-            <p class="credits">{ CREDITS }</p>
+            if place == Place::Home {
+                <p class="credits">{ CREDITS }</p>
+            }
         </footer>
     }
 }

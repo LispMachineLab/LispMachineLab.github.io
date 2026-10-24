@@ -2,14 +2,17 @@
 
 LispM's website, at https://lispm.ai/: what LispM is, told with its films. A
 headline and the 57-second film, the idea, then LispM Agent, LispM Desktop and LispM Browser, each
-with clips from the films, and how to install them. It is written in Rust with
-[Yew](https://yew.rs) and built with [Trunk](https://trunk-rs.github.io/trunk/).
+with clips from the films, and how to install them. Its blog, at https://lispm.ai/blog/, holds
+LispM's Articles from X. It is written in Rust with [Yew](https://yew.rs) and built with
+[Trunk](https://trunk-rs.github.io/trunk/).
 
 The page reads before WebAssembly loads, for crawlers and language models as much as for slow
 connections: after each build Trunk runs `prerender` (see `Trunk.toml`), which renders the same
 Yew components natively into `index.html`'s `<div id="app">`, puts JSON-LD describing the site
 and its projects in the head, and writes `llms.txt`, the page as Markdown. In the browser the
-page is hydrated, not drawn again.
+page is hydrated, not drawn again. `prerender` also draws the blog's pages, the list of posts at
+`blog/index.html` and each post at `blog/<slug>/index.html`, as plain pages that load no
+WebAssembly, and writes `sitemap.xml`, which lists them.
 
 ## Layout
 
@@ -22,12 +25,22 @@ The crate is a library and two binaries: `src/main.rs`, the page in the browser,
 - `src/copy.rs` is the copy buttons' states, pure and tested.
 - `src/publish.rs` is what is written beside the page, pure and tested: the rendered page put
   into `index.html`, the JSON-LD, and `llms.txt`, all from `content.rs`.
+- `src/blog/` is the blog, built natively only: `mod.rs` the posts as data, newest first, each
+  with its title, date, author, cover, share card and the X post it first was; `markdown.rs` a
+  post's Markdown as HTML, a picture alone in its paragraph drawn as a figure, its title the
+  caption, and an `.mp4` as a video on the `.jpg` of the same name; `publish.rs` each page's head
+  (Open Graph, Twitter and JSON-LD), the stylesheet it shares with the home page, the site's map
+  and llms.txt's list of posts.
 - `src/effects.rs` is the only code that touches the browser beyond Yew's rendering: the
   clipboard, the motion the visitor prefers, playing a clip while it is in sight.
 - `src/view/` draws the page: `page.rs` its sections, `media.rs` the film and the clips,
-  `code.rs` the snippets.
+  `code.rs` the snippets, `blog.rs` the blog's list and posts.
+- `blog/` holds each post's words, `<slug>.md`, in Markdown; `assets/blog/<slug>/` its cover
+  (5:2), its share card (1200 by 630) and its pictures and films. To add a post, put its Markdown
+  and assets there and add it at the top of `POSTS` in `src/blog/mod.rs`; the tests check that
+  everything it names is there and every card is 1200 by 630.
 - `style/site.css` is the films' keynote look.
-- `static/` holds `robots.txt` and `sitemap.xml`, copied to the site's root.
+- `static/` holds `robots.txt` and `install.sh`, copied to the site's root.
 - `scripts/remote-page.sh` puts [LispM Remote](https://github.com/LispMachineLab/lispm-remote)'s
   page at `/remote/`, where LispM's QR code points: it downloads the page's release, pinned by
   version and SHA-256, and unpacks it into `dist/remote` after Trunk's build. To publish a new
@@ -51,7 +64,7 @@ Needs Rust with the `wasm32-unknown-unknown` target, and Trunk:
 rustup target add wasm32-unknown-unknown
 cargo install trunk --locked
 trunk serve            # http://127.0.0.1:8080, rebuilt on every change
-cargo test             # the content's, copy buttons', publishing's and share card's tests
+cargo test             # the content's, copy buttons', publishing's, blog's and share cards' tests
 ```
 
 Every push to `main` is built, checked (`cargo fmt --check`, `cargo clippy` denying `unwrap`,

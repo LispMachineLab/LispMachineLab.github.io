@@ -43,6 +43,7 @@ yew = "0.23"
 yew = { version = "0.23", features = ["csr", "hydration"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
 tokio = { version = "1", features = ["rt"] }
 yew = { version = "0.23", features = ["ssr"] }
 
