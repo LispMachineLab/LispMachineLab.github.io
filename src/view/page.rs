@@ -1,5 +1,5 @@
 //! The page, top to bottom: the navigation bar, the headline and film, the
-//! idea, the three projects, how to start, and the footer. The blog's pages
+//! idea, LispM's projects, how to start, and the footer. The blog's pages
 //! share its navigation bar and footer.
 
 use yew::prelude::*;
@@ -7,14 +7,15 @@ use yew::prelude::*;
 use crate::content::{
     APP_ICON, Anchor, BACKENDS, BLOG, CREDITS, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
     EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES, INSTALLER_SOURCE, ORGANIZATION, OWN_EMACS,
-    OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE,
+    INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES, INSTALLER_SOURCE, Media, ORGANIZATION,
+    OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SUMMARY, Spotlight,
+    Step, TAGLINE,
 };
 
 use crate::effects;
 
 use super::code::Code;
-use super::media::{Film, Loop};
+use super::media::{Film, Loop, Still};
 
 /// The rainbow λ, LispM's mark, from the root, as the blog's pages are deeper.
 const LOGO: &str = "/assets/lispm-lambda.png";
@@ -133,6 +134,14 @@ fn idea() -> Html {
     }
 }
 
+/// Returns what shows beside a step of a project's story.
+fn media(media: Media) -> Html {
+    match media {
+        Media::Loop(clip) => html! { <Loop {clip} /> },
+        Media::Picture(picture) => html! { <Still {picture} /> },
+    }
+}
+
 /// Returns a feature told at length: its headline and paragraph over its
 /// clip, if it has one, and its points.
 fn spotlight(spotlight: &Spotlight) -> Html {
@@ -160,13 +169,15 @@ fn project(project: &Project) -> Html {
                         <h3>{ stage.headline }</h3>
                         <p>{ stage.text }</p>
                     </div>
-                    <div class="screen"><Loop clip={stage.clip} /></div>
+                    <div class="screen">{ media(stage.media) }</div>
                 </div>
             }) }
             { for project.spotlight.iter().map(spotlight) }
             { points(project.points) }
             <div class="actions">
-                <a class="button primary" href={Anchor::Start.href()}>{ "Install" }</a>
+                <a class="button primary" href={Anchor::Start.href()}>
+                    { if project.install.is_some() { "Install" } else { "Get LispM" } }
+                </a>
                 { outward(project.repository, "button", "View on GitHub") }
             </div>
         </section>
@@ -235,19 +246,22 @@ fn start() -> Html {
             <h3 class="own-emacs">{ OWN_EMACS_HEADLINE }</h3>
             <p class="lead">{ OWN_EMACS }</p>
             <div class="installs">
-                { for PROJECTS.iter().map(|project| html! {
-                    <article class="install">
-                        <div>
-                            <h3>{ project.name }</h3>
-                            <p>{ project.audience }</p>
-                        </div>
-                        <Code snippet={project.install} />
-                    </article>
+                { for PROJECTS.iter().filter_map(|project| {
+                    let snippet = project.install?;
+                    Some(html! {
+                        <article class="install">
+                            <div>
+                                <h3>{ project.name }</h3>
+                                <p>{ project.audience }</p>
+                            </div>
+                            <Code {snippet} />
+                        </article>
+                    })
                 }) }
             </div>
             <p class="model">
-                { "Then give the agents a model. Claude Code, Codex and Hermes, once installed, \
-                   show beside LispM's own agents, which need only " }
+                { "Then give the agents a model. Claude Code and Codex, once installed, and the App \
+                   Store's Hermes, Holon and OpenClaw show beside LispM's own agents, which need only " }
                 <code>{ "OPENAI_API_KEY" }</code>{ " or " }<code>{ "ANTHROPIC_API_KEY" }</code>
                 { " set in your shell's profile, where LispM.app reads it, or in your own Emacs's \
                    environment. For any other server, local or hosted, see " }

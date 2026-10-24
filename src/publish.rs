@@ -110,7 +110,7 @@ fn application() -> String {
     )
 }
 
-/// Returns the JSON-LD describing the site, LispM.app and the three projects.
+/// Returns the JSON-LD describing the site, LispM.app and its projects.
 pub fn json_ld() -> String {
     format!(
         "{{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"LispM\",\"url\":{},\
@@ -162,14 +162,16 @@ fn markdown_project(project: &Project) -> String {
         out.push('\n');
     }
     out.push_str(&markdown_points(project.points));
-    let _ = writeln!(
-        out,
-        "\n{}\n\n```{}\n{}\n```\n\nRepository: {}\n",
-        project.audience,
-        project.install.language.fence(),
-        project.install.code,
-        project.repository,
-    );
+    let _ = write!(out, "\n{}\n\n", project.audience);
+    if let Some(install) = project.install {
+        let _ = write!(
+            out,
+            "```{}\n{}\n```\n\n",
+            install.language.fence(),
+            install.code
+        );
+    }
+    let _ = writeln!(out, "Repository: {}\n", project.repository);
     out
 }
 
@@ -213,7 +215,7 @@ pub fn llms_txt() -> String {
     out.push('\n');
     let _ = write!(
         out,
-        "## {OWN_EMACS_HEADLINE}\n\n{OWN_EMACS} Each project's section ends with how.\n\n"
+        "## {OWN_EMACS_HEADLINE}\n\n{OWN_EMACS} Each of their sections ends with how.\n\n"
     );
     for project in &PROJECTS {
         out.push_str(&markdown_project(project));
@@ -224,7 +226,7 @@ pub fn llms_txt() -> String {
          - [LispMachineLab on GitHub]({ORGANIZATION})\n\
          - [The film]({SITE}{}): {}\n\
          - [Model servers for LispM Agent]({BACKENDS})\n\n\
-         All three projects are free software, under the GNU Affero General Public License, version 3 or later. {CREDITS}",
+         LispM's projects are all free software, under the GNU Affero General Public License, version 3 or later. {CREDITS}",
         FILM.video, FILM.description,
     );
     out
@@ -292,7 +294,9 @@ mod tests {
         assert!(text.starts_with("# LispM\n\n> "));
         for project in PROJECTS {
             assert!(text.contains(project.headline), "{}", project.name);
-            assert!(text.contains(project.install.code), "{}", project.name);
+            if let Some(install) = project.install {
+                assert!(text.contains(install.code), "{}", project.name);
+            }
         }
         assert!(text.contains("Chrome extensions, inside Emacs."));
         assert!(text.contains(INSTALL_EXPERIMENTAL.code));
