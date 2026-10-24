@@ -112,7 +112,7 @@ h3 {
   font-size: 17px;
 }
 
-/* Below this width the links no longer fit beside the brand and GitHub. */
+/* Below this width the links no longer fit beside the brand, GitHub and X. */
 @media (max-width: 800px) {
   .navigation ul {
     display: none;
@@ -337,6 +337,13 @@ h3 {
   text-align: left;
 }
 
+/* Six points sit in two rows of three rather than four and two. */
+@media (min-width: 901px) {
+  .points.thirds {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .points {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -366,7 +373,7 @@ h3 {
   font-size: 16px;
 }
 
-/* A step of a project's story: its words, and its clip. */
+/* A step of a chapter's story: its words, and its clip or still. */
 .story {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr);
@@ -404,7 +411,7 @@ h3 {
   }
 }
 
-.project .actions {
+.chapter .actions {
   justify-content: flex-start;
   margin-top: 40px;
 }

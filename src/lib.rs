@@ -1,7 +1,8 @@
 //! LispM's website: what LispM is, told with its films. A headline and the
-//! film, the idea, then LispM Agent, LispM Desktop, LispM Browser, the App
-//! Store and LispM Remote, each with clips from the films or stills, and how
-//! to install them.
+//! film, the idea, then chapters on what LispM does (its agents, the
+//! desktop, the App Store, LispM Remote, and why you stay in charge), told
+//! with clips from the films and stills, and how to install LispM and the
+//! projects it is made of.
 //!
 //! [`content`] holds the page's words and media as data, [`copy`] the copy
 //! buttons' states, [`playback`] the looping clips', [`publish`] what is

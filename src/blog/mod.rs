@@ -225,6 +225,11 @@ mod tests {
     }
 
     #[test]
+    fn lispm_posts_from_the_account_the_site_links() {
+        assert_eq!(LISPM.profile(), crate::content::X);
+    }
+
+    #[test]
     fn dates_read_both_ways() {
         let date = Date {
             year: 2026,

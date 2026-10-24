@@ -1,8 +1,11 @@
 # LispMachineLab.github.io
 
 LispM's website, at https://lispm.ai/: what LispM is, told with its films. A
-headline and the 57-second film, the idea, then LispM Agent, LispM Desktop, LispM Browser, the App
-Store and LispM Remote, each with clips from the films or stills, and how to install them. Its blog, at https://lispm.ai/blog/, holds
+headline and the 57-second film, the idea, then chapters on what LispM does: its agents, the
+desktop, the App Store, LispM Remote, and why you stay in charge. They are told with clips from
+the films and stills, and followed by how to install LispM and the projects it is made of. The
+chapters follow what a visitor can do, not how the code is split into repositories, so each
+feature is told once. Its blog, at https://lispm.ai/blog/, holds
 LispM's Articles from X. It is written in Rust with [Yew](https://yew.rs) and built with
 [Trunk](https://trunk-rs.github.io/trunk/).
 
@@ -19,8 +22,9 @@ WebAssembly, and writes `sitemap.xml`, which lists them.
 The crate is a library and two binaries: `src/main.rs`, the page in the browser, and
 `src/bin/prerender.rs`, run natively after each build.
 
-- `src/content.rs` holds the page's words and media as data: the sections, the clips and
-  stills, each project's story, points and install snippet, if it has one of its own. Its tests
+- `src/content.rs` holds the page's words and media as data: the sections, the chapters with
+  their stories, clips, stills and points, and the projects with their repositories and install
+  snippets, for those that stand on their own in your own Emacs. Its tests
   check, among other things, that every clip and poster it names is in `assets/`, and that every
   still is there at the size the page gives it.
 - `src/copy.rs` is the copy buttons' states, pure and tested.

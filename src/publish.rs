@@ -1,15 +1,16 @@
 //! What is written beside the page for crawlers and language models, all
 //! from [`crate::content`]: the page rendered into index.html before
-//! WebAssembly loads, JSON-LD describing the site and its projects, and
-//! llms.txt, the page as Markdown.
+//! WebAssembly loads, JSON-LD describing the site and the projects LispM is
+//! made of, and llms.txt, the page as Markdown.
 
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    BACKENDS, CREDITS, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK,
-    EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
+    BACKENDS, CHAPTERS, CREDITS, Chapter, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL,
+    EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
     INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE, ORGANIZATION,
     OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE,
+    X,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -85,7 +86,7 @@ fn source_code(project: &Project) -> String {
         "{{\"@type\":\"SoftwareSourceCode\",\"name\":{},\"description\":{},\"codeRepository\":{},\
          \"programmingLanguage\":{},\"license\":{},\"runtimePlatform\":\"GNU Emacs\"}}",
         json_string(project.name),
-        json_string(project.lead),
+        json_string(project.description),
         json_string(project.repository),
         json_array(
             project
@@ -115,11 +116,12 @@ pub fn json_ld() -> String {
     format!(
         "{{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"LispM\",\"url\":{},\
          \"headline\":{},\"description\":{},\"publisher\":{{\"@type\":\"Organization\",\
-         \"name\":\"LispMachineLab\",\"url\":{}}},\"about\":{}}}",
+         \"name\":\"LispMachineLab\",\"url\":{},\"sameAs\":{}}},\"about\":{}}}",
         json_string(SITE),
         json_string(TAGLINE),
         json_string(SUMMARY),
         json_string(ORGANIZATION),
+        json_array([ORGANIZATION, X].into_iter().map(json_string)),
         json_array(std::iter::once(application()).chain(PROJECTS.iter().map(source_code))),
     )
 }
@@ -146,32 +148,61 @@ fn markdown_points(points: &[Point]) -> String {
         .collect()
 }
 
-/// Returns a project as a Markdown section.
-fn markdown_project(project: &Project) -> String {
+/// Returns a chapter as a Markdown section.
+fn markdown_chapter(chapter: &Chapter) -> String {
     let mut out = format!(
         "## {}: {}\n\n{}\n\n",
-        project.name, project.headline, project.lead
+        chapter.eyebrow, chapter.headline, chapter.lead
     );
-    for stage in project.stages {
+    for stage in chapter.stages {
         let _ = writeln!(out, "- **{}** {}", stage.headline, stage.text);
     }
-    out.push('\n');
-    if let Some(spotlight) = &project.spotlight {
-        let _ = writeln!(out, "### {}\n\n{}\n", spotlight.headline, spotlight.text);
-        out.push_str(&markdown_points(spotlight.points));
+    if !chapter.stages.is_empty() {
         out.push('\n');
     }
-    out.push_str(&markdown_points(project.points));
-    let _ = write!(out, "\n{}\n\n", project.audience);
-    if let Some(install) = project.install {
-        let _ = write!(
+    for spotlight in chapter.spotlights {
+        let _ = writeln!(out, "### {}\n\n{}\n", spotlight.headline, spotlight.text);
+        if !spotlight.points.is_empty() {
+            out.push_str(&markdown_points(spotlight.points));
+            out.push('\n');
+        }
+    }
+    out.push_str(&markdown_points(chapter.points));
+    let _ = writeln!(out, "\nCode: {}\n", chapter.repository);
+    out
+}
+
+/// Returns how to install the projects that stand on their own in your
+/// own Emacs, as a Markdown section.
+fn markdown_own_emacs() -> String {
+    let mut out = format!("## {OWN_EMACS_HEADLINE}\n\n{OWN_EMACS}\n\n");
+    for project in &PROJECTS {
+        if let Some(install) = project.install {
+            let _ = write!(
+                out,
+                "### {}\n\n{}\n\n```{}\n{}\n```\n\nRepository: {}\n\n",
+                project.name,
+                install.audience,
+                install.snippet.language.fence(),
+                install.snippet.code,
+                project.repository,
+            );
+        }
+    }
+    out
+}
+
+/// Returns the projects LispM is made of, as a Markdown list.
+fn markdown_projects() -> String {
+    let mut out = String::from("## The projects\n\n");
+    for project in &PROJECTS {
+        let _ = writeln!(
             out,
-            "```{}\n{}\n```\n\n",
-            install.language.fence(),
-            install.code
+            "- [{}]({}): {}",
+            project.name, project.repository, project.description
         );
     }
-    let _ = writeln!(out, "Repository: {}\n", project.repository);
+    out.push('\n');
     out
 }
 
@@ -213,17 +244,16 @@ pub fn llms_txt() -> String {
     let _ = write!(out, "## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
     out.push_str(&markdown_points(&IDEA_POINTS));
     out.push('\n');
-    let _ = write!(
-        out,
-        "## {OWN_EMACS_HEADLINE}\n\n{OWN_EMACS} Each of their sections ends with how.\n\n"
-    );
-    for project in &PROJECTS {
-        out.push_str(&markdown_project(project));
+    for chapter in &CHAPTERS {
+        out.push_str(&markdown_chapter(chapter));
     }
+    out.push_str(&markdown_own_emacs());
+    out.push_str(&markdown_projects());
     let _ = writeln!(
         out,
         "## Links\n\n\
          - [LispMachineLab on GitHub]({ORGANIZATION})\n\
+         - [LispM on X]({X})\n\
          - [The film]({SITE}{}): {}\n\
          - [Model servers for LispM Agent]({BACKENDS})\n\n\
          LispM's projects are all free software, under the GNU Affero General Public License, version 3 or later. {CREDITS}",
@@ -283,21 +313,30 @@ mod tests {
             );
         }
         assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
+        assert!(ld.contains(&format!(
+            "\"sameAs\":[{},{}]",
+            json_string(ORGANIZATION),
+            json_string(X)
+        )));
         assert!(!head().trim_end_matches("</script>").contains("</script"));
         assert_eq!(ld.matches('{').count(), ld.matches('}').count());
         assert_eq!(ld.matches('[').count(), ld.matches(']').count());
     }
 
     #[test]
-    fn llms_txt_tells_every_project_and_how_to_install_it() {
+    fn llms_txt_tells_every_chapter_and_project_and_how_to_install_them() {
         let text = llms_txt();
         assert!(text.starts_with("# LispM\n\n> "));
+        for chapter in CHAPTERS {
+            assert!(text.contains(chapter.headline), "{}", chapter.eyebrow);
+        }
         for project in PROJECTS {
-            assert!(text.contains(project.headline), "{}", project.name);
+            assert!(text.contains(project.repository), "{}", project.name);
             if let Some(install) = project.install {
-                assert!(text.contains(install.code), "{}", project.name);
+                assert!(text.contains(install.snippet.code), "{}", project.name);
             }
         }
+        assert!(text.contains("Focus Mode, a Lisp Machine's console."));
         assert!(text.contains("Chrome extensions, inside Emacs."));
         assert!(text.contains(INSTALL_EXPERIMENTAL.code));
         let download = text.find(INSTALL.code).unwrap_or(usize::MAX);
