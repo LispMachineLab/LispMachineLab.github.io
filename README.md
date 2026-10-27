@@ -21,7 +21,10 @@ of search engines; and `sitemap.xml`, which lists the pages.
 
 For search engines and the answer engines built on them, every page has its own title and a
 description within the 160 characters they show (tests keep both), and its pictures their width
-and height. The JSON-LD is one graph whose nodes name each other by id: LispM, the organization,
+and height. What LispM is, `content::DEFINITION` (an AI agent harness built on GNU Emacs and the
+ideas of the Lisp Machine), is told in the same words wherever they look: the description, the
+JSON-LD, llms.txt and the first of the questions at the foot of the page, which are also the
+page's FAQPage. The JSON-LD is one graph whose nodes name each other by id: LispM, the organization,
 is the same node on every page, with its logo and its accounts on GitHub and X, and the app, the
 site, the blog and the posts point to it. After each deploy, `scripts/indexnow.sh` tells Bing and
 the other engines that take IndexNow that the sitemap's pages are new. Google and Bing learn of

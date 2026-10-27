@@ -25,6 +25,8 @@ pub enum Anchor {
     Trust,
     /// How to install LispM, and its projects on their own.
     Start,
+    /// What people ask about LispM, answered.
+    Questions,
 }
 
 impl Anchor {
@@ -50,6 +52,7 @@ impl Anchor {
             Anchor::Remote => "remote",
             Anchor::Trust => "trust",
             Anchor::Start => "start",
+            Anchor::Questions => "questions",
         }
     }
 
@@ -69,6 +72,7 @@ impl Anchor {
             Anchor::Remote => "Remote",
             Anchor::Trust => "Trust",
             Anchor::Start => "Download",
+            Anchor::Questions => "Questions",
         }
     }
 }
@@ -273,8 +277,9 @@ pub const IDEA_HEADLINE: &str = "The editor, the operating system and their agen
 
 /// The paragraph under it.
 pub const IDEA: &str = "On a Lisp Machine everything was a live Lisp object, and the editor and the \
-     system were one. Its inhabitants were programs. Emacs kept that way of working, if not the \
-     machine; LispM makes room in it for agents.";
+     system were one. Its inhabitants were programs. Emacs, born beside it at MIT in 1976, has kept \
+     that way of working for fifty years, if not the machine. LispM makes room in it for agents: \
+     the harness modern AI needs.";
 
 /// What makes LispM's agents what they are.
 pub const IDEA_POINTS: [Point; 4] = [
@@ -725,8 +730,67 @@ pub const TITLE: &str = "LispM — AI agents inside Emacs, a Lisp Machine for ag
 
 /// What search engines show under the title, within the 160 characters
 /// they show: what LispM is, and the agents it runs.
-pub const DESCRIPTION: &str = "LispM runs AI agents inside Emacs, its own beside Claude Code and \
-     Codex: conversations are org documents, tools are Lisp. A free Mac app, with an App Store.";
+pub const DESCRIPTION: &str = "LispM is an AI agent harness built on GNU Emacs and the Lisp \
+     Machine, fifty years in the making: Claude Code, Codex and its own agents, in a free Mac app.";
+
+/// What LispM is, in two sentences: the answer search engines, answer
+/// engines and language models are given everywhere they look, the page's
+/// first question, its JSON-LD and llms.txt.
+pub const DEFINITION: &str = "LispM is an AI agent harness built on GNU Emacs and the ideas of \
+     the Lisp Machine, fifty years in the making. Its agents live inside Emacs: their \
+     conversations are org documents, their tools are Lisp, and Emacs itself is the harness.";
+
+/// A question people ask about LispM, and its answer.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Question {
+    /// The question, as people ask it.
+    pub question: &'static str,
+    /// Its answer, the first sentence a whole answer on its own.
+    pub answer: &'static str,
+}
+
+/// The headline over the questions.
+pub const QUESTIONS_HEADLINE: &str = "Questions, answered.";
+
+/// What people ask about LispM, the first what it is.
+pub const QUESTIONS: [Question; 5] = [
+    Question {
+        question: "What is LispM?",
+        answer: "LispM is an AI agent harness built on GNU Emacs and the ideas of the Lisp Machine, \
+                 fifty years in the making. Its agents live inside Emacs: their conversations are \
+                 org documents, their tools are Lisp, and Emacs itself is the harness. It comes as \
+                 a free Mac app, with a classic-style desktop, a browser, an App Store and LispM \
+                 Remote.",
+    },
+    Question {
+        question: "Is LispM built on Emacs?",
+        answer: "Yes. LispM is built on GNU Emacs, which comes inside LispM.app, so you need not \
+                 know Emacs to begin. If you already use Emacs, LispM Agent, LispM Desktop and \
+                 LispM Browser run in your own.",
+    },
+    Question {
+        question: "Why the Lisp Machine and Emacs?",
+        answer: "Because an agent needs a world it can read and change while it runs. On the Lisp \
+                 Machines of the 1970s, and in Emacs since 1976, everything is a live Lisp object: \
+                 a program can look at any of it, call it and redefine it as it runs. Fifty years \
+                 of that make Emacs the best harness architecture for modern AI, and LispM hands it \
+                 to agents: their tools are Lisp functions, their conversations org documents, \
+                 their approvals TODOs, and they write Lisp to drive Emacs itself.",
+    },
+    Question {
+        question: "Which agents and models does LispM run?",
+        answer: "LispM's own agents, and beside them Claude Code, Codex, Hermes, Holon and \
+                 OpenClaw, all in one sidebar and able to message each other. LispM's agents use \
+                 any model: OpenAI's or Anthropic's with a key, or any other server, local or \
+                 hosted.",
+    },
+    Question {
+        question: "Is LispM free?",
+        answer: "Yes. LispM and every project it is made of are free software, under the GNU Affero \
+                 General Public License, version 3 or later. LispM.app runs on macOS 11 or later, \
+                 on Apple silicon or Intel.",
+    },
+];
 
 /// The blog's path on the site, its posts under it.
 pub const BLOG: &str = "/blog/";
@@ -837,7 +901,7 @@ mod tests {
     use std::path::Path;
 
     /// Every section, top to bottom.
-    const ALL: [Anchor; 8] = [
+    const ALL: [Anchor; 9] = [
         Anchor::Film,
         Anchor::Idea,
         Anchor::Agents,
@@ -846,6 +910,7 @@ mod tests {
         Anchor::Remote,
         Anchor::Trust,
         Anchor::Start,
+        Anchor::Questions,
     ];
 
     fn media() -> impl Iterator<Item = Media> {
@@ -1036,6 +1101,22 @@ mod tests {
     fn hrefs_point_at_ids() {
         assert_eq!(Anchor::Start.href(), "#start");
         assert_eq!(Anchor::Agents.href(), "#agent");
+    }
+
+    #[test]
+    fn everywhere_lispm_is_told_it_is_built_on_emacs_and_the_lisp_machine() {
+        for text in [DESCRIPTION, DEFINITION, IDEA] {
+            assert!(
+                text.contains("Emacs") && text.contains("Lisp Machine"),
+                "{text}"
+            );
+        }
+        let first = QUESTIONS.first().map(|question| question.answer);
+        assert!(first.is_some_and(|answer| answer.starts_with(DEFINITION)));
+        for question in QUESTIONS {
+            assert!(question.question.ends_with('?'), "{}", question.question);
+            assert!(!question.answer.is_empty());
+        }
     }
 
     #[test]

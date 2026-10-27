@@ -11,11 +11,11 @@
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, DESCRIPTION, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
-    EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE,
-    OPERATING_SYSTEM, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project,
-    REQUIREMENTS, SITE, SUMMARY, TAGLINE, TITLE, X,
+    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, DEFINITION, DESCRIPTION, DOWNLOAD_LEAD,
+    DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
+    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES,
+    INSTALLER_SOURCE, LICENSE, OPERATING_SYSTEM, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE,
+    PROJECTS, Point, Project, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS, SITE, TAGLINE, TITLE, X,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -88,6 +88,21 @@ pub(crate) fn json_array(items: impl Iterator<Item = String>) -> String {
 /// LispM's mark, the rainbow λ, from the root, and its side in pixels.
 pub(crate) const LOGO: (&str, u32) = ("assets/lispm-lambda.png", 1254);
 
+/// GNU Emacs, what LispM is built on: its home, and the encyclopedia's page
+/// that names it.
+const EMACS: (&str, &str) = (
+    "https://www.gnu.org/software/emacs/",
+    "https://en.wikipedia.org/wiki/Emacs",
+);
+
+/// The encyclopedia's page on the Lisp Machine, whose ideas LispM carries:
+/// named as what the page mentions, not as LispM, which it is not.
+const LISP_MACHINE: &str = "https://en.wikipedia.org/wiki/Lisp_machine";
+
+/// What LispM is about, as words to search it by.
+const KEYWORDS: &str = "AI agent harness, AI agents, Emacs, GNU Emacs, Lisp Machine, Lisp, Emacs \
+     Lisp, Claude Code, Codex, org-mode";
+
 /// The JSON-LD nodes that every page names by id.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Node {
@@ -147,20 +162,50 @@ fn website() -> String {
          \"description\":{},\"inLanguage\":\"en\",\"publisher\":{}}}",
         json_string(&Node::WebSite.id()),
         json_string(SITE),
-        json_string(&format!("{TAGLINE} {SUMMARY}")),
+        json_string(DEFINITION),
         Node::Organization.reference(),
     )
 }
 
-/// Returns the home page as a schema.org WebPage, about LispM.app.
+/// Returns GNU Emacs as a schema.org SoftwareApplication.
+fn emacs() -> String {
+    let (home, encyclopedia) = EMACS;
+    format!(
+        "{{\"@type\":\"SoftwareApplication\",\"name\":\"GNU Emacs\",\"url\":{},\"sameAs\":{}}}",
+        json_string(home),
+        json_string(encyclopedia),
+    )
+}
+
+/// Returns the questions as schema.org Questions, each with its answer.
+fn questions() -> String {
+    json_array(QUESTIONS.iter().map(|question| {
+        format!(
+            "{{\"@type\":\"Question\",\"name\":{},\"acceptedAnswer\":{{\"@type\":\"Answer\",\
+             \"text\":{}}}}}",
+            json_string(question.question),
+            json_string(question.answer),
+        )
+    }))
+}
+
+/// Returns the home page as a schema.org WebPage, about LispM.app, that is
+/// also a FAQPage: the questions people ask about it, answered. It mentions
+/// Emacs and the Lisp Machine, so LispM is known apart from the machines of
+/// the 1970s that share its name.
 fn home_page() -> String {
     format!(
-        "{{\"@type\":\"WebPage\",\"@id\":{site},\"url\":{site},\"name\":{},\
-         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{}}}",
+        "{{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":{site},\"url\":{site},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"mentions\":[{},{{\"@type\":\"Thing\",\"name\":\"Lisp machine\",\"sameAs\":{}}}],\
+         \"mainEntity\":{}}}",
         json_string(TITLE),
         json_string(DESCRIPTION),
         Node::WebSite.reference(),
         Node::Application.reference(),
+        emacs(),
+        json_string(LISP_MACHINE),
+        questions(),
         site = json_string(SITE),
     )
 }
@@ -193,16 +238,19 @@ fn application() -> String {
          \"description\":{},\"applicationCategory\":\"DeveloperApplication\",\
          \"operatingSystem\":{},\"downloadUrl\":{},\"installUrl\":{},\"screenshot\":{},\
          \"offers\":{{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"USD\"}},\
-         \"isAccessibleForFree\":true,\"license\":{},\"publisher\":{}}}",
+         \"isAccessibleForFree\":true,\"license\":{},\"publisher\":{},\"isBasedOn\":{},\
+         \"keywords\":{}}}",
         json_string(&Node::Application.id()),
         json_string(SITE),
-        json_string(&format!("{SUMMARY} {DOWNLOAD_LEAD}")),
+        json_string(&format!("{DEFINITION} {DOWNLOAD_LEAD}")),
         json_string(OPERATING_SYSTEM),
         json_string(&format!("{SITE}{INSTALLER}")),
         json_string(&format!("{SITE}{}", Anchor::Start.href())),
         json_string(&format!("{SITE}{}", FILM.poster)),
         json_string(LICENSE),
         Node::Organization.reference(),
+        emacs(),
+        json_string(KEYWORDS),
     )
 }
 
@@ -327,9 +375,20 @@ fn markdown_download() -> String {
     out
 }
 
-/// Returns llms.txt: the page as Markdown, after llmstxt.org.
+/// Returns the questions as a Markdown section, each answered.
+fn markdown_questions() -> String {
+    let mut out = format!("## {QUESTIONS_HEADLINE}\n\n");
+    for question in &QUESTIONS {
+        let _ = write!(out, "### {}\n\n{}\n\n", question.question, question.answer);
+    }
+    out
+}
+
+/// Returns llms.txt: the page as Markdown, after llmstxt.org. What LispM
+/// is comes first, then the questions people ask, then how to get it.
 pub fn llms_txt() -> String {
-    let mut out = format!("# LispM\n\n> {TAGLINE} {SUMMARY}\n\n");
+    let mut out = format!("# LispM\n\n> {DEFINITION}\n\n{TAGLINE}\n\n");
+    out.push_str(&markdown_questions());
     out.push_str(&markdown_download());
     let _ = write!(out, "## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
     out.push_str(&markdown_points(&IDEA_POINTS));
@@ -406,6 +465,14 @@ mod tests {
         assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
         assert!(ld.contains("\"installUrl\":\"https://lispm.ai/#start\""));
         assert!(ld.contains("\"price\":\"0\""));
+        assert!(
+            ld.contains("\"isBasedOn\":{\"@type\":\"SoftwareApplication\",\"name\":\"GNU Emacs\"")
+        );
+        assert!(ld.contains("\"@type\":[\"WebPage\",\"FAQPage\"]"));
+        assert_eq!(
+            ld.matches("\"@type\":\"Question\"").count(),
+            QUESTIONS.len()
+        );
         assert!(ld.contains(&format!(
             "\"sameAs\":[{},{}]",
             json_string(ORGANIZATION),
@@ -459,6 +526,10 @@ mod tests {
         assert!(text.contains("Focus Mode, a Lisp Machine's console."));
         assert!(text.contains("Chrome extensions, inside Emacs."));
         assert!(text.contains(INSTALL_EXPERIMENTAL.code));
+        assert!(text.starts_with(&format!("# LispM\n\n> {DEFINITION}\n")));
+        for question in QUESTIONS {
+            assert!(text.contains(&format!("### {}\n\n{}", question.question, question.answer)));
+        }
         let download = text.find(INSTALL.code).unwrap_or(usize::MAX);
         let idea = text.find(IDEA_HEADLINE).unwrap_or(0);
         assert!(download < idea, "the download comes first");
