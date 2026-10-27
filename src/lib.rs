@@ -4,10 +4,10 @@
 //! with clips from the films and stills, and how to install LispM and the
 //! projects it is made of.
 //!
-//! [`content`] holds the page's words and media as data, [`copy`] the copy
-//! buttons' states, [`playback`] the looping clips', [`publish`] what is
-//! written beside the page for crawlers and language models; all four are
-//! pure and tested natively. [`effects`]
+//! [`content`] holds the page's words and media as data, [`date`] the days
+//! they were published, [`copy`] the copy buttons' states, [`playback`] the
+//! looping clips', [`publish`] what is written beside the page for crawlers
+//! and language models; all five are pure and tested natively. [`effects`]
 //! is the boundary with the browser. [`view`] draws the page with Yew: in
 //! the browser it hydrates what the prerender binary wrote into index.html
 //! from the same components at build time.
@@ -22,6 +22,7 @@
 pub mod blog;
 pub mod content;
 pub mod copy;
+pub mod date;
 pub mod effects;
 pub mod playback;
 pub mod publish;

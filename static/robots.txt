@@ -1,3 +1,6 @@
+# Search engines and AI crawlers alike are welcome to all of it.
+# For language models, the site in Markdown: https://lispm.ai/llms.txt
+# and with every post's words: https://lispm.ai/llms-full.txt
 User-agent: *
 Allow: /
 

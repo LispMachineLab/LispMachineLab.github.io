@@ -1,5 +1,6 @@
 //! The page, top to bottom: the navigation bar, the headline and film, the
-//! idea, the chapters, how to start, and the footer. The blog's pages
+//! idea, the chapters, how to start, the questions people ask, and the
+//! footer. The blog's pages
 //! share its navigation bar and footer.
 
 use yew::prelude::*;
@@ -9,7 +10,7 @@ use crate::content::{
     DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
     IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES,
     INSTALLER_SOURCE, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point,
-    REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE, X,
+    QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -21,13 +22,15 @@ use super::media::{Film, Loop, Still};
 const LOGO: &str = "/assets/lispm-lambda.png";
 
 /// The page a navigation bar is on: the home page reaches its sections by
-/// their ids, the blog's pages through the home page.
+/// their ids, the other pages through the home page.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Place {
     /// The home page.
     Home,
     /// The blog, or a post in it.
     Blog,
+    /// Any other page: the one shown at addresses not on the site.
+    Elsewhere,
 }
 
 impl Place {
@@ -35,7 +38,7 @@ impl Place {
     pub(crate) fn href(self, anchor: Anchor) -> String {
         match self {
             Place::Home => anchor.href(),
-            Place::Blog => format!("/{}", anchor.href()),
+            Place::Blog | Place::Elsewhere => format!("/{}", anchor.href()),
         }
     }
 }
@@ -52,6 +55,7 @@ pub fn app() -> Html {
                 { idea() }
                 { for CHAPTERS.iter().map(chapter) }
                 { start() }
+                { questions() }
             </main>
             { footer(Place::Home) }
         </>
@@ -67,7 +71,7 @@ pub(crate) fn outward(href: &'static str, class: &'static str, label: &'static s
 pub(crate) fn navigation(place: Place) -> Html {
     let home = match place {
         Place::Home => "#top",
-        Place::Blog => "/",
+        Place::Blog | Place::Elsewhere => "/",
     };
     html! {
         <header class="navigation">
@@ -274,6 +278,24 @@ fn start() -> Html {
                    environment. For any other server, local or hosted, see " }
                 { outward(BACKENDS, "", "Backends") }{ "." }
             </p>
+        </section>
+    }
+}
+
+/// The questions people ask about LispM, each answered in full where
+/// people, search engines and language models all read it.
+fn questions() -> Html {
+    html! {
+        <section class="section questions" id={Anchor::Questions.id()}>
+            <h2>{ QUESTIONS_HEADLINE }</h2>
+            <ul class="answers">
+                { for QUESTIONS.iter().map(|question| html! {
+                    <li>
+                        <h3>{ question.question }</h3>
+                        <p>{ question.answer }</p>
+                    </li>
+                }) }
+            </ul>
         </section>
     }
 }
