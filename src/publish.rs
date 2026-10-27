@@ -8,9 +8,9 @@ use std::fmt::{self, Write as _};
 use crate::content::{
     BACKENDS, CHAPTERS, CREDITS, Chapter, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL,
     EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
-    INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE, ORGANIZATION,
-    OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE,
-    X,
+    INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE,
+    INSTALLER_UPDATES, LICENSE, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Platform,
+    Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE, X,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -98,14 +98,23 @@ fn source_code(project: &Project) -> String {
     )
 }
 
-/// Returns LispM.app as a schema.org SoftwareApplication.
+/// Returns the systems LispM runs on, each with its releases and processors.
+fn operating_systems() -> String {
+    Platform::ALL
+        .iter()
+        .map(|platform| format!("{}: {}", platform.name(), platform.requirements()))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Returns LispM as a schema.org SoftwareApplication.
 fn application() -> String {
     format!(
         "{{\"@type\":\"SoftwareApplication\",\"name\":\"LispM\",\"description\":{},\
          \"applicationCategory\":\"DeveloperApplication\",\"operatingSystem\":{},\
          \"downloadUrl\":{},\"isAccessibleForFree\":true,\"license\":{}}}",
         json_string(DOWNLOAD_LEAD),
-        json_string(REQUIREMENTS),
+        json_string(&operating_systems()),
         json_string(&format!("{SITE}{INSTALLER}")),
         json_string(LICENSE),
     )
@@ -206,9 +215,18 @@ fn markdown_projects() -> String {
     out
 }
 
-/// Returns how to install LispM.app, as a Markdown section.
+/// Returns how to install LispM, as a Markdown section.
 fn markdown_download() -> String {
-    let mut out = format!("## Download LispM for Mac\n\n{DOWNLOAD_LEAD} {REQUIREMENTS}\n\n");
+    let mut out = format!("## Download LispM\n\n{DOWNLOAD_LEAD} {REQUIREMENTS}\n\n");
+    for platform in Platform::ALL {
+        let _ = writeln!(
+            out,
+            "- **{}**: {}",
+            platform.name(),
+            platform.requirements()
+        );
+    }
+    out.push('\n');
     for (number, step) in DOWNLOAD_STEPS.iter().enumerate() {
         let _ = write!(out, "{}. **{}**", number + 1, step.title);
         if !step.text.is_empty() {
@@ -224,9 +242,16 @@ fn markdown_download() -> String {
             );
         }
     }
+    let _ = write!(
+        out,
+        "\nThe line runs [install.sh]({INSTALLER_SOURCE}), which{INSTALLER_DOES}"
+    );
+    for platform in Platform::ALL {
+        let _ = write!(out, " {}", platform.installer());
+    }
     let _ = writeln!(
         out,
-        "\nThe line runs [install.sh]({INSTALLER_SOURCE}), which{INSTALLER_DOES}\n"
+        " {INSTALLER_UPDATES} To uninstall, see [LispM Desktop's installation guide]({INSTALLATION}).\n"
     );
     let _ = writeln!(
         out,
@@ -313,6 +338,9 @@ mod tests {
             );
         }
         assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
+        for platform in Platform::ALL {
+            assert!(ld.contains(platform.requirements()), "{}", platform.name());
+        }
         assert!(ld.contains(&format!(
             "\"sameAs\":[{},{}]",
             json_string(ORGANIZATION),
@@ -339,6 +367,14 @@ mod tests {
         assert!(text.contains("Focus Mode, a Lisp Machine's console."));
         assert!(text.contains("Chrome extensions, inside Emacs."));
         assert!(text.contains(INSTALL_EXPERIMENTAL.code));
+        for platform in Platform::ALL {
+            assert!(
+                text.contains(platform.requirements()),
+                "{}",
+                platform.name()
+            );
+            assert!(text.contains(platform.installer()), "{}", platform.name());
+        }
         let download = text.find(INSTALL.code).unwrap_or(usize::MAX);
         let idea = text.find(IDEA_HEADLINE).unwrap_or(0);
         assert!(download < idea, "the download comes first");

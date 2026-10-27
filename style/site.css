@@ -197,6 +197,13 @@ h3 {
   background: #ffffff;
 }
 
+/* The systems LispM runs on, quiet under the hero's buttons. */
+.platforms {
+  margin: 16px 0 0;
+  color: var(--faint);
+  font-size: 15px;
+}
+
 .stage {
   max-width: 1180px;
   margin: clamp(48px, 7vw, 80px) auto 0;
@@ -449,6 +456,27 @@ h3 {
   max-width: 240px;
   color: var(--muted);
   font-size: 15px;
+}
+
+/* Each system LispM runs on: its name over its releases and processors. */
+.systems {
+  display: grid;
+  gap: 12px;
+  max-width: 240px;
+  margin: 14px auto 0;
+}
+
+.systems dt {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.systems dd {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  text-wrap: balance;
 }
 
 /* No wider than its column: the line to paste scrolls in its own box. */

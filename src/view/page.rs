@@ -7,9 +7,9 @@ use yew::prelude::*;
 use crate::content::{
     APP_ICON, Anchor, BACKENDS, BLOG, CHAPTERS, CREDITS, Chapter, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD,
     DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
-    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER_DOES,
-    INSTALLER_SOURCE, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point,
-    REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE, X,
+    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER_DOES,
+    INSTALLER_SOURCE, INSTALLER_UPDATES, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE,
+    PLATFORMS, PROJECTS, Platform, Point, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -95,6 +95,20 @@ pub(crate) fn navigation(place: Place) -> Html {
     }
 }
 
+/// The hero's download button. It is drawn for the Mac, as the prerender
+/// knows no visitor, and names GNU/Linux once the browser says it runs there.
+#[function_component(Download)]
+fn download_button() -> Html {
+    let platform = use_state_eq(|| Platform::Mac);
+    {
+        let platform = platform.setter();
+        use_effect_with((), move |_| platform.set(effects::platform()));
+    }
+    html! {
+        <a class="button primary" href={Anchor::Start.href()}>{ platform.download() }</a>
+    }
+}
+
 fn hero() -> Html {
     html! {
         <section class="hero" id="top">
@@ -103,9 +117,10 @@ fn hero() -> Html {
             <h1>{ TAGLINE }</h1>
             <p class="summary">{ SUMMARY }</p>
             <div class="actions">
-                <a class="button primary" href={Anchor::Start.href()}>{ "Download for Mac" }</a>
+                <Download />
                 { outward(ORGANIZATION, "button", "View on GitHub") }
             </div>
+            <p class="platforms">{ PLATFORMS }</p>
             <div class="stage" id={Anchor::Film.id()}>
                 <Film clip={FILM} />
             </div>
@@ -191,7 +206,7 @@ fn chapter(chapter: &Chapter) -> Html {
     }
 }
 
-/// Returns a step of installing LispM.app.
+/// Returns a step of installing LispM.
 fn step(step: &Step) -> Html {
     html! {
         <li>
@@ -204,14 +219,22 @@ fn step(step: &Step) -> Html {
     }
 }
 
-/// LispM.app, for everyone: its icon and what it runs on beside the steps
-/// that install it.
+/// LispM, for everyone: its icon and the systems it runs on beside the
+/// steps that install it, the same on each.
 fn download() -> Html {
     html! {
         <div class="download">
             <div class="app">
                 <img src={APP_ICON} alt="LispM's icon, the rainbow λ" width="128" height="128" />
-                <h3>{ "LispM for Mac" }</h3>
+                <h3>{ "LispM" }</h3>
+                <dl class="systems">
+                    { for Platform::ALL.iter().map(|platform| html! {
+                        <div>
+                            <dt>{ platform.name() }</dt>
+                            <dd>{ platform.requirements() }</dd>
+                        </div>
+                    }) }
+                </dl>
                 <p>{ REQUIREMENTS }</p>
             </div>
             <ol class="steps">
@@ -220,6 +243,9 @@ fn download() -> Html {
             <p class="installer">
                 { "The line runs " }{ outward(INSTALLER_SOURCE, "", "install.sh") }{ ", which" }
                 { INSTALLER_DOES }
+                { for Platform::ALL.iter().map(|platform| html! { <>{ " " }{ platform.installer() }</> }) }
+                { " " }{ INSTALLER_UPDATES }{ " To uninstall, see " }
+                { outward(INSTALLATION, "", "LispM Desktop's installation guide") }{ "." }
             </p>
         </div>
     }

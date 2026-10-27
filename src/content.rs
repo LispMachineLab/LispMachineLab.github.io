@@ -131,7 +131,8 @@ pub struct Point {
 /// The language a snippet is written in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Language {
-    /// A line for macOS's Terminal, named after it for those who know no shell.
+    /// A line for a terminal, named after the Mac's Terminal for those who
+    /// know no shell.
     Terminal,
     /// A shell's.
     Shell,
@@ -726,15 +727,85 @@ pub const BLOG: &str = "/blog/";
 pub const DOWNLOAD_HEADLINE: &str = "Get LispM.";
 
 /// The paragraph under it, for those who have never heard of Emacs.
-pub const DOWNLOAD_LEAD: &str = "LispM is a Mac app. Emacs, the editor it is made of, comes inside it: \
-     you need not know Emacs to begin.";
+pub const DOWNLOAD_LEAD: &str = "One line installs LispM, on a Mac or on GNU/Linux. Emacs, the \
+     editor it is made of, comes with it: you need not know Emacs to begin.";
 
-/// LispM.app's icon.
+/// LispM's icon.
 pub const APP_ICON: &str = "assets/lispm-app.png";
 
-/// What LispM.app runs on.
-pub const REQUIREMENTS: &str =
-    "macOS 11 or later, on Apple silicon or Intel. On GNU Emacs 31.1. Free.";
+/// A system LispM installs on, by the same line.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Platform {
+    /// macOS, where LispM is LispM.app.
+    Mac,
+    /// Debian and Ubuntu, and the systems made from them.
+    Linux,
+}
+
+impl Platform {
+    /// Every system LispM installs on, the Mac first.
+    pub const ALL: [Platform; 2] = [Platform::Mac, Platform::Linux];
+
+    /// Returns its name.
+    pub const fn name(self) -> &'static str {
+        match self {
+            Platform::Mac => "Mac",
+            Platform::Linux => "GNU/Linux",
+        }
+    }
+
+    /// Returns the button that offers LispM to a visitor on it.
+    pub const fn download(self) -> &'static str {
+        match self {
+            Platform::Mac => "Download for Mac",
+            Platform::Linux => "Download for Linux",
+        }
+    }
+
+    /// Returns the releases and processors LispM runs on there.
+    pub const fn requirements(self) -> &'static str {
+        match self {
+            Platform::Mac => "macOS 11 or later, on Apple silicon or Intel.",
+            Platform::Linux => "Debian 12 or 13, or Ubuntu 22.04 or 24.04, on amd64 or arm64.",
+        }
+    }
+
+    /// Returns what the install line does there.
+    pub const fn installer(self) -> &'static str {
+        match self {
+            Platform::Mac => {
+                "On a Mac it installs Apple's command line tools if they are missing \
+                 and puts LispM.app in Applications."
+            }
+            Platform::Linux => {
+                "On GNU/Linux it installs LispM's own GNU Emacs 31.1, with \
+                 xwidgets, in /opt/lispm/emacs with apt, beside any Emacs of the system, and adds \
+                 the lispm command and LispM to the applications menu."
+            }
+        }
+    }
+
+    /// Returns the system a browser runs on, as its user agent tells: GNU/Linux
+    /// on a desktop running it, else the Mac, whose download is offered
+    /// wherever LispM does not run too. Android and ChromeOS are made from
+    /// Linux but are no GNU/Linux the installer knows.
+    pub fn of_user_agent(user_agent: &str) -> Platform {
+        let linux = user_agent.contains("X11")
+            && user_agent.contains("Linux")
+            && !user_agent.contains("Android");
+        if linux {
+            Platform::Linux
+        } else {
+            Platform::Mac
+        }
+    }
+}
+
+/// The systems LispM runs on, under the hero's buttons.
+pub const PLATFORMS: &str = "Free, for macOS and GNU/Linux.";
+
+/// What LispM runs on everywhere, and what it costs.
+pub const REQUIREMENTS: &str = "On GNU Emacs 31.1. Free.";
 
 /// The installer, served beside the page; it runs lispm-desktop's.
 pub const INSTALLER: &str = "install.sh";
@@ -745,28 +816,33 @@ pub const INSTALLER: &str = "install.sh";
 pub const INSTALLER_SOURCE: &str =
     "https://github.com/LispMachineLab/lispm-desktop/blob/main/install.sh";
 
-/// The line that installs LispM.app, or updates it.
+/// LispM Desktop's guide to installing LispM, uninstalling it too.
+pub const INSTALLATION: &str = "https://github.com/LispMachineLab/lispm-desktop#installation";
+
+/// The line that installs LispM, or updates it, on every system.
 pub const INSTALL: Snippet = Snippet {
     language: Language::Terminal,
     code: "curl -fsSL https://lispm.ai/install.sh | sh",
 };
 
-/// Installing LispM.app, step by step.
+/// Installing LispM, step by step.
 pub const DOWNLOAD_STEPS: [Step; 3] = [
     Step {
-        title: "Open Terminal.",
-        text: "It is in Applications, in the Utilities folder; or press Command-Space and type Terminal.",
+        title: "Open a terminal.",
+        text: "On a Mac, Terminal is in Applications, in the Utilities folder; or press Command-Space \
+               and type Terminal.",
         snippet: None,
     },
     Step {
         title: "Paste this line, and press Return.",
-        text: "",
+        text: "The same line on a Mac and on GNU/Linux, where apt asks for your password.",
         snippet: Some(INSTALL),
     },
     Step {
         title: "LispM opens.",
-        text: "A few minutes later, once Emacs and LispM are in. From then on it is in Applications \
-               with your other apps.",
+        text: "A few minutes later, once Emacs and LispM are in. From then on it is with your other \
+               apps: in Applications on a Mac, in the applications menu on GNU/Linux, where the \
+               lispm command opens it too.",
         snippet: None,
     },
 ];
@@ -776,7 +852,7 @@ pub const EXPERIMENTAL_HEADLINE: &str = "LispM Experimental";
 
 /// What it is, and who it is for.
 pub const EXPERIMENTAL: &str = "The same LispM on GNU Emacs 32, still in development, for what \
-     only Emacs 32 can do, as OpenGL drawn in a buffer. Expect rough edges.";
+     only Emacs 32 can do, as OpenGL drawn in a buffer. On a Mac only; expect rough edges.";
 
 /// The line that installs the experimental LispM.app, updates it, or moves
 /// LispM.app onto it.
@@ -791,10 +867,12 @@ pub const EXPERIMENTAL_BACK: &str = "Run it again to update. Back to LispM on Em
 /// The line that moves LispM.app back onto Emacs 31.
 pub const INSTALL_BACK: &str = "curl -fsSL https://lispm.ai/install.sh | LISPM_EMACS=31 sh";
 
-/// What the line does, after the link to the installer.
-pub const INSTALLER_DOES: &str = " installs Apple's command line tools if they are missing, puts \
-     LispM.app in Applications and LispM's files in ~/.lispm. From then on Software Update brings \
-     each release by itself, and the line run again does too; delete both to uninstall.";
+/// What the line does on every system, after the link to the installer.
+pub const INSTALLER_DOES: &str = " keeps LispM's files in ~/.lispm.";
+
+/// How LispM stays up to date, after what the line does on each system.
+pub const INSTALLER_UPDATES: &str = "From then on Software Update brings each release by itself, \
+     and the line run again does too.";
 
 /// The headline over the projects' own installs.
 pub const OWN_EMACS_HEADLINE: &str = "Already use Emacs?";
@@ -1039,5 +1117,72 @@ mod tests {
     fn hrefs_point_at_ids() {
         assert_eq!(Anchor::Start.href(), "#start");
         assert_eq!(Anchor::Agents.href(), "#agent");
+    }
+
+    #[test]
+    fn a_desktop_on_gnu_linux_is_offered_linux_and_every_other_browser_the_mac() {
+        for (agent, platform) in [
+            (
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) \
+                 Chrome/141.0.0.0 Safari/537.36",
+                Platform::Linux,
+            ),
+            (
+                "Mozilla/5.0 (X11; Ubuntu; Linux aarch64; rv:144.0) Gecko/20100101 Firefox/144.0",
+                Platform::Linux,
+            ),
+            (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 \
+                 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+                Platform::Mac,
+            ),
+            (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
+                 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                Platform::Mac,
+            ),
+            (
+                "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) \
+                 Chrome/141.0.0.0 Mobile Safari/537.36",
+                Platform::Mac,
+            ),
+            (
+                "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 \
+                 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+                Platform::Mac,
+            ),
+            (
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 \
+                 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1",
+                Platform::Mac,
+            ),
+            ("", Platform::Mac),
+        ] {
+            assert_eq!(Platform::of_user_agent(agent), platform, "{agent}");
+        }
+    }
+
+    #[test]
+    fn every_platform_is_told_what_it_needs_and_what_the_line_does_there() {
+        for platform in Platform::ALL {
+            assert!(
+                platform
+                    .download()
+                    .ends_with(platform.name().trim_start_matches("GNU/"))
+            );
+            assert!(
+                platform.requirements().ends_with('.'),
+                "{}",
+                platform.name()
+            );
+            assert!(
+                platform.installer().starts_with("On "),
+                "{}",
+                platform.name()
+            );
+        }
+        assert!(Platform::Linux.installer().contains("/opt/lispm/emacs"));
+        assert!(DOWNLOAD_LEAD.contains(Platform::Linux.name()));
+        assert!(INSTALLATION.starts_with(ORGANIZATION));
     }
 }
