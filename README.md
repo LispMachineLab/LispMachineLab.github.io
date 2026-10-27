@@ -17,7 +17,7 @@ the same with every post's words. In the browser the page is hydrated, not drawn
 `prerender` also draws the blog's pages, the list of posts at `blog/index.html` and each post at
 `blog/<slug>/index.html`, as plain pages that load no WebAssembly; the blog's Atom feed at
 `blog/feed.xml`; `404.html`, the page GitHub Pages shows at addresses not on the site, kept out
-of search engines; and `sitemap.xml`, which lists the pages.
+of search engines; and `sitemap.xml`, which lists the pages, and the stills the home page shows.
 
 For search engines and the answer engines built on them, every page has its own title and a
 description within the 160 characters they show (tests keep both), and its pictures their width
@@ -26,7 +26,11 @@ ideas of the Lisp Machine), is told in the same words wherever they look: the de
 JSON-LD, llms.txt and the first of the questions at the foot of the page, which are also the
 page's FAQPage. The JSON-LD is one graph whose nodes name each other by id: LispM, the organization,
 is the same node on every page, with its logo and its accounts on GitHub and X, and the app, the
-site, the blog and the posts point to it. After each deploy, `scripts/indexnow.sh` tells Bing and
+site, the blog and the posts point to it. So that what LispM looks like is not guessed at, the
+app's screenshots are the stills beside the chapters, the clips' posters and the pictures, and
+every clip, the film's too, is a VideoObject about the app, named by the headline it illustrates
+and dated the day it was first published; llms.txt shows them all under Screenshots, and the
+sitemap names them as the home page's images. After each deploy, `scripts/indexnow.sh` tells Bing and
 the other engines that take IndexNow that the sitemap's pages are new. Google and Bing learn of
 the site through their webmaster tools, where `sitemap.xml` is submitted by hand.
 
@@ -37,9 +41,11 @@ The crate is a library and two binaries: `src/main.rs`, the page in the browser,
 
 - `src/content.rs` holds the page's words and media as data: the sections, the chapters with
   their stories, clips, stills and points, and the projects with their repositories and install
-  snippets, for those that stand on their own in your own Emacs. Its tests
-  check, among other things, that every clip and poster it names is in `assets/`, and that every
-  still is there at the size the page gives it.
+  snippets, for those that stand on their own in your own Emacs; `illustrations()` walks the
+  clips and stills top to bottom, each with the headline it illustrates. Its tests, in
+  `src/content/tests.rs`, check, among other things, that every clip and poster it names is in
+  `assets/`, and that every still is there at the size the page gives it.
+- `src/date.rs` is the days posts and clips were first published.
 - `src/copy.rs` is the copy buttons' states, pure and tested.
 - `src/publish.rs` is what is written beside the page, pure and tested: the rendered page put
   into `index.html`, the JSON-LD, and `llms.txt`, all from `content.rs`.
@@ -73,7 +79,8 @@ The crate is a library and two binaries: `src/main.rs`, the page in the browser,
   X's 2:1 crop; `index.html` names it in its Open Graph and Twitter tags, and
   `src/share_card.rs` tests that the tags agree and the file is that size.
 - `assets/video/` holds the film and the clips cut from it, from the longer LispM Desktop film,
-  from the LispM Remote film and from the Classic AI film, each with its poster. The model line
+  from the LispM Remote film and from the Classic AI film, each with its poster; `content.rs`
+  dates each clip the day it was first published, for its VideoObject. The model line
   some frames of the agent's chat showed is covered in them, so no model server is named. The
   stills beside some steps are the blog's own pictures, under `assets/blog/`.
 

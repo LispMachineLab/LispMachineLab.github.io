@@ -9,7 +9,7 @@ use std::fmt::{self, Write as _};
 use super::feed::FEED;
 use super::markdown::escape;
 use super::{Author, CARD, DESCRIPTION, HEADLINE, LEAD, LISPM, POSTS, Post, absolute};
-use crate::content::{BLOG, SITE};
+use crate::content::{BLOG, FILM, SITE, illustrations};
 use crate::publish::{Node, graph, json_array, json_string, organization};
 
 /// Why the blog's pages could not be made.
@@ -255,29 +255,46 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
     )
 }
 
-/// Returns the site's map: the home page, the blog, as new as its latest
-/// post, and the posts. Its pages only: llms.txt, the home page again in
-/// Markdown, is for language models, which find it at its known address.
+/// Returns the stills the home page shows, top to bottom, each a path from
+/// the root: the film's poster, then each clip's poster and each picture
+/// beside the chapters.
+fn stills() -> impl Iterator<Item = &'static str> {
+    std::iter::once(FILM.poster)
+        .chain(illustrations().map(|illustration| illustration.media.still()))
+}
+
+/// Returns the site's map: the home page, with the stills it shows, the
+/// blog, as new as its latest post, and the posts. Its pages only: llms.txt,
+/// the home page again in Markdown, is for language models, which find it
+/// at its known address.
 pub fn sitemap() -> String {
     let mut out = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
-         <urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n",
+         <urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" \
+         xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">\n",
     );
     let latest = POSTS.iter().map(|post| post.date).max();
     let pages = [
-        (absolute("/"), None),
-        (absolute(BLOG), latest.map(|date| date.iso())),
+        (absolute("/"), None, stills().collect()),
+        (absolute(BLOG), latest.map(|date| date.iso()), Vec::new()),
     ]
     .into_iter()
     .chain(
         POSTS
             .iter()
-            .map(|post| (absolute(&post.path()), Some(post.date.iso()))),
+            .map(|post| (absolute(&post.path()), Some(post.date.iso()), Vec::new())),
     );
-    for (url, modified) in pages {
+    for (url, modified, images) in pages {
         let _ = write!(out, "  <url>\n    <loc>{}</loc>\n", escape(&url));
         if let Some(modified) = modified {
             let _ = writeln!(out, "    <lastmod>{modified}</lastmod>");
+        }
+        for image in images {
+            let _ = writeln!(
+                out,
+                "    <image:image>\n      <image:loc>{}</image:loc>\n    </image:image>",
+                escape(&format!("{SITE}{image}"))
+            );
         }
         out.push_str("  </url>\n");
     }
@@ -512,6 +529,23 @@ mod tests {
             )));
         }
         assert_eq!(map.matches("<url>").count(), 2 + POSTS.len());
+    }
+
+    #[test]
+    fn the_map_shows_the_home_pages_stills_there_only() {
+        let map = sitemap();
+        let home = map.split("</url>").next().unwrap_or_default();
+        assert!(home.contains("<loc>https://lispm.ai/</loc>"));
+        let mut shown = 0;
+        for still in stills() {
+            assert!(
+                home.contains(&format!("<image:loc>{SITE}{still}</image:loc>")),
+                "{still}"
+            );
+            shown += 1;
+        }
+        assert!(shown > 1);
+        assert_eq!(map.matches("<image:image>").count(), shown);
     }
 
     #[test]

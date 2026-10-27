@@ -6,6 +6,8 @@
 //! The chapters follow what a visitor can do, not how the code is split:
 //! a feature is told once, in the chapter it matters to.
 
+use crate::date::Date;
+
 /// A section of the page, the target of a link.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Anchor {
@@ -86,6 +88,8 @@ pub struct Clip {
     pub poster: &'static str,
     /// What it shows, for those who cannot see it.
     pub description: &'static str,
+    /// The day it was first published on the page.
+    pub published: Date,
 }
 
 /// A still, where a moment says it better than a clip, or where there is no
@@ -109,6 +113,42 @@ pub enum Media {
     Loop(Clip),
     /// A still.
     Picture(Picture),
+}
+
+impl Media {
+    /// Returns the still it shows first: a clip's poster, or the picture.
+    pub const fn still(self) -> &'static str {
+        match self {
+            Media::Loop(clip) => clip.poster,
+            Media::Picture(picture) => picture.image,
+        }
+    }
+
+    /// Returns what it shows, for those who cannot see it.
+    pub const fn description(self) -> &'static str {
+        match self {
+            Media::Loop(clip) => clip.description,
+            Media::Picture(picture) => picture.description,
+        }
+    }
+
+    /// Returns the clip, if it is one.
+    pub const fn clip(self) -> Option<Clip> {
+        match self {
+            Media::Loop(clip) => Some(clip),
+            Media::Picture(_) => None,
+        }
+    }
+}
+
+/// A clip or a still with the headline it illustrates, the stage's or the
+/// spotlight's it shows beside.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Illustration {
+    /// The headline.
+    pub headline: &'static str,
+    /// What shows beside it.
+    pub media: Media,
 }
 
 /// A step of a project's story: a headline, a sentence, and a clip or a
@@ -242,20 +282,47 @@ pub struct Project {
     pub install: Option<Install>,
 }
 
-/// Returns the clip playing `video`, `poster` before it, described by `description`.
-const fn clip(video: &'static str, poster: &'static str, description: &'static str) -> Clip {
+/// Returns the clip playing `video`, `poster` before it, described by
+/// `description`, first published on `published`.
+const fn clip(
+    video: &'static str,
+    poster: &'static str,
+    description: &'static str,
+    published: Date,
+) -> Clip {
     Clip {
         video,
         poster,
         description,
+        published,
     }
 }
 
 /// Returns a looping clip playing `video`, `poster` before it, described by
-/// `description`.
-const fn shown(video: &'static str, poster: &'static str, description: &'static str) -> Media {
-    Media::Loop(clip(video, poster, description))
+/// `description`, first published on `published`.
+const fn shown(
+    video: &'static str,
+    poster: &'static str,
+    description: &'static str,
+    published: Date,
+) -> Media {
+    Media::Loop(clip(video, poster, description, published))
 }
+
+/// The day the page opened, with the film and the first clips.
+const OPENED: Date = Date {
+    year: 2026,
+    month: 10,
+    day: 20,
+};
+
+/// The day the page showed what LispM had gained since: the classic AIs
+/// and LispM Remote.
+const GAINED: Date = Date {
+    year: 2026,
+    month: 10,
+    day: 25,
+};
 
 /// The film, with sound, under the headline.
 pub const FILM: Clip = clip(
@@ -263,6 +330,7 @@ pub const FILM: Clip = clip(
     "assets/video/lispm-film.jpg",
     "A 57-second film: from the Lisp Machines to LispM Desktop, an agent fixing a failing test \
      inside Emacs, Claude Code, Codex and Hermes side by side, and windows dragged off the desktop.",
+    OPENED,
 );
 
 /// LispM's tagline.
@@ -311,6 +379,7 @@ const AGENTS_STAGES: [Stage; 3] = [
             "assets/video/agent.jpg",
             "An agent is asked to fix a failing test: it reads the code, asks first, writes the fix, \
              the tests pass, and it writes Emacs Lisp to open two files side by side.",
+            OPENED,
         ),
     },
     Stage {
@@ -321,6 +390,7 @@ const AGENTS_STAGES: [Stage; 3] = [
             "assets/video/agents.mp4",
             "assets/video/agents.jpg",
             "Claude Code, Codex and Hermes open beside a LispM agent, all running at once, listed in one sidebar.",
+            OPENED,
         ),
     },
     Stage {
@@ -386,6 +456,7 @@ const DESKTOP_STAGES: [Stage; 3] = [
             "assets/video/desktop.mp4",
             "assets/video/desktop.jpg",
             "LispM Desktop starts on its classic-style desktop, opens a project in Emacs, and shows its workspaces.",
+            OPENED,
         ),
     },
     Stage {
@@ -395,6 +466,7 @@ const DESKTOP_STAGES: [Stage; 3] = [
             "assets/video/windows.mp4",
             "assets/video/windows.jpg",
             "A window is dragged off the desktop, the desktop hides and comes back, and the theme turns to Dracula.",
+            OPENED,
         ),
     },
     Stage {
@@ -405,6 +477,7 @@ const DESKTOP_STAGES: [Stage; 3] = [
             "assets/video/browser.mp4",
             "assets/video/browser.jpg",
             "LispM Browser opens a page, goes to an address from the location field, and labels the links to follow them from the keyboard.",
+            OPENED,
         ),
     },
 ];
@@ -441,6 +514,7 @@ const DESKTOP_SPOTLIGHTS: [Spotlight; 2] = [
              LispM on Dark Reader's page adds it once the question in the minibuffer is answered, \
              the Lisp machine article turns dark, and Dark Reader's own toolbar button opens its \
              popup under it.",
+            OPENED,
         )),
         points: &EXTENSION_POINTS,
     },
@@ -497,6 +571,7 @@ const STORE_STAGES: [Stage; 2] = [
             "assets/video/classic-ai.jpg",
             "SHRDLU in LispM: told to find a block taller than the one it holds and put it into the \
              box, it plans the moves, and its hand carries the blocks across the table.",
+            GAINED,
         ),
     },
 ];
@@ -530,6 +605,7 @@ const REMOTE_STAGES: [Stage; 3] = [
             "assets/video/remote-pair.jpg",
             "LispM Remote shows a QR code on the desktop, a phone scans it, both screens show the \
              fingerprint 3981-CF90, and LispM approves the phone.",
+            GAINED,
         ),
     },
     Stage {
@@ -541,6 +617,7 @@ const REMOTE_STAGES: [Stage; 3] = [
             "assets/video/remote-approve.jpg",
             "On the phone, an agent works through a fix and asks to run make test; Allow is tapped, \
              and all three tests pass.",
+            GAINED,
         ),
     },
     Stage {
@@ -551,6 +628,7 @@ const REMOTE_STAGES: [Stage; 3] = [
             "assets/video/remote-windows.jpg",
             "The phone opens slug.el from LispM's windows, redrawn there, and the film says: no \
              server in between, peer to peer over Rings, sealed end to end.",
+            GAINED,
         ),
     },
 ];
@@ -658,6 +736,25 @@ pub const CHAPTERS: [Chapter; 5] = [
         repository: "https://github.com/LispMachineLab/lispm-security",
     },
 ];
+
+/// Returns every clip and still beside the chapters, top to bottom, each
+/// with the headline it illustrates: a chapter's stages, then its
+/// spotlights' clips. The film, above them all, is [`FILM`].
+pub fn illustrations() -> impl Iterator<Item = Illustration> {
+    CHAPTERS.iter().flat_map(|chapter| {
+        let stages = chapter.stages.iter().map(|stage| Illustration {
+            headline: stage.headline,
+            media: stage.media,
+        });
+        let spotlights = chapter.spotlights.iter().filter_map(|spotlight| {
+            spotlight.clip.map(|clip| Illustration {
+                headline: spotlight.headline,
+                media: Media::Loop(clip),
+            })
+        });
+        stages.chain(spotlights)
+    })
+}
 
 /// The projects LispM is made of, those that stand on their own in your
 /// own Emacs first.
@@ -896,233 +993,4 @@ pub const CREDITS: &str = "The film's photographs are from Wikimedia Commons; th
      licenses are credited at its end.";
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::path::Path;
-
-    /// Every section, top to bottom.
-    const ALL: [Anchor; 9] = [
-        Anchor::Film,
-        Anchor::Idea,
-        Anchor::Agents,
-        Anchor::Desktop,
-        Anchor::Store,
-        Anchor::Remote,
-        Anchor::Trust,
-        Anchor::Start,
-        Anchor::Questions,
-    ];
-
-    fn media() -> impl Iterator<Item = Media> {
-        CHAPTERS
-            .iter()
-            .flat_map(|c| c.stages.iter().map(|s| s.media))
-    }
-
-    fn spotlights() -> impl Iterator<Item = &'static Spotlight> {
-        CHAPTERS.iter().flat_map(|c| c.spotlights.iter())
-    }
-
-    fn clips() -> impl Iterator<Item = Clip> {
-        std::iter::once(FILM)
-            .chain(media().filter_map(|m| match m {
-                Media::Loop(clip) => Some(clip),
-                Media::Picture(_) => None,
-            }))
-            .chain(spotlights().filter_map(|s| s.clip))
-    }
-
-    fn pictures() -> impl Iterator<Item = Picture> {
-        media().filter_map(|m| match m {
-            Media::Picture(picture) => Some(picture),
-            Media::Loop(_) => None,
-        })
-    }
-
-    #[test]
-    fn anchors_have_distinct_ids() {
-        for (i, a) in ALL.iter().enumerate() {
-            for b in ALL.iter().skip(i + 1) {
-                assert_ne!(a.id(), b.id());
-            }
-        }
-    }
-
-    #[test]
-    fn every_chapter_has_its_own_section() {
-        for (i, a) in CHAPTERS.iter().enumerate() {
-            assert!(ALL.contains(&a.anchor), "{}", a.eyebrow);
-            for b in CHAPTERS.iter().skip(i + 1) {
-                assert_ne!(a.anchor, b.anchor);
-            }
-        }
-    }
-
-    #[test]
-    fn every_clip_and_poster_is_in_the_assets() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-        for clip in clips() {
-            assert!(
-                clip.video.ends_with(".mp4") && root.join(clip.video).is_file(),
-                "{}",
-                clip.video
-            );
-            assert!(
-                clip.poster.ends_with(".jpg") && root.join(clip.poster).is_file(),
-                "{}",
-                clip.poster
-            );
-            assert!(!clip.description.is_empty());
-        }
-    }
-
-    #[test]
-    fn every_picture_is_in_the_assets_at_its_size() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-        let mut seen = 0;
-        for picture in pictures() {
-            let bytes = std::fs::read(root.join(picture.image)).unwrap_or_default();
-            assert_eq!(
-                crate::blog::size::webp(&bytes),
-                Some((picture.width, picture.height)),
-                "{}",
-                picture.image
-            );
-            assert!(!picture.description.is_empty());
-            seen += 1;
-        }
-        assert!(seen > 0);
-    }
-
-    #[test]
-    fn every_clip_is_told_once() {
-        let all = clips().map(|clip| clip.video).collect::<Vec<_>>();
-        for (i, a) in all.iter().enumerate() {
-            assert!(!all.iter().skip(i + 1).any(|b| b == a), "{a}");
-        }
-    }
-
-    #[test]
-    fn links_stay_in_the_organization() {
-        for link in PROJECTS
-            .iter()
-            .map(|p| p.repository)
-            .chain(CHAPTERS.iter().map(|c| c.repository))
-            .chain([ORGANIZATION, BACKENDS])
-        {
-            assert!(link.starts_with(ORGANIZATION), "{link}");
-        }
-    }
-
-    #[test]
-    fn snippets_install_from_their_own_repository() {
-        for project in PROJECTS {
-            if let Some(install) = project.install {
-                assert!(
-                    install.snippet.code.contains(project.repository),
-                    "{}",
-                    project.name
-                );
-                assert!(!install.snippet.code.ends_with('\n'), "{}", project.name);
-            }
-        }
-    }
-
-    #[test]
-    fn the_projects_on_their_own_come_first() {
-        let first_without = PROJECTS
-            .iter()
-            .position(|p| p.install.is_none())
-            .unwrap_or(PROJECTS.len());
-        assert!(
-            PROJECTS
-                .iter()
-                .skip(first_without)
-                .all(|p| p.install.is_none())
-        );
-        assert!(first_without > 0);
-    }
-
-    #[test]
-    fn every_chapter_makes_its_points() {
-        for chapter in CHAPTERS {
-            assert!(!chapter.points.is_empty(), "{}", chapter.eyebrow);
-        }
-    }
-
-    #[test]
-    fn the_experimental_lines_are_the_install_line_choosing_an_emacs() {
-        for (emacs, line) in [("32", INSTALL_EXPERIMENTAL.code), ("31", INSTALL_BACK)] {
-            assert_eq!(
-                line,
-                INSTALL
-                    .code
-                    .replace("| sh", &format!("| LISPM_EMACS={emacs} sh"))
-            );
-        }
-    }
-
-    #[test]
-    fn the_install_line_runs_the_installer_served_here() {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-        assert_eq!(INSTALL.code, format!("curl -fsSL {SITE}{INSTALLER} | sh"));
-        let served =
-            std::fs::read_to_string(root.join("static").join(INSTALLER)).unwrap_or_default();
-        assert!(served.starts_with("#!/bin/sh\n"));
-        let source = INSTALLER_SOURCE
-            .replace("github.com", "raw.githubusercontent.com")
-            .replace("/blob/main/", "/${release:-main}/");
-        assert!(served.contains(&source), "{source}");
-        assert!(
-            served.contains(
-                "https://api.github.com/repos/LispMachineLab/lispm-desktop/releases/latest"
-            )
-        );
-        let index = std::fs::read_to_string(root.join("index.html")).unwrap_or_default();
-        assert!(index.contains(&format!("rel=\"copy-file\" href=\"static/{INSTALLER}\"")));
-        assert!(INSTALLER_SOURCE.starts_with(ORGANIZATION));
-    }
-
-    #[test]
-    fn the_steps_hold_the_install_line_once() {
-        let lines = DOWNLOAD_STEPS
-            .iter()
-            .filter_map(|step| step.snippet)
-            .collect::<Vec<_>>();
-        assert_eq!(lines, [INSTALL]);
-        assert!(
-            Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join(APP_ICON)
-                .is_file()
-        );
-    }
-
-    #[test]
-    fn hrefs_point_at_ids() {
-        assert_eq!(Anchor::Start.href(), "#start");
-        assert_eq!(Anchor::Agents.href(), "#agent");
-    }
-
-    #[test]
-    fn everywhere_lispm_is_told_it_is_built_on_emacs_and_the_lisp_machine() {
-        for text in [DESCRIPTION, DEFINITION, IDEA] {
-            assert!(
-                text.contains("Emacs") && text.contains("Lisp Machine"),
-                "{text}"
-            );
-        }
-        let first = QUESTIONS.first().map(|question| question.answer);
-        assert!(first.is_some_and(|answer| answer.starts_with(DEFINITION)));
-        for question in QUESTIONS {
-            assert!(question.question.ends_with('?'), "{}", question.question);
-            assert!(!question.answer.is_empty());
-        }
-    }
-
-    #[test]
-    fn the_title_and_description_fit_where_search_engines_show_them() {
-        assert!(TITLE.chars().count() <= 60, "{TITLE}");
-        assert!(DESCRIPTION.chars().count() <= 160, "{DESCRIPTION}");
-        assert!(REQUIREMENTS.starts_with(OPERATING_SYSTEM));
-    }
-}
+mod tests;
