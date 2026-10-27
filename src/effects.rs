@@ -1,6 +1,6 @@
 //! The site's boundary with the browser: the clipboard, the motion the
-//! visitor prefers, and playing videos. Nothing else touches the page
-//! but Yew's rendering.
+//! visitor prefers, the system it runs on, and playing videos. Nothing else
+//! touches the page but Yew's rendering.
 
 use wasm_bindgen_futures::{JsFuture, spawn_local};
 use web_sys::wasm_bindgen::closure::Closure;
@@ -11,6 +11,7 @@ use web_sys::{
 
 use std::rc::Rc;
 
+use crate::content::Platform;
 use crate::copy::CopyError;
 use crate::playback::PlayError;
 
@@ -27,6 +28,14 @@ pub fn prefers_reduced_motion() -> bool {
                 .flatten()
         })
         .is_some_and(|query| query.matches())
+}
+
+/// Returns the system the visitor's browser runs on, the Mac when it does
+/// not say.
+pub fn platform() -> Platform {
+    web_sys::window()
+        .and_then(|window| window.navigator().user_agent().ok())
+        .map_or(Platform::Mac, |agent| Platform::of_user_agent(&agent))
 }
 
 /// Scrolls to the section the address names after `#`, if any. The browser

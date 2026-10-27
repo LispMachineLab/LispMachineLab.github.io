@@ -14,10 +14,10 @@ use std::fmt::{self, Write as _};
 use crate::content::{
     Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DOWNLOAD_LEAD,
     DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
-    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES,
-    INSTALLER_SOURCE, Illustration, LICENSE, Media, OPERATING_SYSTEM, ORGANIZATION, OWN_EMACS,
-    OWN_EMACS_HEADLINE, PROJECTS, Point, Project, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS,
-    SITE, TAGLINE, TITLE, X, illustrations,
+    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER,
+    INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Illustration, LICENSE, Media,
+    ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Platform, Point, Project, QUESTIONS,
+    QUESTIONS_HEADLINE, REQUIREMENTS, SITE, TAGLINE, TITLE, X, illustrations,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -288,9 +288,18 @@ fn source_code(project: &Project) -> String {
     )
 }
 
-/// Returns LispM.app as a schema.org SoftwareApplication: free, for the Mac,
-/// installed by the line on the page, its screenshots the stills beside the
-/// chapters. The film's poster, a title, is no screenshot.
+/// Returns the systems LispM runs on, each with its releases and processors.
+fn operating_systems() -> String {
+    Platform::ALL
+        .iter()
+        .map(|platform| format!("{}: {}", platform.name(), platform.requirements()))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Returns LispM as a schema.org SoftwareApplication: free, for the Mac and
+/// GNU/Linux, installed by the line on the page, its screenshots the stills
+/// beside the chapters. The film's poster, a title, is no screenshot.
 fn application() -> String {
     format!(
         "{{\"@type\":\"SoftwareApplication\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
@@ -302,7 +311,7 @@ fn application() -> String {
         json_string(&Node::Application.id()),
         json_string(SITE),
         json_string(&format!("{DEFINITION} {DOWNLOAD_LEAD}")),
-        json_string(OPERATING_SYSTEM),
+        json_string(&operating_systems()),
         json_string(&format!("{SITE}{INSTALLER}")),
         json_string(&format!("{SITE}{}", Anchor::Start.href())),
         json_array(illustrations().map(screenshot)),
@@ -404,9 +413,18 @@ fn markdown_projects() -> String {
     out
 }
 
-/// Returns how to install LispM.app, as a Markdown section.
+/// Returns how to install LispM, as a Markdown section.
 fn markdown_download() -> String {
-    let mut out = format!("## Download LispM for Mac\n\n{DOWNLOAD_LEAD} {REQUIREMENTS}\n\n");
+    let mut out = format!("## Download LispM\n\n{DOWNLOAD_LEAD} {REQUIREMENTS}\n\n");
+    for platform in Platform::ALL {
+        let _ = writeln!(
+            out,
+            "- **{}**: {}",
+            platform.name(),
+            platform.requirements()
+        );
+    }
+    out.push('\n');
     for (number, step) in DOWNLOAD_STEPS.iter().enumerate() {
         let _ = write!(out, "{}. **{}**", number + 1, step.title);
         if !step.text.is_empty() {
@@ -422,9 +440,16 @@ fn markdown_download() -> String {
             );
         }
     }
+    let _ = write!(
+        out,
+        "\nThe line runs [install.sh]({INSTALLER_SOURCE}), which{INSTALLER_DOES}"
+    );
+    for platform in Platform::ALL {
+        let _ = write!(out, " {}", platform.installer());
+    }
     let _ = writeln!(
         out,
-        "\nThe line runs [install.sh]({INSTALLER_SOURCE}), which{INSTALLER_DOES}\n"
+        " {INSTALLER_UPDATES} To uninstall, see [LispM Desktop's installation guide]({INSTALLATION}).\n"
     );
     let _ = writeln!(
         out,
@@ -568,6 +593,9 @@ mod tests {
             ld.matches("\"@type\":\"Question\"").count(),
             QUESTIONS.len()
         );
+        for platform in Platform::ALL {
+            assert!(ld.contains(platform.requirements()), "{}", platform.name());
+        }
         assert!(ld.contains(&format!(
             "\"sameAs\":[{},{}]",
             json_string(ORGANIZATION),
@@ -662,6 +690,14 @@ mod tests {
         assert!(text.contains("Focus Mode, a Lisp Machine's console."));
         assert!(text.contains("Chrome extensions, inside Emacs."));
         assert!(text.contains(INSTALL_EXPERIMENTAL.code));
+        for platform in Platform::ALL {
+            assert!(
+                text.contains(platform.requirements()),
+                "{}",
+                platform.name()
+            );
+            assert!(text.contains(platform.installer()), "{}", platform.name());
+        }
         assert!(text.starts_with(&format!("# LispM\n\n> {DEFINITION}\n")));
         for question in QUESTIONS {
             assert!(text.contains(&format!("### {}\n\n{}", question.question, question.answer)));

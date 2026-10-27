@@ -1,5 +1,5 @@
 #!/bin/sh
-# Install LispM on macOS, or bring it up to date:
+# Install LispM on macOS or GNU/Linux, or bring it up to date:
 #
 #   curl -fsSL https://lispm.ai/install.sh | sh
 #

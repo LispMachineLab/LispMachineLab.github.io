@@ -244,5 +244,77 @@ fn everywhere_lispm_is_told_it_is_built_on_emacs_and_the_lisp_machine() {
 fn the_title_and_description_fit_where_search_engines_show_them() {
     assert!(TITLE.chars().count() <= 60, "{TITLE}");
     assert!(DESCRIPTION.chars().count() <= 160, "{DESCRIPTION}");
-    assert!(REQUIREMENTS.starts_with(OPERATING_SYSTEM));
+}
+
+#[test]
+fn a_desktop_on_gnu_linux_is_offered_linux_and_every_other_browser_the_mac() {
+    for (agent, platform) in [
+        (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) \
+             Chrome/141.0.0.0 Safari/537.36",
+            Platform::Linux,
+        ),
+        (
+            "Mozilla/5.0 (X11; Ubuntu; Linux aarch64; rv:144.0) Gecko/20100101 Firefox/144.0",
+            Platform::Linux,
+        ),
+        (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 \
+             (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+            Platform::Mac,
+        ),
+        (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
+             (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+            Platform::Mac,
+        ),
+        (
+            "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) \
+             Chrome/141.0.0.0 Mobile Safari/537.36",
+            Platform::Mac,
+        ),
+        (
+            "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 \
+             (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+            Platform::Mac,
+        ),
+        (
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 \
+             (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1",
+            Platform::Mac,
+        ),
+        ("", Platform::Mac),
+    ] {
+        assert_eq!(Platform::of_user_agent(agent), platform, "{agent}");
+    }
+}
+
+#[test]
+fn every_platform_is_told_what_it_needs_and_what_the_line_does_there() {
+    for platform in Platform::ALL {
+        assert!(
+            platform
+                .download()
+                .ends_with(platform.name().trim_start_matches("GNU/"))
+        );
+        assert!(
+            platform.requirements().ends_with('.'),
+            "{}",
+            platform.name()
+        );
+        assert!(
+            platform.installer().starts_with("On "),
+            "{}",
+            platform.name()
+        );
+    }
+    assert!(Platform::Linux.installer().contains("/opt/lispm/emacs"));
+    assert!(DOWNLOAD_LEAD.contains(Platform::Linux.name()));
+    assert!(DESCRIPTION.contains("Mac and Linux"));
+    assert!(
+        QUESTIONS
+            .iter()
+            .all(|question| !question.answer.contains("Mac app"))
+    );
+    assert!(INSTALLATION.starts_with(ORGANIZATION));
 }
