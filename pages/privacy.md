@@ -15,12 +15,11 @@ server that receives your mail, and never sees it.
 ### What it reads and does
 
 When you add an account, LispM Mail logs in to your provider's mail servers, IMAP to read and
-SMTP to send, with your password or, for Gmail and Outlook.com, with the token their own
-sign-in page gives it. From Google it asks for one permission, `https://mail.google.com/`,
-the only one with which a mail program can read and send mail over IMAP and SMTP. With it,
-LispM Mail lists your mailboxes and messages and shows them; sends the messages you write;
-keeps your drafts and sent mail in their mailboxes; and marks, moves or deletes messages when
-you tell it to.
+SMTP to send, with your password or, for Gmail, with the token Google's own sign-in page gives
+it. From Google it asks for one permission, `https://mail.google.com/`, the only one with which
+a mail program can read and send mail over IMAP and SMTP. With it, LispM Mail lists your
+mailboxes and messages and shows them; sends the messages you write; keeps your drafts and sent
+mail in their mailboxes; and marks, moves or deletes messages when you tell it to.
 
 ### Where it keeps it
 
@@ -52,10 +51,9 @@ to the AI model you chose for it, as you asked, under that model provider's term
 
 ### Removing it
 
-Removing an account in LispM Mail's settings deletes its sign-in and the mail kept of it on
+Removing an account in LispM Mail's settings deletes its sign-in and the copy of its mail on
 your computer. To take back LispM Mail's access to your Google account, go to
-[myaccount.google.com/permissions](https://myaccount.google.com/permissions); to your Microsoft
-account, [account.live.com/consent/Manage](https://account.live.com/consent/Manage).
+[myaccount.google.com/permissions](https://myaccount.google.com/permissions).
 
 ### Google user data
 

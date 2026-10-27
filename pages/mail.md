@@ -11,7 +11,6 @@ Type your address, and LispM Mail fills in its servers.
 
 - **Gmail and Google Workspace** sign in on Google's own page, in your browser. LispM Mail
   never sees your Google password.
-- **Outlook.com and Hotmail** sign in on Microsoft's page the same way.
 - **iCloud, Yahoo, Fastmail, QQ Mail, NetEase** and other providers log in with the password
   their settings make for mail programs.
 
@@ -19,10 +18,10 @@ Type your address, and LispM Mail fills in its servers.
 
 ## Private by design
 
-Your mail goes only between your computer and your provider, and stays on your computer.
-LispM Mail has no server of its own, sends nothing to us, shows no ads, and loads pictures from
-the web only when you ask. Removing an account deletes its sign-in and the mail kept of it.
-The [privacy policy](/privacy/) says exactly what LispM Mail reads, keeps and sends.
+Your mail goes only between your computer and your provider, and stays on your computer. LispM
+Mail has no server of its own, sends nothing to us, shows no ads, and loads pictures from the
+web only when you ask. Removing an account deletes its sign-in and the copy of its mail on your
+computer. The [privacy policy](/privacy/) says exactly what LispM Mail reads, keeps and sends.
 
 ### What it asks of Google
 
