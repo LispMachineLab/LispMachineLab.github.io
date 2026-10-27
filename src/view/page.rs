@@ -1,7 +1,7 @@
 //! The page, top to bottom: the navigation bar, the headline and film, the
 //! idea, the chapters, how to start, the questions people ask, and the
-//! footer. The blog's pages
-//! share its navigation bar and footer.
+//! footer. The blog's pages, and the pages that stand alone, share its
+//! navigation bar and footer.
 
 use yew::prelude::*;
 
@@ -10,8 +10,8 @@ use crate::content::{
     DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
     IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER_DOES,
     INSTALLER_SOURCE, INSTALLER_UPDATES, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE,
-    PLATFORMS, PROJECTS, Platform, Point, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS, SUMMARY,
-    Spotlight, Step, TAGLINE, X,
+    PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS,
+    SUMMARY, Spotlight, Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -30,7 +30,8 @@ pub(crate) enum Place {
     Home,
     /// The blog, or a post in it.
     Blog,
-    /// Any other page: the one shown at addresses not on the site.
+    /// Any other page: one that stands alone, as LispM Mail's and the
+    /// privacy policy do, or the one shown at addresses not on the site.
     Elsewhere,
 }
 
@@ -327,7 +328,8 @@ fn questions() -> Html {
     }
 }
 
-/// Returns the footer of a page at `place`; the home page's credits its film.
+/// Returns the footer of a page at `place`, linking the privacy policy as
+/// every page does; the home page's credits its film.
 pub(crate) fn footer(place: Place) -> Html {
     html! {
         <footer class="footer">
@@ -342,6 +344,7 @@ pub(crate) fn footer(place: Place) -> Html {
                 <li>{ outward(ORGANIZATION, "", "LispMachineLab") }</li>
                 <li>{ outward(X, "", "@lispm_ai on X") }</li>
                 <li><a href={BLOG}>{ "Blog" }</a></li>
+                <li><a href={PRIVACY}>{ "Privacy" }</a></li>
             </ul>
             <p>{ "Free software, under the GNU Affero General Public License, version 3 or later." }</p>
             if place == Place::Home {

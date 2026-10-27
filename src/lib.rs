@@ -13,8 +13,9 @@
 //! from the same components at build time.
 //!
 //! `blog` holds the blog's posts, LispM's Articles from X, and makes their
-//! pages; prerender draws them at build time as plain pages, so it is built
-//! natively only.
+//! pages; `pages` holds the pages that stand alone, LispM Mail's and the
+//! privacy policy. Prerender draws them all at build time as plain pages,
+//! so both are built natively only.
 
 #![deny(missing_docs)]
 
@@ -24,6 +25,8 @@ pub mod content;
 pub mod copy;
 pub mod date;
 pub mod effects;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod pages;
 pub mod playback;
 pub mod publish;
 #[cfg(test)]

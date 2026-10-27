@@ -2,8 +2,10 @@
 //! WebAssembly loads, and writes llms.txt beside it, and llms-full.txt, the
 //! same with every post's words; writes the blog's pages, the list at
 //! blog/index.html and each post at blog/<slug>/index.html, and its feed at
-//! blog/feed.xml; writes 404.html, the page shown at addresses not on the
-//! site; and writes the site's map, sitemap.xml. Trunk runs it after every
+//! blog/feed.xml; writes the pages that stand alone, LispM Mail's at
+//! mail/index.html and the privacy policy at privacy/index.html; writes
+//! 404.html, the page shown at addresses not on the site; and writes the
+//! site's map, sitemap.xml. Trunk runs it after every
 //! build (see Trunk.toml), naming the directory in `TRUNK_STAGING_DIR`; it
 //! can also be given the directory as its argument.
 
@@ -18,9 +20,11 @@ mod native {
     use lispm_site::blog::POSTS;
     use lispm_site::blog::feed;
     use lispm_site::blog::publish::{self as blog, BlogError};
+    use lispm_site::pages::{self, PAGES};
     use lispm_site::publish::{self, PublishError};
     use lispm_site::view::blog::{Blog, Missing, PostPage, PostProps};
     use lispm_site::view::page::App;
+    use lispm_site::view::pages::{Standalone, StandaloneProps};
     use yew::{BaseComponent, LocalServerRenderer};
 
     /// Why the page was not prerendered.
@@ -116,6 +120,24 @@ mod native {
         Ok(())
     }
 
+    /// Writes the pages that stand alone, each at its path under `directory`,
+    /// sharing `links`.
+    fn write_pages(directory: &Path, links: &str) -> Result<(), Failure> {
+        for page in &PAGES {
+            let html = render(
+                LocalServerRenderer::<Standalone>::with_props(StandaloneProps { page })
+                    .hydratable(false),
+            )?;
+            write_page(
+                &directory.join(page.path.trim_matches('/')),
+                &blog::page_head(page),
+                links,
+                &html,
+            )?;
+        }
+        Ok(())
+    }
+
     fn prerender() -> Result<(), Failure> {
         let directory = staging_directory()?;
         let index_path = directory.join("index.html");
@@ -126,7 +148,12 @@ mod native {
         let html =
             publish::insert_page(&index, &page, &publish::head()).map_err(Failure::Publish)?;
         write(&index_path, &html)?;
-        let llms = format!("{}\n{}", publish::llms_txt(), blog::llms_section());
+        let llms = format!(
+            "{}\n{}\n{}",
+            publish::llms_txt(),
+            pages::llms_section(),
+            blog::llms_section()
+        );
         let [short, full] = blog::LLMS.map(|path| directory.join(path.trim_start_matches('/')));
         write(&short, &llms)?;
         write(&full, &format!("{llms}\n{}", blog::llms_posts()))?;
@@ -136,6 +163,7 @@ mod native {
             &directory.join("404.html"),
             &blog::document(&blog::missing_head(), &links, &missing),
         )?;
+        write_pages(&directory, &links)?;
         write_blog(&directory, &links)
     }
 

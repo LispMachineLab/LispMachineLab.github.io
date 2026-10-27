@@ -1,6 +1,7 @@
 //! Tests of the card shared links show: index.html names it in its Open
 //! Graph and Twitter tags, it is in the assets, and it is the size the tags
-//! say, 1200 by 630. So are the cards of the blog's pages.
+//! say, 1200 by 630. So are the cards of the blog's pages; the pages that
+//! stand alone show the home page's.
 
 use std::path::{Path, PathBuf};
 
@@ -93,6 +94,25 @@ fn every_page_of_the_blog_has_its_card_at_that_size() {
         let bytes = std::fs::read(&path).unwrap_or_default();
         assert_eq!(png_size(&bytes), Some((1200, 630)), "{card}");
         assert!(!alt.is_empty(), "{card}");
+    }
+}
+
+#[test]
+fn the_pages_that_stand_alone_show_the_home_pages_card() {
+    let html = index();
+    let card = crate::pages::CARD;
+    assert_eq!(
+        meta(&html, "property", "og:image"),
+        Some(crate::blog::absolute(card.src))
+    );
+    for (key, name) in [("property", "og:image:alt"), ("name", "twitter:image:alt")] {
+        assert_eq!(meta(&html, key, name).as_deref(), Some(card.alt), "{name}");
+    }
+    for page in &crate::pages::PAGES {
+        assert_eq!(
+            crate::blog::publish::page_head(page).card,
+            (card.src, card.alt)
+        );
     }
 }
 
