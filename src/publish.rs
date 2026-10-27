@@ -1,16 +1,23 @@
 //! What is written beside the page for crawlers and language models, all
 //! from [`crate::content`]: the page rendered into index.html before
-//! WebAssembly loads, JSON-LD describing the site and the projects LispM is
-//! made of, and llms.txt, the page as Markdown.
+//! WebAssembly loads, JSON-LD describing the site, LispM, the projects it
+//! is made of and the screenshots and videos that show it, and llms.txt,
+//! the page as Markdown.
+//!
+//! The JSON-LD is one graph of nodes that name each other by id: LispM, the
+//! organization, is the same node on every page, the blog's included, so
+//! search engines and language models know the site, the app, the posts
+//! and the accounts on GitHub and X as one thing.
 
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    BACKENDS, CHAPTERS, CREDITS, Chapter, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL,
-    EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
-    INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE,
-    INSTALLER_UPDATES, LICENSE, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Platform,
-    Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE, X,
+    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DOWNLOAD_LEAD,
+    DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
+    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER,
+    INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Illustration, LICENSE, Media,
+    ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Platform, Point, Project, QUESTIONS,
+    QUESTIONS_HEADLINE, REQUIREMENTS, SITE, TAGLINE, TITLE, X, illustrations,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -76,18 +83,199 @@ pub(crate) fn json_string(text: &str) -> String {
 }
 
 /// Returns a JSON array of `items`, each already JSON.
-fn json_array(items: impl Iterator<Item = String>) -> String {
+pub(crate) fn json_array(items: impl Iterator<Item = String>) -> String {
     format!("[{}]", items.collect::<Vec<_>>().join(","))
+}
+
+/// LispM's mark, the rainbow λ, from the root, and its side in pixels.
+pub(crate) const LOGO: (&str, u32) = ("assets/lispm-lambda.png", 1254);
+
+/// GNU Emacs, what LispM is built on: its home, and the encyclopedia's page
+/// that names it.
+const EMACS: (&str, &str) = (
+    "https://www.gnu.org/software/emacs/",
+    "https://en.wikipedia.org/wiki/Emacs",
+);
+
+/// The encyclopedia's page on the Lisp Machine, whose ideas LispM carries:
+/// named as what the page mentions, not as LispM, which it is not.
+const LISP_MACHINE: &str = "https://en.wikipedia.org/wiki/Lisp_machine";
+
+/// What LispM is about, as words to search it by.
+const KEYWORDS: &str = "AI agent harness, AI agents, Emacs, GNU Emacs, Lisp Machine, Lisp, Emacs \
+     Lisp, Claude Code, Codex, org-mode";
+
+/// The JSON-LD nodes that every page names by id.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Node {
+    /// LispM, the organization behind the site, the app and the posts.
+    Organization,
+    /// The site.
+    WebSite,
+    /// LispM.app.
+    Application,
+}
+
+impl Node {
+    /// Returns the node's id: the site's address and a fragment.
+    pub(crate) fn id(self) -> String {
+        let fragment = match self {
+            Node::Organization => "organization",
+            Node::WebSite => "website",
+            Node::Application => "app",
+        };
+        format!("{SITE}#{fragment}")
+    }
+
+    /// Returns a reference to the node, by its id.
+    pub(crate) fn reference(self) -> String {
+        format!("{{\"@id\":{}}}", json_string(&self.id()))
+    }
+}
+
+/// Returns a JSON-LD document of `nodes`, each already JSON.
+pub(crate) fn graph(nodes: impl Iterator<Item = String>) -> String {
+    format!(
+        "{{\"@context\":\"https://schema.org\",\"@graph\":{}}}",
+        json_array(nodes)
+    )
+}
+
+/// Returns LispM, the organization, as a schema.org Organization: its name
+/// as people know it, LispMachineLab as GitHub does, its mark, and its
+/// accounts.
+pub(crate) fn organization() -> String {
+    let (logo, side) = LOGO;
+    format!(
+        "{{\"@type\":\"Organization\",\"@id\":{},\"name\":\"LispM\",\
+         \"alternateName\":\"LispMachineLab\",\"url\":{},\"logo\":{{\"@type\":\"ImageObject\",\
+         \"url\":{},\"width\":{side},\"height\":{side}}},\"sameAs\":{}}}",
+        json_string(&Node::Organization.id()),
+        json_string(SITE),
+        json_string(&format!("{SITE}{logo}")),
+        json_array([ORGANIZATION, X].into_iter().map(json_string)),
+    )
+}
+
+/// Returns the site as a schema.org WebSite.
+fn website() -> String {
+    format!(
+        "{{\"@type\":\"WebSite\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"publisher\":{}}}",
+        json_string(&Node::WebSite.id()),
+        json_string(SITE),
+        json_string(DEFINITION),
+        Node::Organization.reference(),
+    )
+}
+
+/// Returns GNU Emacs as a schema.org SoftwareApplication.
+fn emacs() -> String {
+    let (home, encyclopedia) = EMACS;
+    format!(
+        "{{\"@type\":\"SoftwareApplication\",\"name\":\"GNU Emacs\",\"url\":{},\"sameAs\":{}}}",
+        json_string(home),
+        json_string(encyclopedia),
+    )
+}
+
+/// Returns the questions as schema.org Questions, each with its answer.
+fn questions() -> String {
+    json_array(QUESTIONS.iter().map(|question| {
+        format!(
+            "{{\"@type\":\"Question\",\"name\":{},\"acceptedAnswer\":{{\"@type\":\"Answer\",\
+             \"text\":{}}}}}",
+            json_string(question.question),
+            json_string(question.answer),
+        )
+    }))
+}
+
+/// Returns the home page as a schema.org WebPage, about LispM.app, that is
+/// also a FAQPage: the questions people ask about it, answered. It mentions
+/// Emacs and the Lisp Machine, so LispM is known apart from the machines of
+/// the 1970s that share its name, and names its videos by their ids.
+fn home_page() -> String {
+    format!(
+        "{{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":{site},\"url\":{site},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"mentions\":[{},{{\"@type\":\"Thing\",\"name\":\"Lisp machine\",\"sameAs\":{}}}],\
+         \"video\":{},\"mainEntity\":{}}}",
+        json_string(TITLE),
+        json_string(DESCRIPTION),
+        Node::WebSite.reference(),
+        Node::Application.reference(),
+        emacs(),
+        json_string(LISP_MACHINE),
+        json_array(
+            videos().map(|(_, clip)| format!("{{\"@id\":{}}}", json_string(&video_id(clip))))
+        ),
+        questions(),
+        site = json_string(SITE),
+    )
+}
+
+/// Returns the film and every clip beside the chapters, top to bottom, each
+/// with the headline it illustrates: the film's is the page's, the tagline.
+fn videos() -> impl Iterator<Item = (&'static str, Clip)> {
+    std::iter::once((TAGLINE, FILM)).chain(illustrations().filter_map(|illustration| {
+        illustration
+            .media
+            .clip()
+            .map(|clip| (illustration.headline, clip))
+    }))
+}
+
+/// Returns the id of `clip`'s VideoObject node: the video's address.
+fn video_id(clip: Clip) -> String {
+    format!("{SITE}{}", clip.video)
+}
+
+/// Returns a clip as a schema.org VideoObject, about LispM.app: named by the
+/// headline it illustrates, its poster the thumbnail, dated the day it was
+/// first published on the page.
+fn video((headline, clip): (&str, Clip)) -> String {
+    format!(
+        "{{\"@type\":\"VideoObject\",\"@id\":{url},\"name\":{},\"description\":{},\
+         \"thumbnailUrl\":{},\"contentUrl\":{url},\"encodingFormat\":\"video/mp4\",\
+         \"uploadDate\":{},\"about\":{},\"publisher\":{}}}",
+        json_string(headline),
+        json_string(clip.description),
+        json_string(&format!("{SITE}{}", clip.poster)),
+        json_string(&clip.published.iso()),
+        Node::Application.reference(),
+        Node::Organization.reference(),
+        url = json_string(&video_id(clip)),
+    )
+}
+
+/// Returns a clip or a still beside the chapters as a schema.org
+/// ImageObject: the still it shows first, a clip's poster or the picture,
+/// named by the headline it illustrates, its caption what it shows, and a
+/// picture's size.
+fn screenshot(illustration: Illustration) -> String {
+    let size = match illustration.media {
+        Media::Picture(picture) => {
+            format!(",\"width\":{},\"height\":{}", picture.width, picture.height)
+        }
+        Media::Loop(_) => String::new(),
+    };
+    format!(
+        "{{\"@type\":\"ImageObject\",\"url\":{},\"name\":{},\"caption\":{}{size}}}",
+        json_string(&format!("{SITE}{}", illustration.media.still())),
+        json_string(illustration.headline),
+        json_string(illustration.media.description()),
+    )
 }
 
 /// Returns a project as a schema.org SoftwareSourceCode.
 fn source_code(project: &Project) -> String {
     format!(
-        "{{\"@type\":\"SoftwareSourceCode\",\"name\":{},\"description\":{},\"codeRepository\":{},\
-         \"programmingLanguage\":{},\"license\":{},\"runtimePlatform\":\"GNU Emacs\"}}",
+        "{{\"@type\":\"SoftwareSourceCode\",\"@id\":{repository},\"name\":{},\
+         \"description\":{},\"codeRepository\":{repository},\"programmingLanguage\":{},\
+         \"license\":{},\"runtimePlatform\":\"GNU Emacs\",\"publisher\":{}}}",
         json_string(project.name),
         json_string(project.description),
-        json_string(project.repository),
         json_array(
             project
                 .languages
@@ -95,6 +283,8 @@ fn source_code(project: &Project) -> String {
                 .map(|language| json_string(language))
         ),
         json_string(LICENSE),
+        Node::Organization.reference(),
+        repository = json_string(project.repository),
     )
 }
 
@@ -107,31 +297,39 @@ fn operating_systems() -> String {
         .join(" ")
 }
 
-/// Returns LispM as a schema.org SoftwareApplication.
+/// Returns LispM as a schema.org SoftwareApplication: free, for the Mac and
+/// GNU/Linux, installed by the line on the page, its screenshots the stills
+/// beside the chapters. The film's poster, a title, is no screenshot.
 fn application() -> String {
     format!(
-        "{{\"@type\":\"SoftwareApplication\",\"name\":\"LispM\",\"description\":{},\
-         \"applicationCategory\":\"DeveloperApplication\",\"operatingSystem\":{},\
-         \"downloadUrl\":{},\"isAccessibleForFree\":true,\"license\":{}}}",
-        json_string(DOWNLOAD_LEAD),
+        "{{\"@type\":\"SoftwareApplication\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
+         \"description\":{},\"applicationCategory\":\"DeveloperApplication\",\
+         \"operatingSystem\":{},\"downloadUrl\":{},\"installUrl\":{},\"screenshot\":{},\
+         \"offers\":{{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"USD\"}},\
+         \"isAccessibleForFree\":true,\"license\":{},\"publisher\":{},\"isBasedOn\":{},\
+         \"keywords\":{}}}",
+        json_string(&Node::Application.id()),
+        json_string(SITE),
+        json_string(&format!("{DEFINITION} {DOWNLOAD_LEAD}")),
         json_string(&operating_systems()),
         json_string(&format!("{SITE}{INSTALLER}")),
+        json_string(&format!("{SITE}{}", Anchor::Start.href())),
+        json_array(illustrations().map(screenshot)),
         json_string(LICENSE),
+        Node::Organization.reference(),
+        emacs(),
+        json_string(KEYWORDS),
     )
 }
 
-/// Returns the JSON-LD describing the site, LispM.app and its projects.
+/// Returns the JSON-LD describing LispM, the site, the home page, LispM.app,
+/// the projects it is made of and the videos that show it.
 pub fn json_ld() -> String {
-    format!(
-        "{{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"LispM\",\"url\":{},\
-         \"headline\":{},\"description\":{},\"publisher\":{{\"@type\":\"Organization\",\
-         \"name\":\"LispMachineLab\",\"url\":{},\"sameAs\":{}}},\"about\":{}}}",
-        json_string(SITE),
-        json_string(TAGLINE),
-        json_string(SUMMARY),
-        json_string(ORGANIZATION),
-        json_array([ORGANIZATION, X].into_iter().map(json_string)),
-        json_array(std::iter::once(application()).chain(PROJECTS.iter().map(source_code))),
+    graph(
+        [organization(), website(), home_page(), application()]
+            .into_iter()
+            .chain(PROJECTS.iter().map(source_code))
+            .chain(videos().map(video)),
     )
 }
 
@@ -262,9 +460,54 @@ fn markdown_download() -> String {
     out
 }
 
-/// Returns llms.txt: the page as Markdown, after llmstxt.org.
+/// Returns the questions as a Markdown section, each answered.
+fn markdown_questions() -> String {
+    let mut out = format!("## {QUESTIONS_HEADLINE}\n\n");
+    for question in &QUESTIONS {
+        let _ = write!(out, "### {}\n\n{}\n\n", question.question, question.answer);
+    }
+    out
+}
+
+/// Writes `clip` under `headline` into `out`, as Markdown: its poster,
+/// described, linking to its video.
+fn markdown_clip(out: &mut String, headline: &str, clip: Clip) {
+    let _ = write!(
+        out,
+        "### {headline}\n\n[![{}]({SITE}{})]({SITE}{})\n\n",
+        clip.description, clip.poster, clip.video
+    );
+}
+
+/// Returns what LispM looks like, as a Markdown section: the film, then every
+/// clip and still beside the chapters, each under the headline it
+/// illustrates.
+fn markdown_screenshots() -> String {
+    let mut out = String::from(
+        "## Screenshots\n\nWhat LispM looks like: the film, then every clip and still on the page, \
+         each under the headline it shows beside. A clip is its poster, linking to the video.\n\n",
+    );
+    markdown_clip(&mut out, TAGLINE, FILM);
+    for illustration in illustrations() {
+        match illustration.media {
+            Media::Loop(clip) => markdown_clip(&mut out, illustration.headline, clip),
+            Media::Picture(picture) => {
+                let _ = write!(
+                    out,
+                    "### {}\n\n![{}]({SITE}{})\n\n",
+                    illustration.headline, picture.description, picture.image
+                );
+            }
+        }
+    }
+    out
+}
+
+/// Returns llms.txt: the page as Markdown, after llmstxt.org. What LispM
+/// is comes first, then the questions people ask, then how to get it.
 pub fn llms_txt() -> String {
-    let mut out = format!("# LispM\n\n> {TAGLINE} {SUMMARY}\n\n");
+    let mut out = format!("# LispM\n\n> {DEFINITION}\n\n{TAGLINE}\n\n");
+    out.push_str(&markdown_questions());
     out.push_str(&markdown_download());
     let _ = write!(out, "## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
     out.push_str(&markdown_points(&IDEA_POINTS));
@@ -274,6 +517,7 @@ pub fn llms_txt() -> String {
     }
     out.push_str(&markdown_own_emacs());
     out.push_str(&markdown_projects());
+    out.push_str(&markdown_screenshots());
     let _ = writeln!(
         out,
         "## Links\n\n\
@@ -330,14 +574,25 @@ mod tests {
     #[test]
     fn the_json_ld_names_every_project_and_no_script_ends_in_it() {
         let ld = json_ld();
+        assert!(ld.starts_with("{\"@context\":\"https://schema.org\",\"@graph\":[{"));
         for project in PROJECTS {
             assert!(
-                ld.contains(&json_string(project.repository)),
+                ld.contains(&format!("\"@id\":{}", json_string(project.repository))),
                 "{}",
                 project.name
             );
         }
         assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
+        assert!(ld.contains("\"installUrl\":\"https://lispm.ai/#start\""));
+        assert!(ld.contains("\"price\":\"0\""));
+        assert!(
+            ld.contains("\"isBasedOn\":{\"@type\":\"SoftwareApplication\",\"name\":\"GNU Emacs\"")
+        );
+        assert!(ld.contains("\"@type\":[\"WebPage\",\"FAQPage\"]"));
+        assert_eq!(
+            ld.matches("\"@type\":\"Question\"").count(),
+            QUESTIONS.len()
+        );
         for platform in Platform::ALL {
             assert!(ld.contains(platform.requirements()), "{}", platform.name());
         }
@@ -349,6 +604,74 @@ mod tests {
         assert!(!head().trim_end_matches("</script>").contains("</script"));
         assert_eq!(ld.matches('{').count(), ld.matches('}').count());
         assert_eq!(ld.matches('[').count(), ld.matches(']').count());
+    }
+
+    #[test]
+    fn the_json_ld_shows_lispm_in_its_screenshots_and_videos() {
+        let ld = json_ld();
+        let url = |path: &str| json_string(&format!("{SITE}{path}"));
+        for illustration in illustrations() {
+            assert!(
+                ld.contains(&format!(
+                    "{{\"@type\":\"ImageObject\",\"url\":{},\"name\":{}",
+                    url(illustration.media.still()),
+                    json_string(illustration.headline)
+                )),
+                "{}",
+                illustration.headline
+            );
+        }
+        assert!(
+            !ld.contains(&format!("\"url\":{}", url(FILM.poster))),
+            "the film's title is no screenshot"
+        );
+        for (headline, clip) in videos() {
+            let id = json_string(&video_id(clip));
+            assert_eq!(
+                ld.matches(&format!("{{\"@type\":\"VideoObject\",\"@id\":{id},"))
+                    .count(),
+                1,
+                "{headline}"
+            );
+            assert_eq!(
+                ld.matches(&format!("{{\"@id\":{id}}}")).count(),
+                1,
+                "{headline}"
+            );
+            assert!(ld.contains(&format!(
+                "\"thumbnailUrl\":{},\"contentUrl\":{id},\"encodingFormat\":\"video/mp4\",\
+                 \"uploadDate\":{}",
+                url(clip.poster),
+                json_string(&clip.published.iso())
+            )));
+        }
+    }
+
+    #[test]
+    fn every_node_named_is_in_the_graph_once() {
+        let ld = json_ld();
+        for node in [Node::Organization, Node::WebSite, Node::Application] {
+            let id = format!("\"@id\":{}", json_string(&node.id()));
+            let named = ld.matches(&format!("{id}}}")).count();
+            let defined = ld.matches(&format!("{id},")).count();
+            assert_eq!(defined, 1, "{} is defined once", node.id());
+            assert!(named > 0, "{} is named", node.id());
+        }
+        assert_eq!(Node::Organization.id(), "https://lispm.ai/#organization");
+    }
+
+    #[test]
+    fn the_index_has_the_title_and_description_search_engines_show() {
+        let index = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/index.html"))
+            .unwrap_or_default();
+        assert!(index.contains(&format!("<title>{TITLE}</title>")));
+        assert!(index.contains(&format!("name=\"description\" content=\"{DESCRIPTION}\"")));
+        for text in [TITLE, DESCRIPTION] {
+            assert!(
+                !text.contains(['"', '&', '<', '>']),
+                "{text} needs no escaping"
+            );
+        }
     }
 
     #[test]
@@ -375,9 +698,44 @@ mod tests {
             );
             assert!(text.contains(platform.installer()), "{}", platform.name());
         }
+        assert!(text.starts_with(&format!("# LispM\n\n> {DEFINITION}\n")));
+        for question in QUESTIONS {
+            assert!(text.contains(&format!("### {}\n\n{}", question.question, question.answer)));
+        }
         let download = text.find(INSTALL.code).unwrap_or(usize::MAX);
         let idea = text.find(IDEA_HEADLINE).unwrap_or(0);
         assert!(download < idea, "the download comes first");
         assert!(text.ends_with('\n'));
+    }
+
+    #[test]
+    fn llms_txt_shows_every_still_under_its_headline() {
+        let text = llms_txt();
+        let section = text
+            .split_once("## Screenshots\n\n")
+            .map(|(_, rest)| rest)
+            .unwrap_or_default();
+        assert!(section.contains(&format!(
+            "### {TAGLINE}\n\n[![{}]({SITE}{})]({SITE}{})\n\n",
+            FILM.description, FILM.poster, FILM.video
+        )));
+        for illustration in illustrations() {
+            let media = illustration.media;
+            let image = format!("![{}]({SITE}{})", media.description(), media.still());
+            let shown = match media.clip() {
+                Some(clip) => format!("[{image}]({SITE}{})", clip.video),
+                None => image,
+            };
+            assert!(
+                section.contains(&format!("### {}\n\n{shown}\n\n", illustration.headline)),
+                "{}",
+                illustration.headline
+            );
+            assert!(
+                !media.description().contains(['[', ']']),
+                "{} needs no escaping",
+                illustration.headline
+            );
+        }
     }
 }

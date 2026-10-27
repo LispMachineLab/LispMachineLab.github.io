@@ -60,3 +60,13 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+      # Bing and the others that take IndexNow hear of the pages at once;
+      # a refusal there is no reason to fail the deploy.
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            scripts
+            static
+      - name: Tell IndexNow
+        continue-on-error: true
+        run: scripts/indexnow.sh

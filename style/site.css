@@ -572,6 +572,34 @@ h3 {
   overflow-wrap: anywhere;
 }
 
+/* The questions people ask, each answered in full. */
+.answers {
+  display: grid;
+  gap: 16px;
+  max-width: 880px;
+  margin: 56px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.answers li {
+  padding: 28px 30px;
+  border-radius: 18px;
+  background: var(--raised);
+}
+
+.answers h3 {
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.answers p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
 .own-emacs {
   margin-top: clamp(72px, 10vw, 112px);
   font-size: clamp(28px, 4vw, 40px);

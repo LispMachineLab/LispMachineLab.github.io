@@ -1,54 +1,16 @@
 //! The blog: LispM's Articles from X, as data. Each post's words are a
 //! Markdown file in `blog/`, its cover, share card, pictures and films in
 //! `assets/blog/<slug>/`. Prerender draws the list and each post as plain
-//! pages at `/blog/` and `/blog/<slug>/`; no WebAssembly runs on them.
+//! pages at `/blog/` and `/blog/<slug>/`, and its feed at
+//! `/blog/feed.xml`; no WebAssembly runs on them.
 
+pub mod feed;
 pub mod markdown;
 pub mod publish;
+pub mod size;
 
 use crate::content::{BLOG, SITE};
-
-/// The day a post was first published.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Date {
-    /// The year.
-    pub year: u16,
-    /// The month, 1 to 12.
-    pub month: u8,
-    /// The day of the month.
-    pub day: u8,
-}
-
-impl Date {
-    /// Returns the date as ISO 8601 writes it, `2026-10-22`.
-    pub fn iso(self) -> String {
-        format!("{:04}-{:02}-{:02}", self.year, self.month, self.day)
-    }
-
-    /// Returns the date as a reader writes it, `22 October 2026`.
-    pub fn long(self) -> String {
-        format!("{} {} {}", self.day, month_name(self.month), self.year)
-    }
-}
-
-/// Returns the name of the month numbered `month`, from 1, or nothing past 12.
-const fn month_name(month: u8) -> &'static str {
-    match month {
-        1 => "January",
-        2 => "February",
-        3 => "March",
-        4 => "April",
-        5 => "May",
-        6 => "June",
-        7 => "July",
-        8 => "August",
-        9 => "September",
-        10 => "October",
-        11 => "November",
-        12 => "December",
-        _ => "",
-    }
-}
+pub use crate::date::Date;
 
 /// Who wrote a post, as X knows them.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -95,8 +57,11 @@ pub struct Post {
     /// Its title.
     pub title: &'static str,
     /// What it is about, in a sentence or two: under its title in the list,
-    /// and in its description for search engines and shared links.
+    /// in its JSON-LD and in its feed's summary.
     pub description: &'static str,
+    /// The same, short enough for search engines and shared links to show
+    /// whole: at most 160 characters.
+    pub summary: &'static str,
     /// The day it was first published.
     pub date: Date,
     /// Who wrote it.
@@ -130,6 +95,14 @@ pub const HEADLINE: &str = "Notes from the lab.";
 pub const LEAD: &str =
     "What we build into LispM, and why. Each post here was first an Article on X.";
 
+/// What search engines and shared links show of the blog: the lead, saying
+/// what LispM is to those who do not know it yet.
+pub const DESCRIPTION: &str = "Notes from the lab behind LispM, AI agents inside Emacs: what we \
+     build into it, and why. Each post here was first an Article on X.";
+
+/// The most characters a description may have before search engines cut it.
+pub const DESCRIPTION_MOST: usize = 160;
+
 /// The card links to the blog show, 1200 by 630.
 pub const CARD: Picture = Picture {
     src: "/assets/blog/card.png",
@@ -144,6 +117,8 @@ pub static POSTS: [Post; 3] = [
         description: "Claude Code, Codex, Hermes, Holon and OpenClaw can now message each other in \
              LispM, ask each other for things and answer, under one policy. How it works, and why \
              it takes a Lisp Machine.",
+        summary: "Claude Code, Codex, Hermes, Holon and OpenClaw can now message each other in \
+             LispM, under one policy. How it works, and why it takes a Lisp Machine.",
         date: Date {
             year: 2026,
             month: 10,
@@ -166,6 +141,8 @@ pub static POSTS: [Post; 3] = [
         description: "We've recreated three classic AI applications from the 1970s on LispM, and \
              they're now available in the LispM App Store: Doctor, SHRDLU and MYCIN. Come \
              experience what AI was like on Lisp Machines half a century ago.",
+        summary: "Doctor, SHRDLU and MYCIN, classic AI of the 1960s and 1970s, run again in \
+             LispM, from its App Store: what AI was like on Lisp Machines.",
         date: Date {
             year: 2026,
             month: 10,
@@ -188,6 +165,8 @@ pub static POSTS: [Post; 3] = [
         description: "While connecting various agents to Emacs, I suddenly wondered: why not build \
              an Emacs-native agent? With Emacs's introspective capabilities, it could become an \
              almost perfect realization of the Lisp Machines of the 1970s.",
+        summary: "Connecting agents to Emacs, I wondered: why not an Emacs-native agent? With \
+             Emacs's introspection it could nearly realize the Lisp Machines of the 1970s.",
         date: Date {
             year: 2026,
             month: 10,
@@ -230,18 +209,6 @@ mod tests {
     }
 
     #[test]
-    fn dates_read_both_ways() {
-        let date = Date {
-            year: 2026,
-            month: 10,
-            day: 2,
-        };
-        assert_eq!(date.iso(), "2026-10-02");
-        assert_eq!(date.long(), "2 October 2026");
-        assert_eq!(month_name(13), "");
-    }
-
-    #[test]
     fn posts_come_latest_first_each_at_its_own_address() {
         for pair in POSTS.windows(2) {
             if let [later, earlier] = pair {
@@ -280,6 +247,9 @@ mod tests {
             {
                 assert!(path.starts_with(&folder), "{path}");
                 assert!(served(path).is_file(), "{path}");
+                if path.ends_with(".webp") {
+                    assert!(size::of(path).is_some(), "the size of {path}");
+                }
             }
             for film in named_paths(post.body)
                 .into_iter()
@@ -289,6 +259,18 @@ mod tests {
             }
         }
         assert!(served(CARD.src).is_file());
+    }
+
+    #[test]
+    fn descriptions_fit_where_search_engines_show_them() {
+        for description in POSTS.iter().map(|post| post.summary).chain([DESCRIPTION]) {
+            assert!(!description.is_empty());
+            assert!(
+                description.chars().count() <= DESCRIPTION_MOST,
+                "{} characters: {description}",
+                description.chars().count()
+            );
+        }
     }
 
     #[test]
