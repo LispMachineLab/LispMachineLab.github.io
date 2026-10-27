@@ -12,10 +12,20 @@ LispM's Articles from X. It is written in Rust with [Yew](https://yew.rs) and bu
 The page reads before WebAssembly loads, for crawlers and language models as much as for slow
 connections: after each build Trunk runs `prerender` (see `Trunk.toml`), which renders the same
 Yew components natively into `index.html`'s `<div id="app">`, puts JSON-LD describing the site
-and its projects in the head, and writes `llms.txt`, the page as Markdown. In the browser the
-page is hydrated, not drawn again. `prerender` also draws the blog's pages, the list of posts at
-`blog/index.html` and each post at `blog/<slug>/index.html`, as plain pages that load no
-WebAssembly, and writes `sitemap.xml`, which lists them.
+and its projects in the head, and writes `llms.txt`, the page as Markdown, and `llms-full.txt`,
+the same with every post's words. In the browser the page is hydrated, not drawn again.
+`prerender` also draws the blog's pages, the list of posts at `blog/index.html` and each post at
+`blog/<slug>/index.html`, as plain pages that load no WebAssembly; the blog's Atom feed at
+`blog/feed.xml`; `404.html`, the page GitHub Pages shows at addresses not on the site, kept out
+of search engines; and `sitemap.xml`, which lists the pages.
+
+For search engines and the answer engines built on them, every page has its own title and a
+description within the 160 characters they show (tests keep both), and its pictures their width
+and height. The JSON-LD is one graph whose nodes name each other by id: LispM, the organization,
+is the same node on every page, with its logo and its accounts on GitHub and X, and the app, the
+site, the blog and the posts point to it. After each deploy, `scripts/indexnow.sh` tells Bing and
+the other engines that take IndexNow that the sitemap's pages are new. Google and Bing learn of
+the site through their webmaster tools, where `sitemap.xml` is submitted by hand.
 
 ## Layout
 
@@ -33,23 +43,29 @@ The crate is a library and two binaries: `src/main.rs`, the page in the browser,
 - `src/blog/` is the blog, built natively only: `mod.rs` the posts as data, newest first, each
   with its title, date, author, cover, share card and the X post it first was; `markdown.rs` a
   post's Markdown as HTML, a picture alone in its paragraph drawn as a figure, its title the
-  caption, and an `.mp4` as a video on the `.jpg` of the same name; `publish.rs` each page's head
-  (Open Graph, Twitter and JSON-LD), the stylesheet it shares with the home page, the site's map
-  and llms.txt's list of posts.
+  caption, its size its width and height, and an `.mp4` as a video on the `.jpg` of the same
+  name; `size.rs` a WebP's size, read from its header; `publish.rs` each page's head (Open Graph,
+  Twitter and JSON-LD), the stylesheet and icons it shares with the home page, the missing page's
+  head, the site's map, llms.txt's list of posts and llms-full.txt's words of them; `feed.rs` the
+  Atom feed.
 - `src/effects.rs` is the only code that touches the browser beyond Yew's rendering: the
   clipboard, the motion the visitor prefers, playing a clip while it is in sight.
 - `src/view/` draws the page: `page.rs` its sections, `media.rs` the film and the clips,
-  `code.rs` the snippets, `blog.rs` the blog's list and posts.
+  `code.rs` the snippets, `blog.rs` the blog's list and posts, and the missing page.
 - `blog/` holds each post's words, `<slug>.md`, in Markdown; `assets/blog/<slug>/` its cover
   (5:2), its share card (1200 by 630) and its pictures and films. To add a post, put its Markdown
   and assets there and add it at the top of `POSTS` in `src/blog/mod.rs`; the tests check that
   everything it names is there and every card is 1200 by 630.
 - `style/site.css` is the films' keynote look.
-- `static/` holds `robots.txt` and `install.sh`, copied to the site's root.
+- `static/` holds what is copied to the site's root: `robots.txt`, `install.sh`, the icons at
+  addresses that stay put (`favicon.ico`, 16 to 48 pixels, and `apple-touch-icon.png`, 180), and
+  `<key>.txt`, the IndexNow key, its own name.
 - `scripts/remote-page.sh` puts [LispM Remote](https://github.com/LispMachineLab/lispm-remote)'s
   page at `/remote/`, where LispM's QR code points: it downloads the page's release, pinned by
-  version and SHA-256, and unpacks it into `dist/remote` after Trunk's build. To publish a new
-  page, pin the new release there.
+  version and SHA-256, and unpacks it into `dist/remote` after Trunk's build, with a robots tag
+  that keeps the app out of search engines. To publish a new page, pin the new release there.
+- `scripts/indexnow.sh` sends the deployed sitemap's pages to IndexNow; `--print` shows the
+  request and sends nothing.
 - `assets/social/lispm-card.png` is the card shared links show, 1200 by 630, its words clear of
   X's 2:1 crop; `index.html` names it in its Open Graph and Twitter tags, and
   `src/share_card.rs` tests that the tags agree and the file is that size.

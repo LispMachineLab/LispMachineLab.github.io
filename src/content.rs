@@ -719,6 +719,15 @@ pub const PROJECTS: [Project; 5] = [
 /// Where the site is served.
 pub const SITE: &str = "https://lispm.ai/";
 
+/// The home page's title, as search engines show it: what LispM is, in the
+/// words it is searched for, within the 60 characters they show.
+pub const TITLE: &str = "LispM — AI agents inside Emacs, a Lisp Machine for agents";
+
+/// What search engines show under the title, within the 160 characters
+/// they show: what LispM is, and the agents it runs.
+pub const DESCRIPTION: &str = "LispM runs AI agents inside Emacs, its own beside Claude Code and \
+     Codex: conversations are org documents, tools are Lisp. A free Mac app, with an App Store.";
+
 /// The blog's path on the site, its posts under it.
 pub const BLOG: &str = "/blog/";
 
@@ -735,6 +744,9 @@ pub const APP_ICON: &str = "assets/lispm-app.png";
 /// What LispM.app runs on.
 pub const REQUIREMENTS: &str =
     "macOS 11 or later, on Apple silicon or Intel. On GNU Emacs 31.1. Free.";
+
+/// The system LispM.app runs on, as its requirements begin.
+pub const OPERATING_SYSTEM: &str = "macOS 11 or later";
 
 /// The installer, served beside the page; it runs lispm-desktop's.
 pub const INSTALLER: &str = "install.sh";
@@ -862,21 +874,6 @@ mod tests {
         })
     }
 
-    /// Returns the canvas of an extended WebP, the kind the pictures are:
-    /// its width and height, each stored less one in three bytes.
-    fn webp_size(bytes: &[u8]) -> Option<(u32, u32)> {
-        if bytes.get(..4)? != b"RIFF" || bytes.get(8..16)? != b"WEBPVP8X" {
-            return None;
-        }
-        let side = |at: usize| match bytes.get(at..at + 3)? {
-            [low, middle, high] => {
-                Some(1 + (u32::from(*high) << 16 | u32::from(*middle) << 8 | u32::from(*low)))
-            }
-            _ => None,
-        };
-        Some((side(24)?, side(27)?))
-    }
-
     #[test]
     fn anchors_have_distinct_ids() {
         for (i, a) in ALL.iter().enumerate() {
@@ -921,7 +918,7 @@ mod tests {
         for picture in pictures() {
             let bytes = std::fs::read(root.join(picture.image)).unwrap_or_default();
             assert_eq!(
-                webp_size(&bytes),
+                crate::blog::size::webp(&bytes),
                 Some((picture.width, picture.height)),
                 "{}",
                 picture.image
@@ -1039,5 +1036,12 @@ mod tests {
     fn hrefs_point_at_ids() {
         assert_eq!(Anchor::Start.href(), "#start");
         assert_eq!(Anchor::Agents.href(), "#agent");
+    }
+
+    #[test]
+    fn the_title_and_description_fit_where_search_engines_show_them() {
+        assert!(TITLE.chars().count() <= 60, "{TITLE}");
+        assert!(DESCRIPTION.chars().count() <= 160, "{DESCRIPTION}");
+        assert!(REQUIREMENTS.starts_with(OPERATING_SYSTEM));
     }
 }

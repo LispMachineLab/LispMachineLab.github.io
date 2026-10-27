@@ -1,16 +1,21 @@
 //! What is written beside the page for crawlers and language models, all
 //! from [`crate::content`]: the page rendered into index.html before
-//! WebAssembly loads, JSON-LD describing the site and the projects LispM is
-//! made of, and llms.txt, the page as Markdown.
+//! WebAssembly loads, JSON-LD describing the site, LispM and the projects
+//! it is made of, and llms.txt, the page as Markdown.
+//!
+//! The JSON-LD is one graph of nodes that name each other by id: LispM, the
+//! organization, is the same node on every page, the blog's included, so
+//! search engines and language models know the site, the app, the posts
+//! and the accounts on GitHub and X as one thing.
 
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    BACKENDS, CHAPTERS, CREDITS, Chapter, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL,
-    EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
-    INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE, ORGANIZATION,
-    OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project, REQUIREMENTS, SITE, SUMMARY, TAGLINE,
-    X,
+    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, DESCRIPTION, DOWNLOAD_LEAD, DOWNLOAD_STEPS,
+    EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
+    INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE, LICENSE,
+    OPERATING_SYSTEM, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Point, Project,
+    REQUIREMENTS, SITE, SUMMARY, TAGLINE, TITLE, X,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -76,18 +81,98 @@ pub(crate) fn json_string(text: &str) -> String {
 }
 
 /// Returns a JSON array of `items`, each already JSON.
-fn json_array(items: impl Iterator<Item = String>) -> String {
+pub(crate) fn json_array(items: impl Iterator<Item = String>) -> String {
     format!("[{}]", items.collect::<Vec<_>>().join(","))
+}
+
+/// LispM's mark, the rainbow λ, from the root, and its side in pixels.
+pub(crate) const LOGO: (&str, u32) = ("assets/lispm-lambda.png", 1254);
+
+/// The JSON-LD nodes that every page names by id.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Node {
+    /// LispM, the organization behind the site, the app and the posts.
+    Organization,
+    /// The site.
+    WebSite,
+    /// LispM.app.
+    Application,
+}
+
+impl Node {
+    /// Returns the node's id: the site's address and a fragment.
+    pub(crate) fn id(self) -> String {
+        let fragment = match self {
+            Node::Organization => "organization",
+            Node::WebSite => "website",
+            Node::Application => "app",
+        };
+        format!("{SITE}#{fragment}")
+    }
+
+    /// Returns a reference to the node, by its id.
+    pub(crate) fn reference(self) -> String {
+        format!("{{\"@id\":{}}}", json_string(&self.id()))
+    }
+}
+
+/// Returns a JSON-LD document of `nodes`, each already JSON.
+pub(crate) fn graph(nodes: impl Iterator<Item = String>) -> String {
+    format!(
+        "{{\"@context\":\"https://schema.org\",\"@graph\":{}}}",
+        json_array(nodes)
+    )
+}
+
+/// Returns LispM, the organization, as a schema.org Organization: its name
+/// as people know it, LispMachineLab as GitHub does, its mark, and its
+/// accounts.
+pub(crate) fn organization() -> String {
+    let (logo, side) = LOGO;
+    format!(
+        "{{\"@type\":\"Organization\",\"@id\":{},\"name\":\"LispM\",\
+         \"alternateName\":\"LispMachineLab\",\"url\":{},\"logo\":{{\"@type\":\"ImageObject\",\
+         \"url\":{},\"width\":{side},\"height\":{side}}},\"sameAs\":{}}}",
+        json_string(&Node::Organization.id()),
+        json_string(SITE),
+        json_string(&format!("{SITE}{logo}")),
+        json_array([ORGANIZATION, X].into_iter().map(json_string)),
+    )
+}
+
+/// Returns the site as a schema.org WebSite.
+fn website() -> String {
+    format!(
+        "{{\"@type\":\"WebSite\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"publisher\":{}}}",
+        json_string(&Node::WebSite.id()),
+        json_string(SITE),
+        json_string(&format!("{TAGLINE} {SUMMARY}")),
+        Node::Organization.reference(),
+    )
+}
+
+/// Returns the home page as a schema.org WebPage, about LispM.app.
+fn home_page() -> String {
+    format!(
+        "{{\"@type\":\"WebPage\",\"@id\":{site},\"url\":{site},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{}}}",
+        json_string(TITLE),
+        json_string(DESCRIPTION),
+        Node::WebSite.reference(),
+        Node::Application.reference(),
+        site = json_string(SITE),
+    )
 }
 
 /// Returns a project as a schema.org SoftwareSourceCode.
 fn source_code(project: &Project) -> String {
     format!(
-        "{{\"@type\":\"SoftwareSourceCode\",\"name\":{},\"description\":{},\"codeRepository\":{},\
-         \"programmingLanguage\":{},\"license\":{},\"runtimePlatform\":\"GNU Emacs\"}}",
+        "{{\"@type\":\"SoftwareSourceCode\",\"@id\":{repository},\"name\":{},\
+         \"description\":{},\"codeRepository\":{repository},\"programmingLanguage\":{},\
+         \"license\":{},\"runtimePlatform\":\"GNU Emacs\",\"publisher\":{}}}",
         json_string(project.name),
         json_string(project.description),
-        json_string(project.repository),
         json_array(
             project
                 .languages
@@ -95,34 +180,39 @@ fn source_code(project: &Project) -> String {
                 .map(|language| json_string(language))
         ),
         json_string(LICENSE),
+        Node::Organization.reference(),
+        repository = json_string(project.repository),
     )
 }
 
-/// Returns LispM.app as a schema.org SoftwareApplication.
+/// Returns LispM.app as a schema.org SoftwareApplication: free, for the Mac,
+/// installed by the line on the page.
 fn application() -> String {
     format!(
-        "{{\"@type\":\"SoftwareApplication\",\"name\":\"LispM\",\"description\":{},\
-         \"applicationCategory\":\"DeveloperApplication\",\"operatingSystem\":{},\
-         \"downloadUrl\":{},\"isAccessibleForFree\":true,\"license\":{}}}",
-        json_string(DOWNLOAD_LEAD),
-        json_string(REQUIREMENTS),
+        "{{\"@type\":\"SoftwareApplication\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
+         \"description\":{},\"applicationCategory\":\"DeveloperApplication\",\
+         \"operatingSystem\":{},\"downloadUrl\":{},\"installUrl\":{},\"screenshot\":{},\
+         \"offers\":{{\"@type\":\"Offer\",\"price\":\"0\",\"priceCurrency\":\"USD\"}},\
+         \"isAccessibleForFree\":true,\"license\":{},\"publisher\":{}}}",
+        json_string(&Node::Application.id()),
+        json_string(SITE),
+        json_string(&format!("{SUMMARY} {DOWNLOAD_LEAD}")),
+        json_string(OPERATING_SYSTEM),
         json_string(&format!("{SITE}{INSTALLER}")),
+        json_string(&format!("{SITE}{}", Anchor::Start.href())),
+        json_string(&format!("{SITE}{}", FILM.poster)),
         json_string(LICENSE),
+        Node::Organization.reference(),
     )
 }
 
-/// Returns the JSON-LD describing the site, LispM.app and its projects.
+/// Returns the JSON-LD describing LispM, the site, the home page, LispM.app
+/// and the projects it is made of.
 pub fn json_ld() -> String {
-    format!(
-        "{{\"@context\":\"https://schema.org\",\"@type\":\"WebSite\",\"name\":\"LispM\",\"url\":{},\
-         \"headline\":{},\"description\":{},\"publisher\":{{\"@type\":\"Organization\",\
-         \"name\":\"LispMachineLab\",\"url\":{},\"sameAs\":{}}},\"about\":{}}}",
-        json_string(SITE),
-        json_string(TAGLINE),
-        json_string(SUMMARY),
-        json_string(ORGANIZATION),
-        json_array([ORGANIZATION, X].into_iter().map(json_string)),
-        json_array(std::iter::once(application()).chain(PROJECTS.iter().map(source_code))),
+    graph(
+        [organization(), website(), home_page(), application()]
+            .into_iter()
+            .chain(PROJECTS.iter().map(source_code)),
     )
 }
 
@@ -305,14 +395,17 @@ mod tests {
     #[test]
     fn the_json_ld_names_every_project_and_no_script_ends_in_it() {
         let ld = json_ld();
+        assert!(ld.starts_with("{\"@context\":\"https://schema.org\",\"@graph\":[{"));
         for project in PROJECTS {
             assert!(
-                ld.contains(&json_string(project.repository)),
+                ld.contains(&format!("\"@id\":{}", json_string(project.repository))),
                 "{}",
                 project.name
             );
         }
         assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
+        assert!(ld.contains("\"installUrl\":\"https://lispm.ai/#start\""));
+        assert!(ld.contains("\"price\":\"0\""));
         assert!(ld.contains(&format!(
             "\"sameAs\":[{},{}]",
             json_string(ORGANIZATION),
@@ -321,6 +414,33 @@ mod tests {
         assert!(!head().trim_end_matches("</script>").contains("</script"));
         assert_eq!(ld.matches('{').count(), ld.matches('}').count());
         assert_eq!(ld.matches('[').count(), ld.matches(']').count());
+    }
+
+    #[test]
+    fn every_node_named_is_in_the_graph_once() {
+        let ld = json_ld();
+        for node in [Node::Organization, Node::WebSite, Node::Application] {
+            let id = format!("\"@id\":{}", json_string(&node.id()));
+            let named = ld.matches(&format!("{id}}}")).count();
+            let defined = ld.matches(&format!("{id},")).count();
+            assert_eq!(defined, 1, "{} is defined once", node.id());
+            assert!(named > 0, "{} is named", node.id());
+        }
+        assert_eq!(Node::Organization.id(), "https://lispm.ai/#organization");
+    }
+
+    #[test]
+    fn the_index_has_the_title_and_description_search_engines_show() {
+        let index = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/index.html"))
+            .unwrap_or_default();
+        assert!(index.contains(&format!("<title>{TITLE}</title>")));
+        assert!(index.contains(&format!("name=\"description\" content=\"{DESCRIPTION}\"")));
+        for text in [TITLE, DESCRIPTION] {
+            assert!(
+                !text.contains(['"', '&', '<', '>']),
+                "{text} needs no escaping"
+            );
+        }
     }
 
     #[test]

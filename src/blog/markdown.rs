@@ -1,14 +1,16 @@
 //! A post's Markdown as HTML: CommonMark, with one addition. A picture
 //! alone in its paragraph is drawn as a figure, its title, if it has one,
-//! as the caption; and when it is a film, an `.mp4`, as a video, the `.jpg`
-//! of the same name its poster.
+//! as the caption, and its size, if it is known, as its width and height;
+//! and when it is a film, an `.mp4`, as a video, the `.jpg` of the same
+//! name its poster.
 
 use pulldown_cmark::{Event, Parser, Tag, TagEnd, html};
 
-/// Returns `markdown` as HTML.
-pub fn to_html(markdown: &str) -> String {
+/// Returns `markdown` as HTML, each figure's picture as large as `size`
+/// says the picture at its address is.
+pub fn to_html(markdown: &str, size: impl Fn(&str) -> Option<(u32, u32)>) -> String {
     let mut out = String::with_capacity(markdown.len() * 3 / 2);
-    html::push_html(&mut out, figures(Parser::new(markdown)).into_iter());
+    html::push_html(&mut out, figures(Parser::new(markdown), &size).into_iter());
     out
 }
 
@@ -39,13 +41,16 @@ enum Held {
 }
 
 /// Returns `events` with each paragraph holding a picture alone replaced by
-/// its figure.
-fn figures<'a>(events: impl IntoIterator<Item = Event<'a>>) -> Vec<Event<'a>> {
+/// its figure, the picture as large as `size` says.
+fn figures<'a>(
+    events: impl IntoIterator<Item = Event<'a>>,
+    size: &impl Fn(&str) -> Option<(u32, u32)>,
+) -> Vec<Event<'a>> {
     let mut out = Vec::new();
     let mut held = Vec::new();
     for event in events {
         held.push(event);
-        match lone_picture(&held) {
+        match lone_picture(&held, size) {
             Held::Maybe => {}
             Held::No => out.append(&mut held),
             Held::Figure(figure) => {
@@ -58,8 +63,9 @@ fn figures<'a>(events: impl IntoIterator<Item = Event<'a>>) -> Vec<Event<'a>> {
     out
 }
 
-/// Returns what `held`, the events since the last that passed on, are.
-fn lone_picture(held: &[Event<'_>]) -> Held {
+/// Returns what `held`, the events since the last that passed on, are,
+/// a figure's picture as large as `size` says.
+fn lone_picture(held: &[Event<'_>], size: &impl Fn(&str) -> Option<(u32, u32)>) -> Held {
     let [Event::Start(Tag::Paragraph), rest @ ..] = held else {
         return Held::No;
     };
@@ -81,7 +87,7 @@ fn lone_picture(held: &[Event<'_>]) -> Held {
             alt @ ..,
             Event::End(TagEnd::Image),
             Event::End(TagEnd::Paragraph),
-        ] => Held::Figure(figure(dest_url, title, &plain_text(alt))),
+        ] => Held::Figure(figure(dest_url, title, &plain_text(alt), size(dest_url))),
         // Words after the picture: an ordinary paragraph.
         [.., Event::End(TagEnd::Image), _] => Held::No,
         _ => Held::Maybe,
@@ -101,8 +107,9 @@ fn plain_text(events: &[Event<'_>]) -> String {
 }
 
 /// Returns the figure of the picture or film at `src`, showing `alt`, with
-/// `caption` under it unless it is empty.
-fn figure(src: &str, caption: &str, alt: &str) -> String {
+/// `caption` under it unless it is empty; a picture as large as `size`, if
+/// it is known.
+fn figure(src: &str, caption: &str, alt: &str, size: Option<(u32, u32)>) -> String {
     let media = match src.strip_suffix(".mp4") {
         Some(stem) => format!(
             "<video src=\"{}\" poster=\"{}.jpg\" controls preload=\"none\" playsinline \
@@ -112,9 +119,11 @@ fn figure(src: &str, caption: &str, alt: &str) -> String {
             escape(alt)
         ),
         None => format!(
-            "<img src=\"{}\" alt=\"{}\" loading=\"lazy\" decoding=\"async\" />",
+            "<img src=\"{}\" alt=\"{}\"{} loading=\"lazy\" decoding=\"async\" />",
             escape(src),
-            escape(alt)
+            escape(alt),
+            size.map(|(width, height)| format!(" width=\"{width}\" height=\"{height}\""))
+                .unwrap_or_default(),
         ),
     };
     let caption = if caption.is_empty() {
@@ -129,10 +138,18 @@ fn figure(src: &str, caption: &str, alt: &str) -> String {
 mod tests {
     use super::*;
 
+    /// Knows the size of `/a.webp` only.
+    fn size(src: &str) -> Option<(u32, u32)> {
+        (src == "/a.webp").then_some((2000, 1125))
+    }
+
     #[test]
     fn markdown_reads_as_commonmark() {
         assert_eq!(
-            to_html("## A *head*\n\nWords, [a link](https://lispm.ai/).\n\n```sh\na | b\n```\n"),
+            to_html(
+                "## A *head*\n\nWords, [a link](https://lispm.ai/).\n\n```sh\na | b\n```\n",
+                size
+            ),
             "<h2>A <em>head</em></h2>\n<p>Words, <a href=\"https://lispm.ai/\">a link</a>.</p>\n\
              <pre><code class=\"language-sh\">a | b\n</code></pre>\n"
         );
@@ -141,22 +158,26 @@ mod tests {
     #[test]
     fn a_picture_alone_is_a_figure_its_title_the_caption() {
         assert_eq!(
-            to_html("Before.\n\n![A *λ*, \"lit\"](/a.webp \"Its caption & more\")\n\nAfter.\n"),
+            to_html(
+                "Before.\n\n![A *λ*, \"lit\"](/a.webp \"Its caption & more\")\n\nAfter.\n",
+                size
+            ),
             "<p>Before.</p>\n<figure><img src=\"/a.webp\" alt=\"A λ, &quot;lit&quot;\" \
-             loading=\"lazy\" decoding=\"async\" /><figcaption>Its caption &amp; more\
+             width=\"2000\" height=\"1125\" loading=\"lazy\" decoding=\"async\" /><figcaption>Its caption &amp; more\
              </figcaption></figure>\n<p>After.</p>\n"
         );
         assert_eq!(
-            to_html("![Alt](/a.webp)\n"),
-            "<figure><img src=\"/a.webp\" alt=\"Alt\" loading=\"lazy\" decoding=\"async\" />\
-             </figure>\n"
+            to_html("![Alt](/b.webp)\n", size),
+            "<figure><img src=\"/b.webp\" alt=\"Alt\" loading=\"lazy\" decoding=\"async\" />\
+             </figure>\n",
+            "a picture of no known size has none"
         );
     }
 
     #[test]
     fn a_film_alone_is_a_video_on_its_poster() {
         assert_eq!(
-            to_html("![A film](/f/film.mp4 \"With sound.\")\n"),
+            to_html("![A film](/f/film.mp4 \"With sound.\")\n", size),
             "<figure><video src=\"/f/film.mp4\" poster=\"/f/film.jpg\" controls preload=\"none\" \
              playsinline aria-label=\"A film\"></video><figcaption>With sound.</figcaption>\
              </figure>\n"
@@ -166,11 +187,11 @@ mod tests {
     #[test]
     fn a_picture_among_words_stays_in_its_paragraph() {
         assert_eq!(
-            to_html("![A](/a.webp) and words.\n"),
+            to_html("![A](/a.webp) and words.\n", size),
             "<p><img src=\"/a.webp\" alt=\"A\" /> and words.</p>\n"
         );
         assert_eq!(
-            to_html("Words and ![A](/a.webp)\n"),
+            to_html("Words and ![A](/a.webp)\n", size),
             "<p>Words and <img src=\"/a.webp\" alt=\"A\" /></p>\n"
         );
     }

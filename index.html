@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LispM — a Lisp Machine for agents</title>
-    <meta
-      name="description"
-      content="LispM runs AI agents inside Emacs: their conversations are org documents, their tools are Lisp, and Emacs itself is the harness. LispM Agent, LispM Desktop, LispM Browser, the App Store and LispM Remote."
-    />
+    <!-- The title and description are content::TITLE and content::DESCRIPTION; a test keeps them so. -->
+    <title>LispM — AI agents inside Emacs, a Lisp Machine for agents</title>
+    <meta name="description" content="LispM runs AI agents inside Emacs, its own beside Claude Code and Codex: conversations are org documents, tools are Lisp. A free Mac app, with an App Store." />
+    <meta name="robots" content="max-image-preview:large" />
     <meta name="theme-color" content="#000000" />
     <link rel="canonical" href="https://lispm.ai/" />
+    <link rel="alternate" type="application/atom+xml" title="LispM Blog" href="/blog/feed.xml" />
     <!-- The card shared links show: 1200 by 630, its words clear of X's 2:1 crop. -->
     <meta property="og:site_name" content="LispM" />
     <meta property="og:type" content="website" />
@@ -38,12 +38,17 @@
       name="twitter:image:alt"
       content="LispM: a Lisp Machine for agents. Beside the words, an agent's chat in Emacs next to the file it is fixing."
     />
-    <link data-trunk rel="icon" href="assets/lispm-lambda.png" />
-    <link rel="apple-touch-icon" href="assets/lispm-lambda.png" />
+    <!-- Icons at addresses that stay put, for search engines to keep: not Trunk's hashed ones. -->
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link data-trunk rel="css" href="style/site.css" />
     <link data-trunk rel="copy-dir" href="assets" />
     <link data-trunk rel="copy-file" href="static/robots.txt" />
     <link data-trunk rel="copy-file" href="static/install.sh" />
+    <link data-trunk rel="copy-file" href="static/favicon.ico" />
+    <link data-trunk rel="copy-file" href="static/apple-touch-icon.png" />
+    <!-- The IndexNow key: it tells Bing and the others that the pings after each deploy are ours. -->
+    <link data-trunk rel="copy-file" href="static/3e816d255143763ad9225ab2c1f8db31.txt" />
     <link data-trunk rel="rust" data-bin="lispm-site" data-wasm-opt="z" />
   </head>
   <body>

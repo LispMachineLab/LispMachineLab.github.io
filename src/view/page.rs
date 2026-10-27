@@ -21,13 +21,15 @@ use super::media::{Film, Loop, Still};
 const LOGO: &str = "/assets/lispm-lambda.png";
 
 /// The page a navigation bar is on: the home page reaches its sections by
-/// their ids, the blog's pages through the home page.
+/// their ids, the other pages through the home page.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Place {
     /// The home page.
     Home,
     /// The blog, or a post in it.
     Blog,
+    /// Any other page: the one shown at addresses not on the site.
+    Elsewhere,
 }
 
 impl Place {
@@ -35,7 +37,7 @@ impl Place {
     pub(crate) fn href(self, anchor: Anchor) -> String {
         match self {
             Place::Home => anchor.href(),
-            Place::Blog => format!("/{}", anchor.href()),
+            Place::Blog | Place::Elsewhere => format!("/{}", anchor.href()),
         }
     }
 }
@@ -67,7 +69,7 @@ pub(crate) fn outward(href: &'static str, class: &'static str, label: &'static s
 pub(crate) fn navigation(place: Place) -> Html {
     let home = match place {
         Place::Home => "#top",
-        Place::Blog => "/",
+        Place::Blog | Place::Elsewhere => "/",
     };
     html! {
         <header class="navigation">

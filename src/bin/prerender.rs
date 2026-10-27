@@ -1,9 +1,11 @@
 //! Renders the page into the index.html Trunk staged, so it reads before
-//! WebAssembly loads, and writes llms.txt beside it; writes the blog's
-//! pages, the list at blog/index.html and each post at
-//! blog/<slug>/index.html; and writes the site's map, sitemap.xml. Trunk
-//! runs it after every build (see Trunk.toml), naming the directory in
-//! `TRUNK_STAGING_DIR`; it can also be given the directory as its argument.
+//! WebAssembly loads, and writes llms.txt beside it, and llms-full.txt, the
+//! same with every post's words; writes the blog's pages, the list at
+//! blog/index.html and each post at blog/<slug>/index.html, and its feed at
+//! blog/feed.xml; writes 404.html, the page shown at addresses not on the
+//! site; and writes the site's map, sitemap.xml. Trunk runs it after every
+//! build (see Trunk.toml), naming the directory in `TRUNK_STAGING_DIR`; it
+//! can also be given the directory as its argument.
 
 #![deny(missing_docs)]
 
@@ -14,9 +16,10 @@ mod native {
     use std::process::ExitCode;
 
     use lispm_site::blog::POSTS;
+    use lispm_site::blog::feed;
     use lispm_site::blog::publish::{self as blog, BlogError};
     use lispm_site::publish::{self, PublishError};
-    use lispm_site::view::blog::{Blog, PostPage, PostProps};
+    use lispm_site::view::blog::{Blog, Missing, PostPage, PostProps};
     use lispm_site::view::page::App;
     use yew::{BaseComponent, LocalServerRenderer};
 
@@ -93,11 +96,12 @@ mod native {
         )
     }
 
-    /// Writes the blog's pages under `directory`, sharing `links`.
+    /// Writes the blog's pages and feed under `directory`, sharing `links`.
     fn write_blog(directory: &Path, links: &str) -> Result<(), Failure> {
         let directory = directory.join("blog");
         let list = render(LocalServerRenderer::<Blog>::new().hydratable(false))?;
         write_page(&directory, &blog::blog_head(), links, &list)?;
+        write(&directory.join("feed.xml"), &feed::feed())?;
         for post in &POSTS {
             let page = render(
                 LocalServerRenderer::<PostPage>::with_props(PostProps { post }).hydratable(false),
@@ -122,11 +126,16 @@ mod native {
         let html =
             publish::insert_page(&index, &page, &publish::head()).map_err(Failure::Publish)?;
         write(&index_path, &html)?;
-        write(
-            &directory.join("llms.txt"),
-            &format!("{}\n{}", publish::llms_txt(), blog::llms_section()),
-        )?;
+        let llms = format!("{}\n{}", publish::llms_txt(), blog::llms_section());
+        let [short, full] = blog::LLMS.map(|path| directory.join(path.trim_start_matches('/')));
+        write(&short, &llms)?;
+        write(&full, &format!("{llms}\n{}", blog::llms_posts()))?;
         write(&directory.join("sitemap.xml"), &blog::sitemap())?;
+        let missing = render(LocalServerRenderer::<Missing>::new().hydratable(false))?;
+        write(
+            &directory.join("404.html"),
+            &blog::document(&blog::missing_head(), &links, &missing),
+        )?;
         write_blog(&directory, &links)
     }
 

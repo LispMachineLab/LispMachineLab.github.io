@@ -8,6 +8,9 @@
 # checks it against its SHA-256, and unpacks it into DIR.  To publish a new
 # page, change VERSION and SHA256 to the new release's.
 #
+# The page is an app, which pairs with LispM and shows nothing before: it
+# is kept out of search engines, by a robots meta tag put into its head.
+#
 # Copyright (C) 2026  Ryan.K
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -31,4 +34,13 @@ fi
 rm -rf "$dir"
 mkdir -p "$dir"
 tar -xzf "$tmp/page.tar.gz" -C "$dir"
+
+page="$dir/index.html"
+awk '{ print } /<head>/ && !done { print "    <meta name=\"robots\" content=\"noindex\">"; done = 1 }' \
+  "$page" >"$tmp/index.html"
+grep -q '<meta name="robots" content="noindex">' "$tmp/index.html" || {
+  echo "remote-page.sh: $page has no <head> to keep it out of search engines" >&2
+  exit 1
+}
+mv "$tmp/index.html" "$page"
 echo "LispM Remote's page $VERSION is in $dir"
