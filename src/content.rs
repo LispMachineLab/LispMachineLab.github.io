@@ -894,6 +894,9 @@ pub const QUESTIONS: [Question; 5] = [
 /// The blog's path on the site, its posts under it.
 pub const BLOG: &str = "/blog/";
 
+/// The privacy policy's path on the site, which every page's footer links.
+pub const PRIVACY: &str = "/privacy/";
+
 /// The headline of the download.
 pub const DOWNLOAD_HEADLINE: &str = "Get LispM.";
 

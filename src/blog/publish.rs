@@ -1,8 +1,9 @@
 //! What makes the blog's pages whole documents, all from [`super`]: each
 //! page's head, its title, description, share card and JSON-LD, with the
-//! stylesheet Trunk built for the home page; the same for the page shown
-//! at addresses not on the site; and, with the posts, the site's map,
-//! llms.txt's list of them and llms-full.txt's words of them.
+//! stylesheet Trunk built for the home page; the same for the pages that
+//! stand alone, from [`crate::pages`], and for the page shown at addresses
+//! not on the site; and, with the posts, the site's map, llms.txt's list of
+//! them and llms-full.txt's words of them.
 
 use std::fmt::{self, Write as _};
 
@@ -10,6 +11,7 @@ use super::feed::FEED;
 use super::markdown::escape;
 use super::{Author, CARD, DESCRIPTION, HEADLINE, LEAD, LISPM, POSTS, Post, absolute};
 use crate::content::{BLOG, FILM, SITE, illustrations};
+use crate::pages::{self, PAGES, Page};
 use crate::publish::{Node, graph, json_array, json_string, organization};
 
 /// Why the blog's pages could not be made.
@@ -57,6 +59,8 @@ pub enum Kind {
     Blog,
     /// A post.
     Article(&'static Post),
+    /// A page that stands alone: LispM Mail's, or the privacy policy.
+    Page(&'static Page),
     /// The page at addresses not on the site: kept out of search engines.
     Missing,
 }
@@ -103,6 +107,19 @@ pub fn post_head(post: &'static Post) -> Head {
         path: post.path(),
         kind: Kind::Article(post),
         card: (post.card, post.cover.alt),
+    }
+}
+
+/// Returns the head of `page`, a page that stands alone: its shared links
+/// show the home page's card.
+pub fn page_head(page: &'static Page) -> Head {
+    Head {
+        title: page.meta_title.to_owned(),
+        headline: page.meta_title,
+        description: page.description,
+        path: page.path.to_owned(),
+        kind: Kind::Page(page),
+        card: (pages::CARD.src, pages::CARD.alt),
     }
 }
 
@@ -175,12 +192,27 @@ fn blog() -> String {
     )
 }
 
+/// Returns `page`, a page that stands alone, as a schema.org WebPage of
+/// the site.
+fn web_page(page: &Page) -> String {
+    format!(
+        "{{\"@type\":\"WebPage\",\"@id\":{url},\"url\":{url},\"name\":{},\"description\":{},\
+         \"inLanguage\":\"en\",\"isPartOf\":{},\"publisher\":{}}}",
+        json_string(page.meta_title),
+        json_string(page.description),
+        Node::WebSite.reference(),
+        Node::Organization.reference(),
+        url = json_string(&absolute(page.path)),
+    )
+}
+
 /// Returns the JSON-LD of a page, LispM the organization in it, or nothing
 /// for a page kept out of search engines.
 pub fn json_ld(kind: Kind) -> Option<String> {
     let page = match kind {
         Kind::Blog => blog(),
         Kind::Article(post) => posting(post),
+        Kind::Page(page) => web_page(page),
         Kind::Missing => return None,
     };
     Some(graph([organization(), page].into_iter()))
@@ -193,7 +225,7 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
     let (card, card_alt) = head.card;
     let card = absolute(card);
     let (kind, article) = match head.kind {
-        Kind::Blog | Kind::Missing => ("website", String::new()),
+        Kind::Blog | Kind::Page(_) | Kind::Missing => ("website", String::new()),
         Kind::Article(post) => (
             "article",
             format!(
@@ -212,7 +244,7 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
     // missing page out; nothing there to name as the page's own address.
     let (robots, canonical) = match head.kind {
         Kind::Missing => ("noindex", String::new()),
-        Kind::Blog | Kind::Article(_) => (
+        Kind::Blog | Kind::Article(_) | Kind::Page(_) => (
             "max-image-preview:large",
             format!("\n    <link rel=\"canonical\" href=\"{}\" />", escape(&url)),
         ),
@@ -264,9 +296,9 @@ fn stills() -> impl Iterator<Item = &'static str> {
 }
 
 /// Returns the site's map: the home page, with the stills it shows, the
-/// blog, as new as its latest post, and the posts. Its pages only: llms.txt,
-/// the home page again in Markdown, is for language models, which find it
-/// at its known address.
+/// blog, as new as its latest post, the posts, and the pages that stand
+/// alone. Its pages only: llms.txt, the home page again in Markdown, is for
+/// language models, which find it at its known address.
 pub fn sitemap() -> String {
     let mut out = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
@@ -283,6 +315,11 @@ pub fn sitemap() -> String {
         POSTS
             .iter()
             .map(|post| (absolute(&post.path()), Some(post.date.iso()), Vec::new())),
+    )
+    .chain(
+        PAGES
+            .iter()
+            .map(|page| (absolute(page.path), None, Vec::new())),
     );
     for (url, modified, images) in pages {
         let _ = write!(out, "  <url>\n    <loc>{}</loc>\n", escape(&url));
@@ -390,11 +427,18 @@ mod tests {
 
     #[test]
     fn every_page_has_its_own_card_title_and_address() {
-        for (head, path) in std::iter::once((blog_head(), "/blog/".to_owned())).chain(
-            POSTS
-                .iter()
-                .map(|post| (post_head(post), format!("/blog/{}/", post.slug))),
-        ) {
+        for (head, path) in std::iter::once((blog_head(), "/blog/".to_owned()))
+            .chain(
+                POSTS
+                    .iter()
+                    .map(|post| (post_head(post), format!("/blog/{}/", post.slug))),
+            )
+            .chain(
+                PAGES
+                    .iter()
+                    .map(|page| (page_head(page), page.path.to_owned())),
+            )
+        {
             let html = document(
                 &head,
                 "<link rel=\"stylesheet\" href=\"/s.css\"/>",
@@ -462,6 +506,36 @@ mod tests {
     }
 
     #[test]
+    fn a_page_that_stands_alone_is_a_web_page_of_the_site_with_its_card() {
+        for page in &PAGES {
+            let html = document(&page_head(page), "", "");
+            assert!(html.contains("<meta property=\"og:type\" content=\"website\" />"));
+            assert!(!html.contains("article:"));
+            assert!(html.contains(&format!("<title>{}</title>", escape(page.meta_title))));
+            assert!(html.contains(&format!(
+                "<meta property=\"og:title\" content=\"{}\" />",
+                escape(page.meta_title)
+            )));
+            assert!(html.contains(&format!(
+                "<meta name=\"description\" content=\"{}\" />",
+                escape(page.description)
+            )));
+            assert!(html.contains(&format!(
+                "<meta property=\"og:image\" content=\"https://lispm.ai{}\" />",
+                pages::CARD.src
+            )));
+            let ld = json_ld(Kind::Page(page)).unwrap_or_default();
+            assert!(ld.contains(&format!(
+                ",{{\"@type\":\"WebPage\",\"@id\":{}",
+                json_string(&absolute(page.path))
+            )));
+            assert!(ld.contains(&format!("\"isPartOf\":{}", Node::WebSite.reference())));
+            assert!(!ld.contains("</script"));
+            assert_eq!(ld.matches('{').count(), ld.matches('}').count());
+        }
+    }
+
+    #[test]
     fn heads_are_escaped() {
         let mut head = blog_head();
         head.title = "a \"b\" <c>".to_owned();
@@ -504,7 +578,7 @@ mod tests {
     }
 
     #[test]
-    fn the_map_lists_the_home_page_the_blog_and_every_post() {
+    fn the_map_lists_the_home_page_the_blog_every_post_and_every_page() {
         let map = sitemap();
         assert!(map.starts_with("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset "));
         assert!(map.ends_with("</urlset>\n"));
@@ -528,7 +602,10 @@ mod tests {
                 post.date.iso()
             )));
         }
-        assert_eq!(map.matches("<url>").count(), 2 + POSTS.len());
+        for page in &PAGES {
+            assert!(map.contains(&format!("<loc>{}</loc>\n  </url>", absolute(page.path))));
+        }
+        assert_eq!(map.matches("<url>").count(), 2 + POSTS.len() + PAGES.len());
     }
 
     #[test]

@@ -812,7 +812,8 @@ code {
 /* The blog: its headline over the posts, each a cover beside its title. */
 
 .blog,
-.post {
+.post,
+.standalone {
   max-width: var(--width);
   margin: 0 auto;
   padding: clamp(56px, 9vw, 104px) var(--gutter) 0;
@@ -895,19 +896,23 @@ code {
 }
 
 /* A post: its title over its cover, then its words in a column, its
-   pictures wider than the words. */
+   pictures wider than the words. A page that stands alone is set the same,
+   with no byline or cover. */
 
-.post-head {
+.post-head,
+.standalone-head {
   max-width: 860px;
   margin: 0 auto;
   text-align: center;
 }
 
-.post-head .eyebrow {
+.post-head .eyebrow,
+.standalone-head .eyebrow {
   font-size: 17px;
 }
 
-.post-head h1 {
+.post-head h1,
+.standalone-head h1 {
   font-size: clamp(36px, 6.4vw, 68px);
   line-height: 1.05;
   letter-spacing: -0.03em;
