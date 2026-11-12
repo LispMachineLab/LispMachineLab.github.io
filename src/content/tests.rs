@@ -31,6 +31,17 @@ fn pictures() -> impl Iterator<Item = Picture> {
 fn illustrations_are_every_stage_then_every_spotlight_clip() {
     let mut told = illustrations();
     for chapter in CHAPTERS {
+        if chapter.anchor == Anchor::Desktop {
+            for theme in DESKTOP_THEMES {
+                assert_eq!(
+                    told.next(),
+                    Some(Illustration {
+                        headline: theme.title,
+                        media: Media::Picture(theme.picture),
+                    })
+                );
+            }
+        }
         for stage in chapter.stages {
             assert_eq!(
                 told.next(),
@@ -219,9 +230,9 @@ fn the_steps_hold_the_install_line_once() {
 }
 
 #[test]
-fn hrefs_point_at_ids() {
-    assert_eq!(Anchor::Start.href(), "#start");
-    assert_eq!(Anchor::Agents.href(), "#agent");
+fn ids_are_named() {
+    assert_eq!(Anchor::Start.id(), "start");
+    assert_eq!(Anchor::Agents.id(), "agent");
 }
 
 #[test]

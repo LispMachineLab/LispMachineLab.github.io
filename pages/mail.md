@@ -14,7 +14,7 @@ Type your address, and LispM Mail fills in its servers.
 - **iCloud, Yahoo, Fastmail, QQ Mail, NetEase** and other providers log in with the password
   their settings make for mail programs.
 
-*Test Connection* logs in to both servers and says how it went.
+*Test Connection* in LispM Mail logs in to both servers over IMAP and SMTP and says how it went.
 
 ## Private by design
 

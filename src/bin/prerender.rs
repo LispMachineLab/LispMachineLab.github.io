@@ -2,12 +2,14 @@
 //! WebAssembly loads, and writes llms.txt beside it, and llms-full.txt, the
 //! same with every post's words; writes the blog's pages, the list at
 //! blog/index.html and each post at blog/<slug>/index.html, and its feed at
-//! blog/feed.xml; writes the pages that stand alone, LispM Mail's at
-//! mail/index.html and the privacy policy at privacy/index.html; writes
-//! 404.html, the page shown at addresses not on the site; and writes the
-//! site's map, sitemap.xml. Trunk runs it after every
-//! build (see Trunk.toml), naming the directory in `TRUNK_STAGING_DIR`; it
-//! can also be given the directory as its argument.
+//! blog/feed.xml; writes the Desktop page at desktop/index.html, the Apps page
+//! at apps/index.html, the Remote page at lispm-remote/index.html and the Q&A
+//! page at qa/index.html; writes the pages that stand alone, the download
+//! guide at download/index.html, LispM Mail's at mail/index.html and the
+//! privacy policy at privacy/index.html; writes 404.html, the page shown at
+//! addresses not on the site; and writes the site's map, sitemap.xml. Trunk
+//! runs it after every build (see Trunk.toml), naming the directory in
+//! `TRUNK_STAGING_DIR`; it can also be given the directory as its argument.
 
 #![deny(missing_docs)]
 
@@ -22,7 +24,9 @@ mod native {
     use lispm_site::blog::publish::{self as blog, BlogError};
     use lispm_site::pages::{self, PAGES};
     use lispm_site::publish::{self, PublishError};
-    use lispm_site::view::blog::{Blog, Missing, PostPage, PostProps};
+    use lispm_site::view::blog::{
+        Agent, Apps, Blog, Desktop, Missing, PostPage, PostProps, Questions, Remote,
+    };
     use lispm_site::view::page::App;
     use lispm_site::view::pages::{Standalone, StandaloneProps};
     use yew::{BaseComponent, LocalServerRenderer};
@@ -156,7 +160,10 @@ mod native {
         );
         let [short, full] = blog::LLMS.map(|path| directory.join(path.trim_start_matches('/')));
         write(&short, &llms)?;
-        write(&full, &format!("{llms}\n{}", blog::llms_posts()))?;
+        write(
+            &full,
+            &format!("{llms}\n{}\n{}", pages::llms_pages(), blog::llms_posts()),
+        )?;
         write(&directory.join("sitemap.xml"), &blog::sitemap())?;
         let missing = render(LocalServerRenderer::<Missing>::new().hydratable(false))?;
         write(
@@ -164,6 +171,31 @@ mod native {
             &blog::document(&blog::missing_head(), &links, &missing),
         )?;
         write_pages(&directory, &links)?;
+        let agent = render(LocalServerRenderer::<Agent>::new().hydratable(false))?;
+        write_page(
+            &directory.join("agent"),
+            &blog::agent_head(),
+            &links,
+            &agent,
+        )?;
+        let desktop = render(LocalServerRenderer::<Desktop>::new().hydratable(false))?;
+        write_page(
+            &directory.join("desktop"),
+            &blog::desktop_head(),
+            &links,
+            &desktop,
+        )?;
+        let apps = render(LocalServerRenderer::<Apps>::new().hydratable(false))?;
+        write_page(&directory.join("apps"), &blog::apps_head(), &links, &apps)?;
+        let remote = render(LocalServerRenderer::<Remote>::new().hydratable(false))?;
+        write_page(
+            &directory.join("lispm-remote"),
+            &blog::remote_head(),
+            &links,
+            &remote,
+        )?;
+        let qa = render(LocalServerRenderer::<Questions>::new().hydratable(false))?;
+        write_page(&directory.join("qa"), &blog::questions_head(), &links, &qa)?;
         write_blog(&directory, &links)
     }
 

@@ -7,7 +7,7 @@
 use std::fmt::Write as _;
 
 use crate::blog::{Picture, absolute};
-use crate::content::PRIVACY;
+use crate::content::{DOWNLOAD, PRIVACY};
 
 /// A page that stands alone: its words under a headline.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,12 +39,21 @@ pub const CARD: Picture = Picture {
 };
 
 /// The pages, in the order the site's map and llms.txt list them.
-pub static PAGES: [Page; 2] = [
+pub static PAGES: [Page; 3] = [
+    Page {
+        path: DOWNLOAD,
+        eyebrow: "Download",
+        title: "Get LispM, or put it in your own Emacs.",
+        meta_title: "Download LispM for Mac, Linux & Emacs — LispM",
+        description: "Install LispM on macOS or GNU/Linux with one line, try LispM Experimental \
+             on GNU Emacs 32, or install LispM Agent, Desktop and Browser in your own Emacs.",
+        body: include_str!("../pages/download.md"),
+    },
     Page {
         path: "/mail/",
         eyebrow: "LispM Mail",
         title: "Your mail, in one window.",
-        meta_title: "LispM Mail — your mail, in one classic-style window",
+        meta_title: "Your mail, in one classic-style window — LispM Mail",
         description: "LispM Mail puts your mail accounts in one classic-style window: a folder \
              list, a table of messages you can sort, and the message you choose under it.",
         body: include_str!("../pages/mail.md"),
@@ -72,6 +81,33 @@ pub fn llms_section() -> String {
             absolute(page.path),
             page.description,
         );
+    }
+    out
+}
+
+/// Returns every page that stands alone as Markdown, for llms-full.txt: its
+/// headline, its address, and its words with their headings two levels down
+/// and their root links made whole.
+pub fn llms_pages() -> String {
+    let mut out = String::from("## The pages, in full\n");
+    for page in &PAGES {
+        let body = format!(
+            "\n{}",
+            page.body
+                .replace("](/", &format!("]({}", crate::content::SITE))
+        )
+        .replace("\n## ", "\n#### ")
+        .replace("\n### ", "\n##### ");
+        let _ = write!(
+            out,
+            "\n### {}\n\n{}\n\n{}",
+            page.meta_title,
+            absolute(page.path),
+            body.trim_start(),
+        );
+        if !out.ends_with('\n') {
+            out.push('\n');
+        }
     }
     out
 }
@@ -148,6 +184,11 @@ mod tests {
         let on_site = |path: &str| {
             path == "/"
                 || path == BLOG
+                || path == crate::content::AGENT
+                || path == crate::content::DESKTOP
+                || path == crate::content::APPS
+                || path == crate::content::REMOTE
+                || path == crate::content::QA
                 || PAGES.iter().any(|page| page.path == path)
                 || POSTS.iter().any(|post| post.path() == path)
         };
@@ -172,5 +213,19 @@ mod tests {
                 page.meta_title, page.path, page.description
             )));
         }
+    }
+
+    #[test]
+    fn llms_full_txt_has_every_page_whole_its_links_whole_too() {
+        let pages = llms_pages();
+        for page in &PAGES {
+            assert!(pages.contains(&format!(
+                "\n### {}\n\nhttps://lispm.ai{}\n",
+                page.meta_title, page.path
+            )));
+        }
+        assert!(!pages.contains("](/"));
+        assert!(!pages.contains("\n## "));
+        assert!(pages.ends_with('\n'));
     }
 }

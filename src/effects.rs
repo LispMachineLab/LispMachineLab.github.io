@@ -38,25 +38,6 @@ pub fn platform() -> Platform {
         .map_or(Platform::Mac, |agent| Platform::of_user_agent(&agent))
 }
 
-/// Scrolls to the section the address names after `#`, if any. The browser
-/// looks for it before the page is drawn, so it is looked for again after.
-pub fn reveal_addressed_section() {
-    let Some(window) = web_sys::window() else {
-        return;
-    };
-    let id = window
-        .location()
-        .hash()
-        .ok()
-        .and_then(|hash| hash.strip_prefix('#').map(str::to_owned));
-    let section = id
-        .filter(|id| !id.is_empty())
-        .and_then(|id| window.document()?.get_element_by_id(&id));
-    if let Some(section) = section {
-        section.scroll_into_view();
-    }
-}
-
 /// Puts `text` on the clipboard.
 pub async fn copy(text: &str) -> Result<(), CopyError> {
     let window = web_sys::window().ok_or(CopyError::Unavailable)?;

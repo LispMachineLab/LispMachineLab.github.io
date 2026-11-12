@@ -6,12 +6,11 @@
 use yew::prelude::*;
 
 use crate::content::{
-    APP_ICON, Anchor, BACKENDS, BLOG, CHAPTERS, CREDITS, Chapter, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD,
-    DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
-    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER_DOES,
-    INSTALLER_SOURCE, INSTALLER_UPDATES, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE,
-    PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS,
-    SUMMARY, Spotlight, Step, TAGLINE, X,
+    AGENT, APP_ICON, APPS, Anchor, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DOWNLOAD,
+    DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
+    INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Media, ORGANIZATION,
+    PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, REMOTE, REQUIREMENTS, SUMMARY, Spotlight,
+    Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -22,12 +21,24 @@ use super::media::{Film, Loop, Still};
 /// The rainbow λ, LispM's mark, from the root, as the blog's pages are deeper.
 const LOGO: &str = "/assets/lispm-lambda.png";
 
-/// The page a navigation bar is on: the home page reaches its sections by
-/// their ids, the other pages through the home page.
+/// The page a navigation bar is on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(target_arch = "wasm32", allow(dead_code))]
 pub(crate) enum Place {
     /// The home page.
     Home,
+    /// The LispM Agent page.
+    Agent,
+    /// The LispM Desktop page.
+    Desktop,
+    /// The LispM App Store page.
+    Apps,
+    /// The LispM Remote page.
+    Remote,
+    /// The download and Emacs installation guide.
+    Download,
+    /// The questions page.
+    Questions,
     /// The blog, or a post in it.
     Blog,
     /// Any other page: one that stands alone, as LispM Mail's and the
@@ -35,29 +46,20 @@ pub(crate) enum Place {
     Elsewhere,
 }
 
-impl Place {
-    /// Returns the link to the home page's `anchor` from here.
-    pub(crate) fn href(self, anchor: Anchor) -> String {
-        match self {
-            Place::Home => anchor.href(),
-            Place::Blog | Place::Elsewhere => format!("/{}", anchor.href()),
-        }
-    }
-}
-
 /// The site.
 #[function_component(App)]
 pub fn app() -> Html {
-    use_effect_with((), |_| effects::reveal_addressed_section());
     html! {
         <>
             { navigation(Place::Home) }
             <main>
                 { hero() }
                 { idea() }
-                { for CHAPTERS.iter().map(chapter) }
+                { for CHAPTERS
+                    .iter()
+                    .filter(|c| c.anchor == Anchor::Trust)
+                    .map(chapter) }
                 { start() }
-                { questions() }
             </main>
             { footer(Place::Home) }
         </>
@@ -71,21 +73,49 @@ pub(crate) fn outward(href: &'static str, class: &'static str, label: &'static s
 
 /// Returns the navigation bar of a page at `place`.
 pub(crate) fn navigation(place: Place) -> Html {
-    let home = match place {
-        Place::Home => "#top",
-        Place::Blog | Place::Elsewhere => "/",
-    };
     html! {
         <header class="navigation">
             <nav aria-label="LispM">
-                <a class="brand" href={home}>
+                <a class="brand" href="/">
                     <img src={LOGO} alt="" width="22" height="22" />
                     <span>{ "LispM" }</span>
                 </a>
                 <ul>
-                    { for Anchor::NAVIGATION.iter().map(|anchor| html! {
-                        <li><a href={place.href(*anchor)}>{ anchor.name() }</a></li>
-                    }) }
+                    <li>
+                        <a href="/" aria-current={(place == Place::Home).then_some("true")}>
+                            { "Home" }
+                        </a>
+                    </li>
+                    <li>
+                        <a href={AGENT} aria-current={(place == Place::Agent).then_some("true")}>
+                            { "Agent" }
+                        </a>
+                    </li>
+                    <li>
+                        <a href={DESKTOP} aria-current={(place == Place::Desktop).then_some("true")}>
+                            { "Desktop" }
+                        </a>
+                    </li>
+                    <li>
+                        <a href={APPS} aria-current={(place == Place::Apps).then_some("true")}>
+                            { "Apps" }
+                        </a>
+                    </li>
+                    <li>
+                        <a href={REMOTE} aria-current={(place == Place::Remote).then_some("true")}>
+                            { "Remote" }
+                        </a>
+                    </li>
+                    <li>
+                        <a href={DOWNLOAD} aria-current={(place == Place::Download).then_some("true")}>
+                            { "Download" }
+                        </a>
+                    </li>
+                    <li>
+                        <a href={QA} aria-current={(place == Place::Questions).then_some("true")}>
+                            { "Q&A" }
+                        </a>
+                    </li>
                     <li>
                         <a href={BLOG} aria-current={(place == Place::Blog).then_some("true")}>
                             { "Blog" }
@@ -111,7 +141,7 @@ fn download_button() -> Html {
         use_effect_with((), move |_| platform.set(effects::platform()));
     }
     html! {
-        <a class="button primary" href={Anchor::Start.href()}>{ platform.download() }</a>
+        <a class="button primary" href={DOWNLOAD}>{ platform.download() }</a>
     }
 }
 
@@ -136,7 +166,7 @@ fn hero() -> Html {
 
 /// Returns `points` as a grid of tiles: in rows of three when they fill
 /// rows of three but not of four.
-fn points(points: &[Point]) -> Html {
+pub(crate) fn points(points: &[Point]) -> Html {
     let thirds = points.len().is_multiple_of(3) && !points.len().is_multiple_of(4);
     html! {
         <ul class={classes!("points", thirds.then_some("thirds"))}>
@@ -205,7 +235,6 @@ fn chapter(chapter: &Chapter) -> Html {
             { for chapter.spotlights.iter().map(spotlight) }
             { points(chapter.points) }
             <div class="actions">
-                <a class="button primary" href={Anchor::Start.href()}>{ "Get LispM" }</a>
                 { outward(chapter.repository, "button", "View on GitHub") }
             </div>
         </section>
@@ -257,73 +286,17 @@ fn download() -> Html {
     }
 }
 
-/// The experimental LispM.app, on Emacs 32: who it is for beside its line,
-/// as the projects' own installs are laid out.
-fn experimental() -> Html {
-    html! {
-        <article class="install experimental">
-            <div>
-                <p class="eyebrow">{ "Experimental" }</p>
-                <h3>{ EXPERIMENTAL_HEADLINE }</h3>
-                <p>{ EXPERIMENTAL }</p>
-            </div>
-            <div>
-                <Code snippet={INSTALL_EXPERIMENTAL} />
-                <p class="back">{ EXPERIMENTAL_BACK }{ " " }<code>{ INSTALL_BACK }</code></p>
-            </div>
-        </article>
-    }
-}
-
 fn start() -> Html {
     html! {
         <section class="section start" id={Anchor::Start.id()}>
             <h2>{ DOWNLOAD_HEADLINE }</h2>
             <p class="lead">{ DOWNLOAD_LEAD }</p>
             { download() }
-            { experimental() }
-            <h3 class="own-emacs">{ OWN_EMACS_HEADLINE }</h3>
-            <p class="lead">{ OWN_EMACS }</p>
-            <div class="installs">
-                { for PROJECTS.iter().filter_map(|project| {
-                    let install = project.install?;
-                    Some(html! {
-                        <article class="install">
-                            <div>
-                                <h3>{ project.name }</h3>
-                                <p>{ install.audience }</p>
-                            </div>
-                            <Code snippet={install.snippet} />
-                        </article>
-                    })
-                }) }
+            <div class="actions">
+                <a class="button" href={DOWNLOAD}>
+                    { "LispM Experimental, your own Emacs & model setup" }
+                </a>
             </div>
-            <p class="model">
-                { "Then give the agents a model. Claude Code and Codex, once installed, and the App \
-                   Store's Hermes, Holon and OpenClaw show beside LispM's own agents, which need only " }
-                <code>{ "OPENAI_API_KEY" }</code>{ " or " }<code>{ "ANTHROPIC_API_KEY" }</code>
-                { " set in your shell's profile, where LispM.app reads it, or in your own Emacs's \
-                   environment. For any other server, local or hosted, see " }
-                { outward(BACKENDS, "", "Backends") }{ "." }
-            </p>
-        </section>
-    }
-}
-
-/// The questions people ask about LispM, each answered in full where
-/// people, search engines and language models all read it.
-fn questions() -> Html {
-    html! {
-        <section class="section questions" id={Anchor::Questions.id()}>
-            <h2>{ QUESTIONS_HEADLINE }</h2>
-            <ul class="answers">
-                { for QUESTIONS.iter().map(|question| html! {
-                    <li>
-                        <h3>{ question.question }</h3>
-                        <p>{ question.answer }</p>
-                    </li>
-                }) }
-            </ul>
         </section>
     }
 }
@@ -343,6 +316,13 @@ pub(crate) fn footer(place: Place) -> Html {
                 }) }
                 <li>{ outward(ORGANIZATION, "", "LispMachineLab") }</li>
                 <li>{ outward(X, "", "@lispm_ai on X") }</li>
+                <li><a href="/">{ "Home" }</a></li>
+                <li><a href={AGENT}>{ "Agent" }</a></li>
+                <li><a href={DESKTOP}>{ "Desktop" }</a></li>
+                <li><a href={APPS}>{ "Apps" }</a></li>
+                <li><a href={REMOTE}>{ "Remote" }</a></li>
+                <li><a href={DOWNLOAD}>{ "Download" }</a></li>
+                <li><a href={QA}>{ "Q&A" }</a></li>
                 <li><a href={BLOG}>{ "Blog" }</a></li>
                 <li><a href={PRIVACY}>{ "Privacy" }</a></li>
             </ul>

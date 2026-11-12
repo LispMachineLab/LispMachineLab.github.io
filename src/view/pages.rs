@@ -22,10 +22,15 @@ pub struct StandaloneProps {
 #[function_component(Standalone)]
 pub fn standalone(props: &StandaloneProps) -> Html {
     let page = props.page;
+    let place = if page.path == crate::content::DOWNLOAD {
+        Place::Download
+    } else {
+        Place::Elsewhere
+    };
     let body = Html::from_html_unchecked(markdown::to_html(page.body, size::of).into());
     html! {
         <>
-            { navigation(Place::Elsewhere) }
+            { navigation(place) }
             <main class="standalone">
                 <article>
                     <header class="standalone-head">
@@ -35,7 +40,7 @@ pub fn standalone(props: &StandaloneProps) -> Html {
                     <div class="prose">{ body }</div>
                 </article>
             </main>
-            { footer(Place::Elsewhere) }
+            { footer(place) }
         </>
     }
 }

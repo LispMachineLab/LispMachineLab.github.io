@@ -114,6 +114,15 @@ fn the_pages_that_stand_alone_show_the_home_pages_card() {
             (card.src, card.alt)
         );
     }
+    for head in [
+        crate::blog::publish::agent_head(),
+        crate::blog::publish::desktop_head(),
+        crate::blog::publish::apps_head(),
+        crate::blog::publish::remote_head(),
+        crate::blog::publish::questions_head(),
+    ] {
+        assert_eq!(head.card, (card.src, card.alt));
+    }
 }
 
 #[test]
