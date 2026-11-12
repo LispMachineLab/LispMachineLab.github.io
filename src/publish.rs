@@ -12,12 +12,13 @@
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DOWNLOAD_LEAD,
-    DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK, EXPERIMENTAL_HEADLINE, FILM, IDEA,
-    IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER,
-    INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Illustration, LICENSE, Media,
-    ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Platform, Point, Project, QUESTIONS,
-    QUESTIONS_HEADLINE, REQUIREMENTS, SITE, TAGLINE, TITLE, X, illustrations,
+    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DESKTOP_THEMES,
+    DOWNLOAD, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK,
+    EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
+    INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE,
+    INSTALLER_UPDATES, Illustration, LICENSE, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE,
+    PROJECTS, Platform, Point, Project, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS, SITE, TAGLINE,
+    TITLE, X, illustrations,
 };
 
 /// The id of the element the page is rendered into and hydrated in.
@@ -158,7 +159,7 @@ pub(crate) fn organization() -> String {
 }
 
 /// Returns the site as a schema.org WebSite.
-fn website() -> String {
+pub(crate) fn website() -> String {
     format!(
         "{{\"@type\":\"WebSite\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
          \"description\":{},\"inLanguage\":\"en\",\"publisher\":{}}}",
@@ -166,6 +167,38 @@ fn website() -> String {
         json_string(SITE),
         json_string(DEFINITION),
         Node::Organization.reference(),
+    )
+}
+
+/// Returns the id of `page`'s BreadcrumbList node.
+pub(crate) fn breadcrumb_id(page: &str) -> String {
+    format!("{page}#breadcrumb")
+}
+
+/// Returns `crumbs`, from the home page to `page`, as a schema.org
+/// BreadcrumbList.
+pub(crate) fn breadcrumb(page: &str, crumbs: &[(&str, &str)]) -> String {
+    let items = crumbs.iter().enumerate().map(|(index, (name, url))| {
+        format!(
+            "{{\"@type\":\"ListItem\",\"position\":{},\"name\":{},\"item\":{}}}",
+            index + 1,
+            json_string(name),
+            json_string(url),
+        )
+    });
+    format!(
+        "{{\"@type\":\"BreadcrumbList\",\"@id\":{},\"itemListElement\":{}}}",
+        json_string(&breadcrumb_id(page)),
+        json_array(items),
+    )
+}
+
+/// Returns `selectors` as a schema.org SpeakableSpecification: the parts of
+/// a page an answer engine or screen reader may read aloud as its summary.
+pub(crate) fn speakable(selectors: &[&str]) -> String {
+    format!(
+        "{{\"@type\":\"SpeakableSpecification\",\"cssSelector\":{}}}",
+        json_array(selectors.iter().copied().map(json_string)),
     )
 }
 
@@ -180,7 +213,7 @@ fn emacs() -> String {
 }
 
 /// Returns the questions as schema.org Questions, each with its answer.
-fn questions() -> String {
+pub(crate) fn questions() -> String {
     json_array(QUESTIONS.iter().map(|question| {
         format!(
             "{{\"@type\":\"Question\",\"name\":{},\"acceptedAnswer\":{{\"@type\":\"Answer\",\
@@ -199,12 +232,15 @@ fn home_page() -> String {
     format!(
         "{{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":{site},\"url\":{site},\"name\":{},\
          \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
          \"mentions\":[{},{{\"@type\":\"Thing\",\"name\":\"Lisp machine\",\"sameAs\":{}}}],\
          \"video\":{},\"mainEntity\":{}}}",
         json_string(TITLE),
         json_string(DESCRIPTION),
         Node::WebSite.reference(),
         Node::Application.reference(),
+        json_string(&breadcrumb_id(SITE)),
+        speakable(&["h1", ".hero .summary", "#idea .lead", "#questions .answers"]),
         emacs(),
         json_string(LISP_MACHINE),
         json_array(
@@ -217,7 +253,7 @@ fn home_page() -> String {
 
 /// Returns the film and every clip beside the chapters, top to bottom, each
 /// with the headline it illustrates: the film's is the page's, the tagline.
-fn videos() -> impl Iterator<Item = (&'static str, Clip)> {
+pub(crate) fn videos() -> impl Iterator<Item = (&'static str, Clip)> {
     std::iter::once((TAGLINE, FILM)).chain(illustrations().filter_map(|illustration| {
         illustration
             .media
@@ -300,7 +336,7 @@ fn operating_systems() -> String {
 /// Returns LispM as a schema.org SoftwareApplication: free, for the Mac and
 /// GNU/Linux, installed by the line on the page, its screenshots the stills
 /// beside the chapters. The film's poster, a title, is no screenshot.
-fn application() -> String {
+pub(crate) fn application() -> String {
     format!(
         "{{\"@type\":\"SoftwareApplication\",\"@id\":{},\"name\":\"LispM\",\"url\":{},\
          \"description\":{},\"applicationCategory\":\"DeveloperApplication\",\
@@ -313,7 +349,7 @@ fn application() -> String {
         json_string(&format!("{DEFINITION} {DOWNLOAD_LEAD}")),
         json_string(&operating_systems()),
         json_string(&format!("{SITE}{INSTALLER}")),
-        json_string(&format!("{SITE}{}", Anchor::Start.href())),
+        json_string(&format!("{SITE}{}", DOWNLOAD.trim_start_matches('/'))),
         json_array(illustrations().map(screenshot)),
         json_string(LICENSE),
         Node::Organization.reference(),
@@ -326,10 +362,16 @@ fn application() -> String {
 /// the projects it is made of and the videos that show it.
 pub fn json_ld() -> String {
     graph(
-        [organization(), website(), home_page(), application()]
-            .into_iter()
-            .chain(PROJECTS.iter().map(source_code))
-            .chain(videos().map(video)),
+        [
+            organization(),
+            website(),
+            breadcrumb(SITE, &[("LispM", SITE)]),
+            home_page(),
+            application(),
+        ]
+        .into_iter()
+        .chain(PROJECTS.iter().map(source_code))
+        .chain(videos().map(video)),
     )
 }
 
@@ -361,6 +403,17 @@ fn markdown_chapter(chapter: &Chapter) -> String {
         "## {}: {}\n\n{}\n\n",
         chapter.eyebrow, chapter.headline, chapter.lead
     );
+    if chapter.anchor == Anchor::Desktop {
+        out.push_str("### The Three Desktops\n\n");
+        for theme in &DESKTOP_THEMES {
+            let _ = writeln!(
+                out,
+                "- **{} — {}**: {} (`{}`)",
+                theme.eyebrow, theme.title, theme.description, theme.setting
+            );
+        }
+        out.push('\n');
+    }
     for stage in chapter.stages {
         let _ = writeln!(out, "- **{}** {}", stage.headline, stage.text);
     }
@@ -521,6 +574,12 @@ pub fn llms_txt() -> String {
     let _ = writeln!(
         out,
         "## Links\n\n\
+         - [LispM Agent]({SITE}agent/)\n\
+         - [LispM Desktop]({SITE}desktop/)\n\
+         - [LispM App Store]({SITE}apps/)\n\
+         - [LispM Remote]({SITE}lispm-remote/)\n\
+         - [Download LispM]({SITE}download/)\n\
+         - [Questions & Answers]({SITE}qa/)\n\
          - [LispMachineLab on GitHub]({ORGANIZATION})\n\
          - [LispM on X]({X})\n\
          - [The film]({SITE}{}): {}\n\
@@ -583,7 +642,7 @@ mod tests {
             );
         }
         assert!(ld.contains("\"downloadUrl\":\"https://lispm.ai/install.sh\""));
-        assert!(ld.contains("\"installUrl\":\"https://lispm.ai/#start\""));
+        assert!(ld.contains("\"installUrl\":\"https://lispm.ai/download/\""));
         assert!(ld.contains("\"price\":\"0\""));
         assert!(
             ld.contains("\"isBasedOn\":{\"@type\":\"SoftwareApplication\",\"name\":\"GNU Emacs\"")
@@ -657,7 +716,39 @@ mod tests {
             assert_eq!(defined, 1, "{} is defined once", node.id());
             assert!(named > 0, "{} is named", node.id());
         }
+        let crumbs = format!("\"@id\":{}", json_string(&breadcrumb_id(SITE)));
+        assert_eq!(ld.matches(&format!("{crumbs},")).count(), 1);
+        assert_eq!(ld.matches(&format!("{crumbs}}}")).count(), 1);
+        assert!(ld.contains("\"@type\":\"SpeakableSpecification\""));
         assert_eq!(Node::Organization.id(), "https://lispm.ai/#organization");
+    }
+
+    #[test]
+    fn robots_txt_welcomes_search_and_ai_crawlers_with_content_signals() {
+        let robots =
+            std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/static/robots.txt"))
+                .unwrap_or_default();
+        assert!(robots.contains(
+            "Content-Signal: search=yes, ai-input=yes, ai-retrieval=yes, ai-train=yes\n"
+        ));
+        for agent in [
+            "Googlebot",
+            "bingbot",
+            "OAI-SearchBot",
+            "GPTBot",
+            "ClaudeBot",
+            "PerplexityBot",
+            "Google-Extended",
+            "Applebot-Extended",
+            "*",
+        ] {
+            assert!(
+                robots.contains(&format!("User-agent: {agent}\n")),
+                "{agent}"
+            );
+        }
+        assert!(robots.contains("Allow: /\n"));
+        assert!(robots.contains(&format!("Sitemap: {SITE}sitemap.xml")));
     }
 
     #[test]
@@ -666,6 +757,20 @@ mod tests {
             .unwrap_or_default();
         assert!(index.contains(&format!("<title>{TITLE}</title>")));
         assert!(index.contains(&format!("name=\"description\" content=\"{DESCRIPTION}\"")));
+        assert!(
+            index.contains("<link rel=\"alternate\" hreflang=\"en\" href=\"https://lispm.ai/\" />")
+        );
+        assert!(index.contains(
+            "<link rel=\"alternate\" hreflang=\"x-default\" href=\"https://lispm.ai/\" />"
+        ));
+        assert!(index.contains("<link rel=\"llms-txt\" href=\"https://lispm.ai/llms.txt\" />"));
+        assert!(
+            index
+                .contains("<link rel=\"llms-full-txt\" href=\"https://lispm.ai/llms-full.txt\" />")
+        );
+        assert!(index.contains(
+            "<link rel=\"sitemap\" type=\"application/xml\" href=\"https://lispm.ai/sitemap.xml\" />"
+        ));
         for text in [TITLE, DESCRIPTION] {
             assert!(
                 !text.contains(['"', '&', '<', '>']),

@@ -13,26 +13,36 @@ The page reads before WebAssembly loads, for crawlers and language models as muc
 connections: after each build Trunk runs `prerender` (see `Trunk.toml`), which renders the same
 Yew components natively into `index.html`'s `<div id="app">`, puts JSON-LD describing the site
 and its projects in the head, and writes `llms.txt`, the page as Markdown, and `llms-full.txt`,
-the same with every post's words. In the browser the page is hydrated, not drawn again.
+the same with every page's and post's words. In the browser the page is hydrated, not drawn again.
 `prerender` also draws the blog's pages, the list of posts at `blog/index.html` and each post at
-`blog/<slug>/index.html`, as plain pages that load no WebAssembly; the blog's Atom feed at
-`blog/feed.xml`; `404.html`, the page GitHub Pages shows at addresses not on the site, kept out
-of search engines; and `sitemap.xml`, which lists the pages, and the stills the home page shows.
+`blog/<slug>/index.html`, the Agent page at `agent/index.html`, the Desktop page at
+`desktop/index.html`, the Apps page at `apps/index.html`, the Remote page at
+`lispm-remote/index.html`, the Q&A page at
+`qa/index.html`, and the pages that stand alone
+(`download/index.html`, `mail/index.html` and `privacy/index.html`), as plain pages that load no
+WebAssembly; the blog's Atom feed at `blog/feed.xml`; `404.html`, the page GitHub Pages shows at
+addresses not on the site, kept out of search engines; and `sitemap.xml`, which lists the pages,
+and the stills and videos the home page shows.
 
 For search engines and the answer engines built on them, every page has its own title and a
-description within the 160 characters they show (tests keep both), and its pictures their width
-and height. What LispM is, `content::DEFINITION` (an AI agent harness built on GNU Emacs and the
-ideas of the Lisp Machine), is told in the same words wherever they look: the description, the
-JSON-LD, llms.txt and the first of the questions at the foot of the page, which are also the
-page's FAQPage. The JSON-LD is one graph whose nodes name each other by id: LispM, the organization,
-is the same node on every page, with its logo and its accounts on GitHub and X, and the app, the
-site, the blog and the posts point to it. So that what LispM looks like is not guessed at, the
-app's screenshots are the stills beside the chapters, the clips' posters and the pictures, and
-every clip, the film's too, is a VideoObject about the app, named by the headline it illustrates
-and dated the day it was first published; llms.txt shows them all under Screenshots, and the
-sitemap names them as the home page's images. After each deploy, `scripts/indexnow.sh` tells Bing and
-the other engines that take IndexNow that the sitemap's pages are new. Google and Bing learn of
-the site through their webmaster tools, where `sitemap.xml` is submitted by hand.
+description within the 160 characters they show (tests keep both), `hreflang` (`en` and
+`x-default`) and links to `llms.txt`, `llms-full.txt` and `sitemap.xml`, and its pictures their
+width and height. `robots.txt` welcomes search and AI crawlers by name (`Googlebot`, `bingbot`,
+`OAI-SearchBot`, `GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended` and `Applebot-Extended`)
+with `Content-Signal: search=yes, ai-input=yes, ai-retrieval=yes, ai-train=yes`. What LispM is,
+`content::DEFINITION` (an AI agent harness built on GNU Emacs and the ideas of the Lisp Machine),
+is told in the same words wherever they look: the description, the JSON-LD, llms.txt and the
+first of the questions at the foot of the page, which are also the page's FAQPage. The JSON-LD is
+one graph whose nodes name each other by id: LispM, the organization, is the same node on every
+page, with its logo and its accounts on GitHub and X, and the app, the site, the breadcrumb path,
+the speakable selectors, the blog and the posts point to it. So that what LispM looks like is not
+guessed at, the app's screenshots are the stills beside the chapters, the clips' posters and the
+pictures, and every clip, the film's too, is a VideoObject about the app, named by the headline it
+illustrates and dated the day it was first published; llms.txt shows them all under Screenshots,
+and the sitemap names them as the home page's images and videos. After each deploy,
+`scripts/indexnow.sh` tells Bing and the other engines that take IndexNow that the sitemap's pages
+are new. Google and Bing learn of the site through their webmaster tools, where `sitemap.xml` is
+submitted by hand.
 
 ## Layout
 

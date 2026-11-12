@@ -10,9 +10,15 @@ use std::fmt::{self, Write as _};
 use super::feed::FEED;
 use super::markdown::escape;
 use super::{Author, CARD, DESCRIPTION, HEADLINE, LEAD, LISPM, POSTS, Post, absolute};
-use crate::content::{BLOG, FILM, SITE, illustrations};
+use crate::content::{
+    AGENT, AGENT_DESCRIPTION, APPS, APPS_DESCRIPTION, BLOG, DESKTOP, DESKTOP_DESCRIPTION, FILM, QA,
+    QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE, REMOTE_DESCRIPTION, SITE, illustrations,
+};
 use crate::pages::{self, PAGES, Page};
-use crate::publish::{Node, graph, json_array, json_string, organization};
+use crate::publish::{
+    Node, application, breadcrumb, breadcrumb_id, graph, json_array, json_string, organization,
+    questions, speakable, videos, website,
+};
 
 /// Why the blog's pages could not be made.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -55,11 +61,22 @@ pub fn shared_links(index: &str) -> Result<String, BlogError> {
 /// What a page is, to those it is shared with.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    /// LispM Agent's own page: AI agents inside GNU Emacs.
+    Agent,
+    /// LispM Desktop's own page: the three classic desktops and workspaces.
+    Desktop,
+    /// The LispM App Store's own page: apps, skills, classic AI and games.
+    Apps,
+    /// LispM Remote's own page: QR pairing and peer-to-peer phone access.
+    Remote,
+    /// The questions people ask about LispM, answered.
+    Questions,
     /// The list of posts.
     Blog,
     /// A post.
     Article(&'static Post),
-    /// A page that stands alone: LispM Mail's, or the privacy policy.
+    /// A page that stands alone: the download guide, LispM Mail's, or the
+    /// privacy policy.
     Page(&'static Page),
     /// The page at addresses not on the site: kept out of search engines.
     Missing,
@@ -85,11 +102,76 @@ pub struct Head {
 /// The blog's name.
 const NAME: &str = "LispM Blog";
 
+/// Returns the head of the Agent page.
+pub fn agent_head() -> Head {
+    let headline = "LispM Agent: AI agents inside GNU Emacs — LispM";
+    Head {
+        title: headline.to_owned(),
+        headline,
+        description: AGENT_DESCRIPTION,
+        path: AGENT.to_owned(),
+        kind: Kind::Agent,
+        card: (pages::CARD.src, pages::CARD.alt),
+    }
+}
+
+/// Returns the head of the Desktop page.
+pub fn desktop_head() -> Head {
+    let headline = "LispM Desktop: Genera, Mac OS 9 & Win 3.2 — LispM";
+    Head {
+        title: headline.to_owned(),
+        headline,
+        description: DESKTOP_DESCRIPTION,
+        path: DESKTOP.to_owned(),
+        kind: Kind::Desktop,
+        card: (pages::CARD.src, pages::CARD.alt),
+    }
+}
+
+/// Returns the head of the Apps page.
+pub fn apps_head() -> Head {
+    let headline = "LispM App Store: apps your agents can drive — LispM";
+    Head {
+        title: headline.to_owned(),
+        headline,
+        description: APPS_DESCRIPTION,
+        path: APPS.to_owned(),
+        kind: Kind::Apps,
+        card: (pages::CARD.src, pages::CARD.alt),
+    }
+}
+
+/// Returns the head of the Remote page.
+pub fn remote_head() -> Head {
+    let headline = "LispM Remote: your agents in your pocket — LispM";
+    Head {
+        title: headline.to_owned(),
+        headline,
+        description: REMOTE_DESCRIPTION,
+        path: REMOTE.to_owned(),
+        kind: Kind::Remote,
+        card: (pages::CARD.src, pages::CARD.alt),
+    }
+}
+
+/// Returns the head of the questions page.
+pub fn questions_head() -> Head {
+    let headline = "Questions, answered: AI agents in Emacs — LispM";
+    Head {
+        title: headline.to_owned(),
+        headline,
+        description: QUESTIONS_LEAD,
+        path: QA.to_owned(),
+        kind: Kind::Questions,
+        card: (pages::CARD.src, pages::CARD.alt),
+    }
+}
+
 /// Returns the head of the list of posts.
 pub fn blog_head() -> Head {
     let headline = "LispM Blog: notes from the lab";
     Head {
-        title: headline.to_owned(),
+        title: format!("{headline} — LispM"),
         headline,
         description: DESCRIPTION,
         path: BLOG.to_owned(),
@@ -192,30 +274,217 @@ fn blog() -> String {
     )
 }
 
+/// Returns a feature page at `path` as a schema.org WebPage of the site.
+fn feature_page(path: &str, name: &str, description: &str, selectors: &[&str]) -> String {
+    let url = absolute(path);
+    format!(
+        "{{\"@type\":\"WebPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
+         \"mainEntity\":[{}]}}",
+        json_string(name),
+        json_string(description),
+        Node::WebSite.reference(),
+        Node::Application.reference(),
+        Node::Organization.reference(),
+        json_string(&breadcrumb_id(&url)),
+        speakable(selectors),
+        Node::Application.reference(),
+        quoted = json_string(&url),
+    )
+}
+
+/// Returns the Q&A page as a schema.org WebPage and FAQPage of the site.
+fn questions_page() -> String {
+    let url = absolute(QA);
+    format!(
+        "{{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
+         \"mainEntity\":{}}}",
+        json_string(QUESTIONS_HEADLINE),
+        json_string(QUESTIONS_LEAD),
+        Node::WebSite.reference(),
+        Node::Application.reference(),
+        Node::Organization.reference(),
+        json_string(&breadcrumb_id(&url)),
+        speakable(&["h1", ".lead", ".answers"]),
+        questions(),
+        quoted = json_string(&url),
+    )
+}
+
+/// Returns the blog's page as a schema.org CollectionPage of the site.
+fn blog_page() -> String {
+    let url = absolute(BLOG);
+    format!(
+        "{{\"@type\":\"CollectionPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
+         \"mainEntity\":[{{\"@id\":{}}}]}}",
+        json_string(NAME),
+        json_string(DESCRIPTION),
+        Node::WebSite.reference(),
+        Node::Application.reference(),
+        Node::Organization.reference(),
+        json_string(&breadcrumb_id(&url)),
+        speakable(&["h1", ".lead", ".posts"]),
+        json_string(&blog_id()),
+        quoted = json_string(&url),
+    )
+}
+
+/// Returns `post`'s page as a schema.org WebPage of the site, the post its
+/// main entity.
+fn post_page(post: &Post) -> String {
+    let url = absolute(&post.path());
+    format!(
+        "{{\"@type\":\"WebPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
+         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
+         \"mainEntity\":[{{\"@id\":{}}}]}}",
+        json_string(post.title),
+        json_string(post.summary),
+        Node::WebSite.reference(),
+        Node::Application.reference(),
+        Node::Organization.reference(),
+        json_string(&breadcrumb_id(&url)),
+        speakable(&["h1", ".prose"]),
+        json_string(&format!("{url}#article")),
+        quoted = json_string(&url),
+    )
+}
+
 /// Returns `page`, a page that stands alone, as a schema.org WebPage of
 /// the site.
 fn web_page(page: &Page) -> String {
+    let url = absolute(page.path);
     format!(
-        "{{\"@type\":\"WebPage\",\"@id\":{url},\"url\":{url},\"name\":{},\"description\":{},\
-         \"inLanguage\":\"en\",\"isPartOf\":{},\"publisher\":{}}}",
+        "{{\"@type\":\"WebPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\"description\":{},\
+         \"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\"publisher\":{},\
+         \"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\"mainEntity\":[{}]}}",
         json_string(page.meta_title),
         json_string(page.description),
         Node::WebSite.reference(),
+        Node::Application.reference(),
         Node::Organization.reference(),
-        url = json_string(&absolute(page.path)),
+        json_string(&breadcrumb_id(&url)),
+        speakable(&["h1", ".prose"]),
+        Node::Application.reference(),
+        quoted = json_string(&url),
     )
 }
 
 /// Returns the JSON-LD of a page, LispM the organization in it, or nothing
 /// for a page kept out of search engines.
 pub fn json_ld(kind: Kind) -> Option<String> {
-    let page = match kind {
-        Kind::Blog => blog(),
-        Kind::Article(post) => posting(post),
-        Kind::Page(page) => web_page(page),
+    let blog_url = absolute(BLOG);
+    let nodes: Vec<String> = match kind {
+        Kind::Agent => {
+            let url = absolute(AGENT);
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(&url, &[("LispM", SITE), ("Agent", &url)]),
+                feature_page(
+                    AGENT,
+                    "LispM Agent: Ask, and it gets done.",
+                    AGENT_DESCRIPTION,
+                    &["h1", ".lead", ".points"],
+                ),
+            ]
+        }
+        Kind::Desktop => {
+            let url = absolute(DESKTOP);
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(&url, &[("LispM", SITE), ("Desktop", &url)]),
+                feature_page(
+                    DESKTOP,
+                    "LispM Desktop: Three classic desktops, one workspace for agents.",
+                    DESKTOP_DESCRIPTION,
+                    &["h1", ".lead", ".theme-cards"],
+                ),
+            ]
+        }
+        Kind::Apps => {
+            let url = absolute(APPS);
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(&url, &[("LispM", SITE), ("Apps", &url)]),
+                feature_page(
+                    APPS,
+                    "LispM App Store: Apps your agents can drive.",
+                    APPS_DESCRIPTION,
+                    &["h1", ".lead", ".points"],
+                ),
+            ]
+        }
+        Kind::Remote => {
+            let url = absolute(REMOTE);
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(&url, &[("LispM", SITE), ("Remote", &url)]),
+                feature_page(
+                    REMOTE,
+                    "LispM Remote: Your agents, in your pocket.",
+                    REMOTE_DESCRIPTION,
+                    &["h1", ".lead", ".points"],
+                ),
+            ]
+        }
+        Kind::Questions => {
+            let url = absolute(QA);
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(&url, &[("LispM", SITE), ("Q&A", &url)]),
+                questions_page(),
+            ]
+        }
+        Kind::Blog => vec![
+            organization(),
+            website(),
+            application(),
+            breadcrumb(&blog_url, &[("LispM", SITE), (NAME, &blog_url)]),
+            blog_page(),
+            blog(),
+        ],
+        Kind::Article(post) => {
+            let url = absolute(&post.path());
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(
+                    &url,
+                    &[("LispM", SITE), (NAME, &blog_url), (post.title, &url)],
+                ),
+                post_page(post),
+                posting(post),
+            ]
+        }
+        Kind::Page(page) => {
+            let url = absolute(page.path);
+            vec![
+                organization(),
+                website(),
+                application(),
+                breadcrumb(&url, &[("LispM", SITE), (page.title, &url)]),
+                web_page(page),
+            ]
+        }
         Kind::Missing => return None,
     };
-    Some(graph([organization(), page].into_iter()))
+    Some(graph(nodes.into_iter()))
 }
 
 /// Returns a page as a whole document: `head`, the shared `links` and `page`,
@@ -225,7 +494,14 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
     let (card, card_alt) = head.card;
     let card = absolute(card);
     let (kind, article) = match head.kind {
-        Kind::Blog | Kind::Page(_) | Kind::Missing => ("website", String::new()),
+        Kind::Agent
+        | Kind::Desktop
+        | Kind::Apps
+        | Kind::Remote
+        | Kind::Questions
+        | Kind::Blog
+        | Kind::Page(_)
+        | Kind::Missing => ("website", String::new()),
         Kind::Article(post) => (
             "article",
             format!(
@@ -244,10 +520,28 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
     // missing page out; nothing there to name as the page's own address.
     let (robots, canonical) = match head.kind {
         Kind::Missing => ("noindex", String::new()),
-        Kind::Blog | Kind::Article(_) | Kind::Page(_) => (
-            "max-image-preview:large",
-            format!("\n    <link rel=\"canonical\" href=\"{}\" />", escape(&url)),
-        ),
+        Kind::Agent
+        | Kind::Desktop
+        | Kind::Apps
+        | Kind::Remote
+        | Kind::Questions
+        | Kind::Blog
+        | Kind::Article(_)
+        | Kind::Page(_) => {
+            let url = escape(&url);
+            let [short, full] = LLMS.map(absolute);
+            (
+                "max-image-preview:large",
+                format!(
+                    "\n    <link rel=\"canonical\" href=\"{url}\" />\
+                     \n    <link rel=\"alternate\" hreflang=\"en\" href=\"{url}\" />\
+                     \n    <link rel=\"alternate\" hreflang=\"x-default\" href=\"{url}\" />\
+                     \n    <link rel=\"llms-txt\" href=\"{short}\" />\
+                     \n    <link rel=\"llms-full-txt\" href=\"{full}\" />\
+                     \n    <link rel=\"sitemap\" type=\"application/xml\" href=\"{SITE}sitemap.xml\" />"
+                ),
+            )
+        }
     };
     let json_ld = json_ld(head.kind)
         .map(|ld| format!("\n    <script type=\"application/ld+json\">{ld}</script>"))
@@ -295,33 +589,52 @@ fn stills() -> impl Iterator<Item = &'static str> {
         .chain(illustrations().map(|illustration| illustration.media.still()))
 }
 
-/// Returns the site's map: the home page, with the stills it shows, the
-/// blog, as new as its latest post, the posts, and the pages that stand
-/// alone. Its pages only: llms.txt, the home page again in Markdown, is for
-/// language models, which find it at its known address.
+/// Returns the site's map: the home page, with the stills and videos it
+/// shows, the blog, as new as its latest post, the posts, and the pages that
+/// stand alone. Its pages only: llms.txt, the home page again in Markdown,
+/// is for language models, which find it at its known address.
 pub fn sitemap() -> String {
     let mut out = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
          <urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" \
-         xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">\n",
+         xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\" \
+         xmlns:video=\"http://www.google.com/schemas/sitemap-video/1.1\">\n",
     );
     let latest = POSTS.iter().map(|post| post.date).max();
     let pages = [
-        (absolute("/"), None, stills().collect()),
-        (absolute(BLOG), latest.map(|date| date.iso()), Vec::new()),
+        (
+            absolute("/"),
+            None,
+            stills().collect(),
+            videos().collect::<Vec<_>>(),
+        ),
+        (absolute(AGENT), None, Vec::new(), Vec::new()),
+        (absolute(DESKTOP), None, Vec::new(), Vec::new()),
+        (absolute(APPS), None, Vec::new(), Vec::new()),
+        (absolute(REMOTE), None, Vec::new(), Vec::new()),
+        (absolute(QA), None, Vec::new(), Vec::new()),
+        (
+            absolute(BLOG),
+            latest.map(|date| date.iso()),
+            Vec::new(),
+            Vec::new(),
+        ),
     ]
     .into_iter()
-    .chain(
-        POSTS
-            .iter()
-            .map(|post| (absolute(&post.path()), Some(post.date.iso()), Vec::new())),
-    )
+    .chain(POSTS.iter().map(|post| {
+        (
+            absolute(&post.path()),
+            Some(post.date.iso()),
+            Vec::new(),
+            Vec::new(),
+        )
+    }))
     .chain(
         PAGES
             .iter()
-            .map(|page| (absolute(page.path), None, Vec::new())),
+            .map(|page| (absolute(page.path), None, Vec::new(), Vec::new())),
     );
-    for (url, modified, images) in pages {
+    for (url, modified, images, clips) in pages {
         let _ = write!(out, "  <url>\n    <loc>{}</loc>\n", escape(&url));
         if let Some(modified) = modified {
             let _ = writeln!(out, "    <lastmod>{modified}</lastmod>");
@@ -331,6 +644,20 @@ pub fn sitemap() -> String {
                 out,
                 "    <image:image>\n      <image:loc>{}</image:loc>\n    </image:image>",
                 escape(&format!("{SITE}{image}"))
+            );
+        }
+        for (headline, clip) in clips {
+            let _ = writeln!(
+                out,
+                "    <video:video>\n      <video:thumbnail_loc>{}</video:thumbnail_loc>\n      \
+                 <video:title>{}</video:title>\n      <video:description>{}</video:description>\n      \
+                 <video:content_loc>{}</video:content_loc>\n      \
+                 <video:publication_date>{}</video:publication_date>\n    </video:video>",
+                escape(&format!("{SITE}{}", clip.poster)),
+                escape(headline),
+                escape(clip.description),
+                escape(&format!("{SITE}{}", clip.video)),
+                clip.published.iso(),
             );
         }
         out.push_str("  </url>\n");
@@ -427,18 +754,25 @@ mod tests {
 
     #[test]
     fn every_page_has_its_own_card_title_and_address() {
-        for (head, path) in std::iter::once((blog_head(), "/blog/".to_owned()))
-            .chain(
-                POSTS
-                    .iter()
-                    .map(|post| (post_head(post), format!("/blog/{}/", post.slug))),
-            )
-            .chain(
-                PAGES
-                    .iter()
-                    .map(|page| (page_head(page), page.path.to_owned())),
-            )
-        {
+        for (head, path) in [
+            (agent_head(), AGENT.to_owned()),
+            (desktop_head(), DESKTOP.to_owned()),
+            (apps_head(), APPS.to_owned()),
+            (remote_head(), REMOTE.to_owned()),
+            (questions_head(), QA.to_owned()),
+            (blog_head(), "/blog/".to_owned()),
+        ]
+        .into_iter()
+        .chain(
+            POSTS
+                .iter()
+                .map(|post| (post_head(post), format!("/blog/{}/", post.slug))),
+        )
+        .chain(
+            PAGES
+                .iter()
+                .map(|page| (page_head(page), page.path.to_owned())),
+        ) {
             let html = document(
                 &head,
                 "<link rel=\"stylesheet\" href=\"/s.css\"/>",
@@ -446,6 +780,19 @@ mod tests {
             );
             let url = format!("https://lispm.ai{path}");
             assert!(html.contains(&format!("<link rel=\"canonical\" href=\"{url}\" />")));
+            assert!(html.contains(&format!(
+                "<link rel=\"alternate\" hreflang=\"en\" href=\"{url}\" />"
+            )));
+            assert!(html.contains(&format!(
+                "<link rel=\"alternate\" hreflang=\"x-default\" href=\"{url}\" />"
+            )));
+            assert!(html.contains("<link rel=\"llms-txt\" href=\"https://lispm.ai/llms.txt\" />"));
+            assert!(html.contains(
+                "<link rel=\"llms-full-txt\" href=\"https://lispm.ai/llms-full.txt\" />"
+            ));
+            assert!(html.contains(
+                "<link rel=\"sitemap\" type=\"application/xml\" href=\"https://lispm.ai/sitemap.xml\" />"
+            ));
             assert!(html.contains(&format!("<meta property=\"og:url\" content=\"{url}\" />")));
             assert!(html.contains(&format!(
                 "<meta property=\"og:image\" content=\"https://lispm.ai{}\" />",
@@ -605,7 +952,12 @@ mod tests {
         for page in &PAGES {
             assert!(map.contains(&format!("<loc>{}</loc>\n  </url>", absolute(page.path))));
         }
-        assert_eq!(map.matches("<url>").count(), 2 + POSTS.len() + PAGES.len());
+        assert!(map.contains("<loc>https://lispm.ai/agent/</loc>\n  </url>"));
+        assert!(map.contains("<loc>https://lispm.ai/desktop/</loc>\n  </url>"));
+        assert!(map.contains("<loc>https://lispm.ai/apps/</loc>\n  </url>"));
+        assert!(map.contains("<loc>https://lispm.ai/lispm-remote/</loc>\n  </url>"));
+        assert!(map.contains("<loc>https://lispm.ai/qa/</loc>\n  </url>"));
+        assert_eq!(map.matches("<url>").count(), 7 + POSTS.len() + PAGES.len());
     }
 
     #[test]
@@ -623,6 +975,19 @@ mod tests {
         }
         assert!(shown > 1);
         assert_eq!(map.matches("<image:image>").count(), shown);
+        let mut clips = 0;
+        for (headline, clip) in videos() {
+            assert!(
+                home.contains(&format!(
+                    "<video:content_loc>{SITE}{}</video:content_loc>",
+                    clip.video
+                )),
+                "{headline}"
+            );
+            clips += 1;
+        }
+        assert!(clips > 1);
+        assert_eq!(map.matches("<video:video>").count(), clips);
     }
 
     #[test]
