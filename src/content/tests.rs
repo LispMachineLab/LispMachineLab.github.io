@@ -31,6 +31,15 @@ fn pictures() -> impl Iterator<Item = Picture> {
 #[test]
 fn illustrations_are_every_stage_then_every_spotlight_clip() {
     let mut told = illustrations();
+    for stage in IDEA_STAGES {
+        assert_eq!(
+            told.next(),
+            Some(Illustration {
+                headline: stage.headline,
+                media: stage.media,
+            })
+        );
+    }
     for chapter in CHAPTERS {
         if chapter.anchor == Anchor::Desktop {
             for theme in DESKTOP_THEMES {

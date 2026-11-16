@@ -342,6 +342,66 @@ pub const IDEA_POINTS: [Point; 4] = [
     },
 ];
 
+/// The steps of the Classic Lisp Machine (Symbolics Open Genera 2.0) story,
+/// shown on the home page under [`IDEA`] and on `/desktop/`.
+pub const IDEA_STAGES: [Stage; 4] = [
+    Stage {
+        headline: "Symbolics Open Genera, in 1-bit monochrome.",
+        text: "Switch LispM Desktop to Symbolics Open Genera 2.0 and the top menu bar, desktop \
+               icons and Control Strip give way to a 1-bit monochrome Dynamic Windows workstation: \
+               paper-white headers, double-rule borders, 45° hatched scrollbars, a Who-Line and a \
+               2-line inverse-video Mouse Documentation Line.",
+        media: shown(
+            "assets/video/genera-desktop.mp4",
+            "assets/video/genera-desktop.jpg",
+            "LispM Desktop switches from Mac OS 9 Platinum to Symbolics Open Genera 2.0 monochrome \
+             Dynamic Windows, then closes the floating panes to reveal Dynamic Lisp Listener 1.",
+            GAINED,
+        ),
+    },
+    Stage {
+        headline: "Lisp and AI at one Command: prompt.",
+        text: "In Dynamic Lisp Listener 1, type a Lisp form at Command: to evaluate it inline, or \
+               type a task in plain English at the very same prompt—the Who-Line switches from \
+               User Input to Agent Run as LispM edits the code and runs the tests.",
+        media: shown(
+            "assets/video/genera-listener.mp4",
+            "assets/video/genera-listener.jpg",
+            "In Dynamic Lisp Listener 1, a Lisp form is evaluated at the Command: prompt, followed \
+             by an English request to fix a failing test; the Who-Line switches to Agent Run and \
+             all three tests pass.",
+            GAINED,
+        ),
+    },
+    Stage {
+        headline: "Create ▸ Emacs, sweep to size.",
+        text: "Right-click anywhere to open the 1-bit Dynamic Windows System Menu, choose \
+               Create ▸ Emacs, and drag a dotted rubber-band outline across the screen to size \
+               and place the window—then click [Bury] or [Kill] on any frame header to return to \
+               the Listener.",
+        media: shown(
+            "assets/video/genera-windows.mp4",
+            "assets/video/genera-windows.jpg",
+            "Right-clicking opens the 1-bit System Menu to choose Create and Emacs, the pointer \
+             drags a dotted rubber-band outline across Dynamic Lisp Listener 1 to size and place \
+             the window, and Bury and Kill return to the Listener.",
+            GAINED,
+        ),
+    },
+    Stage {
+        headline: "The Lisp Machine in a terminal, too.",
+        text: "Start emacs -nw in any terminal or over SSH and the same Dynamic Lisp Listener 1, \
+               block-character λ, Command: prompt and Who-Line run in text mode.",
+        media: shown(
+            "assets/video/genera-terminal.mp4",
+            "assets/video/genera-terminal.jpg",
+            "Starting emacs -nw in a terminal opens Dynamic Lisp Listener 1 with the rainbow \
+             block-character lambda, Command: prompt and Who-Line, evaluating Lisp in text mode.",
+            GAINED,
+        ),
+    },
+];
+
 /// A headline metric card in the FrontierHarness 1.0 benchmark section.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct BenchmarkStat {
@@ -1173,11 +1233,15 @@ pub const CHAPTERS: [Chapter; 5] = [
 ];
 
 /// Returns every clip and still beside the chapters, top to bottom, each
-/// with the headline it illustrates: the Desktop chapter's three classic
-/// desktop themes, a chapter's stages, then its spotlights' clips. The
-/// film, above them all, is [`FILM`].
+/// with the headline it illustrates: the home page's Classic Lisp Machine
+/// stages, the Desktop chapter's three classic desktop themes, a chapter's
+/// stages, then its spotlights' clips. The film, above them all, is [`FILM`].
 pub fn illustrations() -> impl Iterator<Item = Illustration> {
-    CHAPTERS.iter().flat_map(|chapter| {
+    let idea = IDEA_STAGES.iter().map(|stage| Illustration {
+        headline: stage.headline,
+        media: stage.media,
+    });
+    idea.chain(CHAPTERS.iter().flat_map(|chapter| {
         let themes = if chapter.anchor == Anchor::Desktop {
             DESKTOP_THEMES.as_slice()
         } else {
@@ -1198,7 +1262,7 @@ pub fn illustrations() -> impl Iterator<Item = Illustration> {
             })
         });
         themes.chain(stages).chain(spotlights)
-    })
+    }))
 }
 
 /// The projects LispM is made of, those that stand on their own in your

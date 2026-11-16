@@ -9,9 +9,9 @@ use crate::content::{
     AGENT, APP_ICON, APPS, Anchor, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD,
     BENCHMARK_ROWS, BENCHMARK_STATS, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DOWNLOAD,
     DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Media, ORGANIZATION,
-    PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, REMOTE, REQUIREMENTS, SUMMARY, Spotlight,
-    Step, TAGLINE, X,
+    IDEA_STAGES, INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Media,
+    ORGANIZATION, PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, REMOTE, REQUIREMENTS, SUMMARY,
+    Spotlight, Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -187,6 +187,15 @@ fn idea() -> Html {
         <section class="section idea" id={Anchor::Idea.id()}>
             <h2>{ IDEA_HEADLINE }</h2>
             <p class="lead">{ IDEA }</p>
+            { for IDEA_STAGES.iter().map(|stage| html! {
+                <div class="story">
+                    <div class="words">
+                        <h3>{ stage.headline }</h3>
+                        <p>{ stage.text }</p>
+                    </div>
+                    <div class="screen">{ media(stage.media) }</div>
+                </div>
+            }) }
             { points(&IDEA_POINTS) }
         </section>
     }

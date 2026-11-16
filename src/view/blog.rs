@@ -8,8 +8,9 @@ use yew::prelude::*;
 use crate::blog::{HEADLINE, LEAD, POSTS, Picture, Post, markdown, size};
 use crate::content::{
     AGENTS_POINTS, AGENTS_SPOTLIGHTS, AGENTS_STAGES, BLOG, DESKTOP_POINTS, DESKTOP_SPOTLIGHTS,
-    DESKTOP_STAGES, DESKTOP_THEMES, DOWNLOAD, IDEA_POINTS, Media, QUESTIONS, QUESTIONS_HEADLINE,
-    QUESTIONS_LEAD, REMOTE_POINTS, REMOTE_STAGES, STORE_POINTS, STORE_STAGES, Stage,
+    DESKTOP_STAGES, DESKTOP_THEMES, DOWNLOAD, IDEA_POINTS, IDEA_STAGES, Media, QUESTIONS,
+    QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE_POINTS, REMOTE_STAGES, STORE_POINTS, STORE_STAGES,
+    Stage,
 };
 
 use super::page::{Place, benchmark, footer, navigation, outward, points};
@@ -167,6 +168,7 @@ pub fn desktop() -> Html {
                             </li>
                         }) }
                     </ul>
+                    { subpage_stages(&IDEA_STAGES) }
                 </section>
                 <section class="section chapter" id="workspaces">
                     <p class="eyebrow">{ "Workspaces & Browser" }</p>
