@@ -105,7 +105,7 @@ const LISP_MACHINE: &str = "https://en.wikipedia.org/wiki/Lisp_machine";
 
 /// What LispM is about, as words to search it by.
 const KEYWORDS: &str = "AI agent harness, AI agents, Emacs, GNU Emacs, Lisp Machine, Lisp, Emacs \
-     Lisp, Claude Code, Codex, org-mode";
+     Lisp, Claude Code, Codex, org-mode, FrontierHarness, Terminal-Bench";
 
 /// The JSON-LD nodes that every page names by id.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -241,7 +241,13 @@ fn home_page() -> String {
         Node::WebSite.reference(),
         Node::Application.reference(),
         json_string(&breadcrumb_id(SITE)),
-        speakable(&["h1", ".hero .summary", "#idea .lead", "#questions .answers"]),
+        speakable(&[
+            "h1",
+            ".hero .summary",
+            "#idea .lead",
+            "#benchmark .lead",
+            "#questions .answers",
+        ]),
         emacs(),
         json_string(LISP_MACHINE),
         json_array(

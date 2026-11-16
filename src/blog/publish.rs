@@ -391,7 +391,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     AGENT,
                     "LispM Agent: Ask, and it gets done.",
                     AGENT_DESCRIPTION,
-                    &["h1", ".lead", ".points"],
+                    &["h1", ".lead", "#benchmark .lead", ".points"],
                 ),
             ]
         }
