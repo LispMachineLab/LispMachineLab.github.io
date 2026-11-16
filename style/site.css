@@ -382,6 +382,7 @@ h3 {
   align-items: center;
   gap: clamp(24px, 4vw, 56px);
   margin-top: clamp(48px, 7vw, 88px);
+  text-align: left;
 }
 
 .story:nth-of-type(even) {

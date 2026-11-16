@@ -15,7 +15,7 @@ use crate::content::{
     Anchor, BACKENDS, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD, BENCHMARK_ROWS,
     BENCHMARK_STATS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DESKTOP_THEMES,
     DOWNLOAD, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK,
-    EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
+    EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, IDEA_STAGES, INSTALL_BACK,
     INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE,
     INSTALLER_UPDATES, Illustration, LICENSE, Media, ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE,
     PROJECTS, Platform, Point, Project, QUESTIONS, QUESTIONS_HEADLINE, REQUIREMENTS, SITE, TAGLINE,
@@ -603,6 +603,10 @@ pub fn llms_txt() -> String {
     out.push_str(&markdown_questions());
     out.push_str(&markdown_download());
     let _ = write!(out, "## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
+    for stage in &IDEA_STAGES {
+        let _ = writeln!(out, "- **{}** {}", stage.headline, stage.text);
+    }
+    out.push('\n');
     out.push_str(&markdown_points(&IDEA_POINTS));
     out.push('\n');
     out.push_str(&markdown_benchmark());
