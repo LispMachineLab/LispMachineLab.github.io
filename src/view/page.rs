@@ -6,7 +6,8 @@
 use yew::prelude::*;
 
 use crate::content::{
-    AGENT, APP_ICON, APPS, Anchor, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DOWNLOAD,
+    AGENT, APP_ICON, APPS, Anchor, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD,
+    BENCHMARK_ROWS, BENCHMARK_STATS, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DOWNLOAD,
     DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
     INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Media, ORGANIZATION,
     PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, REMOTE, REQUIREMENTS, SUMMARY, Spotlight,
@@ -55,6 +56,7 @@ pub fn app() -> Html {
             <main>
                 { hero() }
                 { idea() }
+                { benchmark() }
                 { for CHAPTERS
                     .iter()
                     .filter(|c| c.anchor == Anchor::Trust)
@@ -186,6 +188,97 @@ fn idea() -> Html {
             <h2>{ IDEA_HEADLINE }</h2>
             <p class="lead">{ IDEA }</p>
             { points(&IDEA_POINTS) }
+        </section>
+    }
+}
+
+/// Renders the FrontierHarness 1.0 30-task benchmark section: KPI cards,
+/// pass-rate and speed bar rankings, and the full 13-harness leaderboard table.
+pub(crate) fn benchmark() -> Html {
+    let mut by_speed = BENCHMARK_ROWS;
+    by_speed.sort_by_key(|row| row.median_seconds);
+    html! {
+        <section class="section benchmark" id={Anchor::Benchmark.id()}>
+            <p class="eyebrow">{ BENCHMARK_EYEBROW }</p>
+            <h2>{ BENCHMARK_HEADLINE }</h2>
+            <p class="lead">{ BENCHMARK_LEAD }</p>
+            <ul class="benchmark-stats">
+                { for BENCHMARK_STATS.iter().map(|stat| html! {
+                    <li class="benchmark-stat">
+                        <span class="stat-label">{ stat.label }</span>
+                        <strong class="stat-value">{ stat.value }</strong>
+                        <span class="stat-detail">{ stat.detail }</span>
+                    </li>
+                }) }
+            </ul>
+            <div class="benchmark-panels">
+                <div class="benchmark-panel">
+                    <h3>{ "Pass Rate (30 Official Tasks)" }</h3>
+                    <ol class="benchmark-bars">
+                        { for BENCHMARK_ROWS.iter().map(|row| html! {
+                            <li class={classes!("bar-row", row.is_lispm.then_some("is-lispm"))}>
+                                <span class="bar-name">{ row.harness }</span>
+                                <span class="bar-track">
+                                    <span
+                                        class="bar-fill"
+                                        style={format!("width: {}%", row.pass_bar_pct)}
+                                    />
+                                </span>
+                                <span class="bar-val">{ format!("{} ({})", row.pass_rate, row.passed) }</span>
+                            </li>
+                        }) }
+                    </ol>
+                </div>
+                <div class="benchmark-panel">
+                    <h3>{ "Median Time per Pass (Speed, lower is faster)" }</h3>
+                    <ol class="benchmark-bars">
+                        { for by_speed.iter().map(|row| {
+                            let width_pct = (row.median_seconds.saturating_mul(100) / 578).clamp(10, 100);
+                            let short_time = row.median_time.split(" (").next().unwrap_or(row.median_time);
+                            html! {
+                                <li class={classes!("bar-row", row.is_lispm.then_some("is-lispm"))}>
+                                    <span class="bar-name">{ row.harness }</span>
+                                    <span class="bar-track">
+                                        <span
+                                            class="bar-fill"
+                                            style={format!("width: {width_pct}%")}
+                                        />
+                                    </span>
+                                    <span class="bar-val">{ short_time }</span>
+                                </li>
+                            }
+                        }) }
+                    </ol>
+                </div>
+            </div>
+            <div class="benchmark-table-wrap">
+                <table class="benchmark-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">{ "#" }</th>
+                            <th scope="col">{ "Harness" }</th>
+                            <th scope="col">{ "Pass Rate" }</th>
+                            <th scope="col">{ "Median Cost / Pass" }</th>
+                            <th scope="col">{ "Effective Cost / Pass" }</th>
+                            <th scope="col">{ "Warm Cache Hit" }</th>
+                            <th scope="col">{ "Median Time" }</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        { for BENCHMARK_ROWS.iter().map(|row| html! {
+                            <tr class={classes!(row.is_lispm.then_some("is-lispm"))}>
+                                <td>{ row.rank }</td>
+                                <td>{ row.harness }</td>
+                                <td>{ format!("{} ({})", row.pass_rate, row.passed) }</td>
+                                <td>{ row.median_cost }</td>
+                                <td>{ row.effective_cost }</td>
+                                <td>{ row.cache_hit }</td>
+                                <td>{ row.median_time }</td>
+                            </tr>
+                        }) }
+                    </tbody>
+                </table>
+            </div>
         </section>
     }
 }

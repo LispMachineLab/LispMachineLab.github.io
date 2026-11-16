@@ -12,7 +12,8 @@
 use std::fmt::{self, Write as _};
 
 use crate::content::{
-    Anchor, BACKENDS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DESKTOP_THEMES,
+    Anchor, BACKENDS, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD, BENCHMARK_ROWS,
+    BENCHMARK_STATS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DESKTOP_THEMES,
     DOWNLOAD, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK,
     EXPERIMENTAL_HEADLINE, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS, INSTALL_BACK,
     INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER, INSTALLER_DOES, INSTALLER_SOURCE,
@@ -556,6 +557,39 @@ fn markdown_screenshots() -> String {
     out
 }
 
+/// Returns the FrontierHarness 1.0 30-task benchmark summary and leaderboard
+/// as a Markdown section for llms.txt.
+fn markdown_benchmark() -> String {
+    let mut out = format!("## {BENCHMARK_EYEBROW}: {BENCHMARK_HEADLINE}\n\n{BENCHMARK_LEAD}\n\n");
+    for stat in &BENCHMARK_STATS {
+        let _ = writeln!(
+            out,
+            "- **{}**: {} ({})",
+            stat.label, stat.value, stat.detail
+        );
+    }
+    out.push_str(
+        "\n| # | Harness | Pass Rate | Median Cost / Pass | Effective Cost / Pass | Warm Cache Hit | Median Time |\n\
+         | --- | --- | --- | --- | --- | --- | --- |\n",
+    );
+    for row in &BENCHMARK_ROWS {
+        let _ = writeln!(
+            out,
+            "| {} | {} | {} ({}) | {} | {} | {} | {} |",
+            row.rank,
+            row.harness,
+            row.pass_rate,
+            row.passed,
+            row.median_cost,
+            row.effective_cost,
+            row.cache_hit,
+            row.median_time
+        );
+    }
+    out.push('\n');
+    out
+}
+
 /// Returns llms.txt: the page as Markdown, after llmstxt.org. What LispM
 /// is comes first, then the questions people ask, then how to get it.
 pub fn llms_txt() -> String {
@@ -565,6 +599,7 @@ pub fn llms_txt() -> String {
     let _ = write!(out, "## {IDEA_HEADLINE}\n\n{IDEA}\n\n");
     out.push_str(&markdown_points(&IDEA_POINTS));
     out.push('\n');
+    out.push_str(&markdown_benchmark());
     for chapter in &CHAPTERS {
         out.push_str(&markdown_chapter(chapter));
     }

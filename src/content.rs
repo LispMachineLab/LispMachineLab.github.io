@@ -15,6 +15,8 @@ pub enum Anchor {
     Film,
     /// What LispM is.
     Idea,
+    /// FrontierHarness 1.0 benchmark results.
+    Benchmark,
     /// What its agents do.
     Agents,
     /// The desktop they live on.
@@ -37,6 +39,7 @@ impl Anchor {
         match self {
             Anchor::Film => "film",
             Anchor::Idea => "idea",
+            Anchor::Benchmark => "benchmark",
             Anchor::Agents => "agent",
             Anchor::Desktop => "desktop",
             Anchor::Store => "store",
@@ -336,6 +339,253 @@ pub const IDEA_POINTS: [Point; 4] = [
     Point {
         title: "Memory is git.",
         text: "What LispM's agents remember is org files under git.",
+    },
+];
+
+/// A headline metric card in the FrontierHarness 1.0 benchmark section.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BenchmarkStat {
+    /// The metric's name.
+    pub label: &'static str,
+    /// The primary value.
+    pub value: &'static str,
+    /// Ranking or context note under the value.
+    pub detail: &'static str,
+}
+
+/// One row of the 13-harness FrontierHarness 1.0 leaderboard (30 tasks).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BenchmarkRow {
+    /// Leaderboard rank (1..=13).
+    pub rank: u8,
+    /// Harness name.
+    pub harness: &'static str,
+    /// Pass rate percentage (e.g. `66.7%`).
+    pub pass_rate: &'static str,
+    /// Tasks passed out of 30 (e.g. `20/30`).
+    pub passed: &'static str,
+    /// Pass rate width in percent (0..=100) for visual bar rendering.
+    pub pass_bar_pct: u8,
+    /// Median cost per successful task under standardized Kimi K3 pricing.
+    pub median_cost: &'static str,
+    /// Effective cost per pass (failures included).
+    pub effective_cost: &'static str,
+    /// Typical warm prompt-cache hit rate.
+    pub cache_hit: &'static str,
+    /// Median wall-clock time per successful task.
+    pub median_time: &'static str,
+    /// Median time in seconds, for visual speed bar scaling.
+    pub median_seconds: u32,
+    /// Whether this row is LispM.
+    pub is_lispm: bool,
+}
+
+/// Eyebrow over the FrontierHarness 1.0 benchmark section.
+pub const BENCHMARK_EYEBROW: &str = "FrontierHarness 1.0 Benchmark";
+
+/// Headline of the FrontierHarness 1.0 benchmark section.
+pub const BENCHMARK_HEADLINE: &str = "Tied for #1 pass rate. #1 fastest harness overall.";
+
+/// Lead paragraph of the FrontierHarness 1.0 benchmark section.
+pub const BENCHMARK_LEAD: &str = "On the 30 official containerized tasks of the FrontierHarness 1.0 \
+     benchmark (Terminal-Bench 2.0 and DeepSWE), LispM ties for #1 in pass rate (66.7%, 20/30 tasks) \
+     while finishing successful tasks in a median of 3m 24s (203.9s)—nearly twice as fast as the \
+     next fastest harness—on the Pareto efficiency frontier.";
+
+/// Headline metrics from the FrontierHarness 1.0 30-task evaluation.
+pub const BENCHMARK_STATS: [BenchmarkStat; 4] = [
+    BenchmarkStat {
+        label: "Pass Rate (30 Official Tasks)",
+        value: "66.7%",
+        detail: "20 / 30 tasks passed — #1 tied with Codex",
+    },
+    BenchmarkStat {
+        label: "Median Time per Pass (Speed)",
+        value: "3m 24s",
+        detail: "203.9s — #1 fastest overall (2× faster than Codex)",
+    },
+    BenchmarkStat {
+        label: "Cost per Pass (Standardized)",
+        value: "$0.08",
+        detail: "$0.0809 median · $1.98 effective (#2 lowest overall)",
+    },
+    BenchmarkStat {
+        label: "Warm Prompt-Cache Hit Rate",
+        value: "83.2%",
+        detail: "94.2% normalized across 13.5 median turns",
+    },
+];
+
+/// Full 13-harness leaderboard on the 30 official FrontierHarness 1.0 tasks.
+pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
+    BenchmarkRow {
+        rank: 1,
+        harness: "LispM ★",
+        pass_rate: "66.7%",
+        passed: "20/30",
+        pass_bar_pct: 67,
+        median_cost: "$0.0809",
+        effective_cost: "$1.98",
+        cache_hit: "83.2%",
+        median_time: "3m 24s (203.9s)",
+        median_seconds: 204,
+        is_lispm: true,
+    },
+    BenchmarkRow {
+        rank: 2,
+        harness: "Codex",
+        pass_rate: "66.7%",
+        passed: "20/30",
+        pass_bar_pct: 67,
+        median_cost: "$0.1243",
+        effective_cost: "$3.47",
+        cache_hit: "88.0%",
+        median_time: "6m 43s (403.3s)",
+        median_seconds: 403,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 3,
+        harness: "DSH (Creator)",
+        pass_rate: "63.3%",
+        passed: "19/30",
+        pass_bar_pct: 63,
+        median_cost: "$0.1194",
+        effective_cost: "$3.28",
+        cache_hit: "84.3%",
+        median_time: "6m 44s (403.9s)",
+        median_seconds: 404,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 4,
+        harness: "Claude Code",
+        pass_rate: "63.3%",
+        passed: "19/30",
+        pass_bar_pct: 63,
+        median_cost: "$0.2880",
+        effective_cost: "$18.34",
+        cache_hit: "67.8%",
+        median_time: "9m 38s (578.0s)",
+        median_seconds: 578,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 5,
+        harness: "Pi",
+        pass_rate: "60.0%",
+        passed: "18/30",
+        pass_bar_pct: 60,
+        median_cost: "$0.0709",
+        effective_cost: "$2.43",
+        cache_hit: "79.4%",
+        median_time: "7m 33s (453.3s)",
+        median_seconds: 453,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 6,
+        harness: "DSH (Standard)",
+        pass_rate: "60.0%",
+        passed: "18/30",
+        pass_bar_pct: 60,
+        median_cost: "$0.1201",
+        effective_cost: "$3.46",
+        cache_hit: "86.5%",
+        median_time: "6m 17s (376.5s)",
+        median_seconds: 377,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 7,
+        harness: "DSH (PTC)",
+        pass_rate: "60.0%",
+        passed: "18/30",
+        pass_bar_pct: 60,
+        median_cost: "$0.1370",
+        effective_cost: "$4.58",
+        cache_hit: "87.2%",
+        median_time: "7m 44s (463.8s)",
+        median_seconds: 464,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 8,
+        harness: "Kimi Code",
+        pass_rate: "56.7%",
+        passed: "17/30",
+        pass_bar_pct: 57,
+        median_cost: "$0.1818",
+        effective_cost: "$3.65",
+        cache_hit: "88.0%",
+        median_time: "7m 56s (475.9s)",
+        median_seconds: 476,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 9,
+        harness: "DSH (Minimal)",
+        pass_rate: "56.7%",
+        passed: "17/30",
+        pass_bar_pct: 57,
+        median_cost: "$0.1214",
+        effective_cost: "$4.72",
+        cache_hit: "84.6%",
+        median_time: "5m 41s (341.2s)",
+        median_seconds: 341,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 10,
+        harness: "Oh My Pi",
+        pass_rate: "56.7%",
+        passed: "17/30",
+        pass_bar_pct: 57,
+        median_cost: "$0.1354",
+        effective_cost: "$4.75",
+        cache_hit: "82.2%",
+        median_time: "6m 46s (406.4s)",
+        median_seconds: 406,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 11,
+        harness: "Exo Harness",
+        pass_rate: "53.3%",
+        passed: "16/30",
+        pass_bar_pct: 53,
+        median_cost: "$0.0748",
+        effective_cost: "$1.05",
+        cache_hit: "70.3%",
+        median_time: "6m 17s (377.2s)",
+        median_seconds: 377,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 12,
+        harness: "Hermes",
+        pass_rate: "50.0%",
+        passed: "15/30",
+        pass_bar_pct: 50,
+        median_cost: "$0.1746",
+        effective_cost: "$2.90",
+        cache_hit: "85.9%",
+        median_time: "6m 58s (417.8s)",
+        median_seconds: 418,
+        is_lispm: false,
+    },
+    BenchmarkRow {
+        rank: 13,
+        harness: "OpenCode",
+        pass_rate: "50.0%",
+        passed: "15/30",
+        pass_bar_pct: 50,
+        median_cost: "$0.0615",
+        effective_cost: "$3.24",
+        cache_hit: "78.4%",
+        median_time: "6m 27s (387.3s)",
+        median_seconds: 387,
+        is_lispm: false,
     },
 ];
 
@@ -1081,7 +1331,7 @@ pub const REMOTE_DESCRIPTION: &str = "LispM Remote connects your phone and Emacs
 pub const QA: &str = "/qa/";
 
 /// What people ask about LispM, the first what it is.
-pub const QUESTIONS: [Question; 12] = [
+pub const QUESTIONS: [Question; 13] = [
     Question {
         question: "What is LispM?",
         answer: "LispM is an AI agent harness built on GNU Emacs and the ideas of the Lisp Machine, \
@@ -1089,6 +1339,16 @@ pub const QUESTIONS: [Question; 12] = [
                  org documents, their tools are Lisp, and Emacs itself is the harness. It comes free \
                  for macOS and GNU/Linux, with three classic desktops, a browser, an App Store and \
                  LispM Remote.",
+    },
+    Question {
+        question: "How does LispM perform on the FrontierHarness 1.0 benchmark?",
+        answer: "On the 30 official containerized tasks of the FrontierHarness 1.0 benchmark \
+                 (Terminal-Bench 2.0 and DeepSWE), LispM ties for #1 in pass rate at 66.7% (20/30 \
+                 tasks, alongside Codex at 66.7% and ahead of Claude Code at 63.3%) and ranks #1 \
+                 in speed with a median time per pass of 3m 24s (203.9s)—nearly twice as fast as \
+                 Codex (6m 43s) and nearly three times as fast as Claude Code (9m 38s)—at a median \
+                 cost of $0.0809 per pass ($1.98 effective cost per pass) and an 83.2% warm \
+                 prompt-cache hit rate (94.2% normalized).",
     },
     Question {
         question: "What are the three desktops in LispM Desktop?",
