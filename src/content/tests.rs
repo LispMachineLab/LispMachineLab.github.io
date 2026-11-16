@@ -4,9 +4,10 @@ use super::*;
 use std::path::Path;
 
 /// Every section, top to bottom.
-const ALL: [Anchor; 9] = [
+const ALL: [Anchor; 10] = [
     Anchor::Film,
     Anchor::Idea,
+    Anchor::Benchmark,
     Anchor::Agents,
     Anchor::Desktop,
     Anchor::Store,
@@ -233,6 +234,29 @@ fn the_steps_hold_the_install_line_once() {
 fn ids_are_named() {
     assert_eq!(Anchor::Start.id(), "start");
     assert_eq!(Anchor::Agents.id(), "agent");
+    assert_eq!(Anchor::Benchmark.id(), "benchmark");
+}
+
+#[test]
+fn frontier_harness_benchmark_rows_are_ranked_and_complete() {
+    assert_eq!(BENCHMARK_STATS.len(), 4);
+    assert_eq!(BENCHMARK_ROWS.len(), 13);
+    assert_eq!(
+        BENCHMARK_ROWS
+            .first()
+            .map(|r| (r.rank, r.harness, r.pass_rate, r.is_lispm)),
+        Some((1, "LispM ★", "66.7%", true))
+    );
+    for (i, row) in BENCHMARK_ROWS.iter().enumerate() {
+        assert_eq!(usize::from(row.rank), i + 1);
+        assert!(!row.harness.is_empty());
+        assert!(row.pass_rate.ends_with('%'));
+        assert!(row.passed.ends_with("/30"));
+        assert!(row.median_cost.starts_with('$'));
+        assert!(row.effective_cost.starts_with('$'));
+        assert!(row.cache_hit.ends_with('%'));
+        assert!(row.median_seconds > 0);
+    }
 }
 
 #[test]

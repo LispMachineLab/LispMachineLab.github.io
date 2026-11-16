@@ -12,7 +12,7 @@ use crate::content::{
     QUESTIONS_LEAD, REMOTE_POINTS, REMOTE_STAGES, STORE_POINTS, STORE_STAGES, Stage,
 };
 
-use super::page::{Place, footer, navigation, outward, points};
+use super::page::{Place, benchmark, footer, navigation, outward, points};
 
 /// The properties of a [`PostPage`].
 #[derive(Properties, PartialEq)]
@@ -108,6 +108,7 @@ pub fn agent() -> Html {
                         { outward("https://github.com/LispMachineLab/lispm-agent", "button", "View on GitHub") }
                     </div>
                 </section>
+                { benchmark() }
             </main>
             { footer(Place::Agent) }
         </>

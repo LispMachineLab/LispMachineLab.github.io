@@ -1125,3 +1125,187 @@ code {
   justify-content: flex-start;
   margin-top: 28px;
 }
+
+/* FrontierHarness 1.0 Benchmark section. */
+
+.benchmark-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 900px) {
+  .benchmark-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .benchmark-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.benchmark-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 22px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--raised);
+}
+
+.benchmark-stat .stat-label {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.benchmark-stat .stat-value {
+  margin-top: 8px;
+  color: #4ade80;
+  font: 700 clamp(28px, 3.4vw, 38px) / 1.1 var(--mono);
+  letter-spacing: -0.02em;
+}
+
+.benchmark-stat .stat-detail {
+  margin-top: 8px;
+  color: var(--faint);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.benchmark-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+@media (max-width: 900px) {
+  .benchmark-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.benchmark-panel {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--raised);
+}
+
+.benchmark-panel h3 {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: 18px;
+}
+
+.benchmark-bars {
+  display: grid;
+  gap: 9px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  font: 13px/1.3 var(--mono);
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 104px;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.bar-row.is-lispm {
+  background: rgb(34 197 94 / 0.14);
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.bar-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.bar-row.is-lispm .bar-name,
+.bar-row.is-lispm .bar-val {
+  color: #4ade80;
+}
+
+.bar-track {
+  display: block;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #1a1a20;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: #4b5563;
+}
+
+.bar-row.is-lispm .bar-fill {
+  background: #22c55e;
+}
+
+.bar-val {
+  text-align: right;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.benchmark-table-wrap {
+  margin-top: 24px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--raised);
+}
+
+.benchmark-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 13.5px/1.45 var(--mono);
+}
+
+.benchmark-table th,
+.benchmark-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.benchmark-table th:first-child,
+.benchmark-table td:first-child,
+.benchmark-table th:nth-child(2),
+.benchmark-table td:nth-child(2) {
+  text-align: left;
+}
+
+.benchmark-table th {
+  background: var(--raised-high);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.benchmark-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.benchmark-table tr.is-lispm {
+  background: rgb(34 197 94 / 0.14);
+  color: #4ade80;
+  font-weight: 700;
+}
