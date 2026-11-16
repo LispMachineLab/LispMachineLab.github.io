@@ -389,8 +389,8 @@ pub const BENCHMARK_HEADLINE: &str = "Tied for #1 pass rate. #1 fastest harness 
 /// Lead paragraph of the FrontierHarness 1.0 benchmark section.
 pub const BENCHMARK_LEAD: &str = "On the 30 official containerized tasks of the FrontierHarness 1.0 \
      benchmark (Terminal-Bench 2.0 and DeepSWE), LispM ties for #1 in pass rate (66.7%, 20/30 tasks) \
-     while finishing successful tasks in a median of 3m 24s (203.9s)—nearly twice as fast as the \
-     next fastest harness—on the Pareto efficiency frontier.";
+     while finishing successful tasks in a median of 3m 24s (203.9 seconds)—nearly twice as fast as \
+     the next fastest harness—on the Pareto efficiency frontier.";
 
 /// Headline metrics from the FrontierHarness 1.0 30-task evaluation.
 pub const BENCHMARK_STATS: [BenchmarkStat; 4] = [
@@ -1303,8 +1303,8 @@ pub const QUESTIONS_LEAD: &str = "Answers to common questions about LispM: how A
 pub const AGENT: &str = "/agent/";
 
 /// The description of the Agent page for search engines, within 160 characters.
-pub const AGENT_DESCRIPTION: &str = "LispM Agent runs AI agents inside GNU Emacs: org-mode chats, \
-     Elisp tools, TODO approvals, git memory, LispM Office, and Claude Code & Codex side by side.";
+pub const AGENT_DESCRIPTION: &str = "LispM Agent runs AI agents in GNU Emacs (#1 on FrontierHarness \
+     1.0: 66.7% pass rate, 3m 24s speed): org chats, Elisp tools, LispM Office and Claude Code.";
 
 /// The Desktop page's path on the site.
 pub const DESKTOP: &str = "/desktop/";
@@ -1345,10 +1345,10 @@ pub const QUESTIONS: [Question; 13] = [
         answer: "On the 30 official containerized tasks of the FrontierHarness 1.0 benchmark \
                  (Terminal-Bench 2.0 and DeepSWE), LispM ties for #1 in pass rate at 66.7% (20/30 \
                  tasks, alongside Codex at 66.7% and ahead of Claude Code at 63.3%) and ranks #1 \
-                 in speed with a median time per pass of 3m 24s (203.9s)—nearly twice as fast as \
-                 Codex (6m 43s) and nearly three times as fast as Claude Code (9m 38s)—at a median \
-                 cost of $0.0809 per pass ($1.98 effective cost per pass) and an 83.2% warm \
-                 prompt-cache hit rate (94.2% normalized).",
+                 in speed with a median time per pass of 3m 24s (203.9 seconds)—nearly twice as \
+                 fast as Codex (6m 43s) and nearly three times as fast as Claude Code (9m 38s)—at \
+                 a median cost of $0.0809 per pass ($1.98 effective cost per pass) and an 83.2% \
+                 warm prompt-cache hit rate (94.2% normalized).",
     },
     Question {
         question: "What are the three desktops in LispM Desktop?",
