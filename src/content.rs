@@ -1079,7 +1079,7 @@ pub const STORE_POINTS: [Point; 6] = [
     },
     Point {
         title: "AI Harnesses",
-        text: "From the LispM App Store, Hermes, Holon and OpenClaw, agents of their own, join Claude Code, Codex and @Ada in one sidebar.",
+        text: "From the LispM App Store, Antigravity, Hermes, Holon and OpenClaw, agents of their own, join Claude Code, Codex and @Ada in one sidebar.",
     },
     Point {
         title: "For every day",
@@ -1381,8 +1381,8 @@ pub const DESKTOP_DESCRIPTION: &str = "LispM Desktop runs three classic desktops
 pub const APPS: &str = "/apps/";
 
 /// The description of the Apps page for search engines, within 160 characters.
-pub const APPS_DESCRIPTION: &str = "The LispM App Store installs Emacs apps, skills, LispM Office, \
-     AI harnesses (Hermes, Holon, OpenClaw), games and 1960s–70s classic AI (SHRDLU, Doctor, MYCIN).";
+pub const APPS_DESCRIPTION: &str = "LispM App Store installs Emacs apps, skills, LispM Office, \
+     AI harnesses (Antigravity, Hermes, Holon, OpenClaw), games and 1960s–70s AI (SHRDLU, Doctor, MYCIN).";
 
 /// The Remote page's path on the site (distinct from `/remote/`, the QR pairing web app).
 pub const REMOTE: &str = "/lispm-remote/";
@@ -1436,18 +1436,18 @@ pub const QUESTIONS: [Question; 13] = [
     Question {
         question: "Which agents and models does LispM run?",
         answer: "LispM's own agents, persistent Characters (@Ada) with their own soul and model, \
-                 and beside them Claude Code, Codex, Hermes, Holon and OpenClaw, all in one sidebar \
-                 and able to message each other. LispM's agents use any model: OpenAI's or \
-                 Anthropic's with a key, or any other server, local or hosted.",
+                 and beside them Claude Code, Codex, Antigravity, Hermes, Holon and OpenClaw, all \
+                 in one sidebar and able to message each other. LispM's agents use any model: \
+                 OpenAI's or Anthropic's with a key, or any other server, local or hosted.",
     },
     Question {
         question: "How do agents talk to each other, and what is LispM Office?",
-        answer: "In LispM, Claude Code, Codex, Hermes, Holon, OpenClaw, Characters (@Ada) and \
-                 LispM's own agents share one sidebar and one message bus inside Emacs so any agent \
-                 can ask another for a review or subtask. Pressing C-c O opens LispM Office, an \
-                 8-room animated pixel office where every agent session has a desk, working agents \
-                 type, waiting agents raise a hand, and clicking a desk inspects its work or \
-                 approves pending calls.",
+        answer: "In LispM, Claude Code, Codex, Antigravity, Hermes, Holon, OpenClaw, Characters \
+                 (@Ada) and LispM's own agents share one sidebar and one message bus inside Emacs \
+                 so any agent can ask another for a review or subtask. Pressing C-c O opens LispM \
+                 Office, an 8-room animated pixel office where every agent session has a desk, \
+                 working agents type, waiting agents raise a hand, and clicking a desk inspects \
+                 its work or approves pending calls.",
     },
     Question {
         question: "How does LispM keep agents safe on my computer?",
