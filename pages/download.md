@@ -75,9 +75,9 @@ later built with xwidgets
 
 ## Models and API keys
 
-Claude Code and Codex, once installed on your computer, and the LispM App Store's Hermes, Holon and
-OpenClaw show beside LispM's own agents in one sidebar. LispM's own agents need only
-`OPENAI_API_KEY` or `ANTHROPIC_API_KEY` set in your shell's profile, where `LispM.app` reads it, or
-in your own Emacs's environment. For any other local or hosted server speaking the OpenAI Chat
-Completions API or Anthropic Messages API over HTTPS, see
+Claude Code and Codex, once installed on your computer, and the LispM App Store's Antigravity,
+Hermes, Holon and OpenClaw show beside LispM's own agents in one sidebar. LispM's own agents need
+only `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` set in your shell's profile, where `LispM.app` reads
+it, or in your own Emacs's environment. For any other local or hosted server speaking the OpenAI
+Chat Completions API or Anthropic Messages API over HTTPS, see
 [LispM Agent's backends guide](https://github.com/LispMachineLab/lispm-agent#backends).

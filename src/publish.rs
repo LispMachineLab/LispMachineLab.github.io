@@ -105,7 +105,7 @@ const LISP_MACHINE: &str = "https://en.wikipedia.org/wiki/Lisp_machine";
 
 /// What LispM is about, as words to search it by.
 const KEYWORDS: &str = "AI agent harness, AI agents, Emacs, GNU Emacs, Lisp Machine, Lisp, Emacs \
-     Lisp, Claude Code, Codex, org-mode, FrontierHarness, Terminal-Bench";
+     Lisp, Claude Code, Codex, Antigravity, org-mode, FrontierHarness, Terminal-Bench";
 
 /// The JSON-LD nodes that every page names by id.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
