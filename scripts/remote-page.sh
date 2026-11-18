@@ -16,8 +16,8 @@
 
 set -eu
 
-VERSION=0.5.1
-SHA256=804a42d3a66a74bf74d29eb13c944fe67951762730225279ce6042fe63d298e8
+VERSION=0.6.0
+SHA256=591c7efd7d198fbb37deeafac968f3ad1deb257b639fdf3cd4c6a9a3e2c706ce
 URL=https://github.com/LispMachineLab/lispm-remote/releases/download/page-v$VERSION/lispm-remote-page-$VERSION.tar.gz
 
 dir=${1:-dist/remote}
