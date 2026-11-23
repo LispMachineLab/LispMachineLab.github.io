@@ -62,6 +62,8 @@ pub struct Post {
     /// The same, short enough for search engines and shared links to show
     /// whole: at most 160 characters.
     pub summary: &'static str,
+    /// Words search engines and answer engines index the post by.
+    pub keywords: &'static str,
     /// The day it was first published.
     pub date: Date,
     /// Who wrote it.
@@ -109,8 +111,47 @@ pub const CARD: Picture = Picture {
     alt: "LispM Blog: notes from the lab. Beside the words, the covers of its posts.",
 };
 
+/// Returns the paths from the root a post's Markdown names, in `(` `)`.
+pub(crate) fn named_paths(body: &str) -> Vec<&str> {
+    body.split("](")
+        .skip(1)
+        .filter_map(|rest| rest.split([')', ' ']).next())
+        .filter(|path| path.starts_with('/'))
+        .collect()
+}
+
 /// The posts, the latest first.
-pub static POSTS: [Post; 3] = [
+pub static POSTS: [Post; 4] = [
+    Post {
+        slug: "zero-lock-how-lispm-kernel-made-emacs-157x-faster",
+        title: "Zero Lock: How LispM-Kernel Made Emacs 157x Faster",
+        description: "How we evolved lispm-kernel from Rust to Common Lisp and rebuilt its \
+             runtime on lock-free Communicating Sequential Processes (CSP) beside GNU Emacs, \
+             cutting worst-case UI stalls from 206.35 ms to 1.31 ms (157x faster) with zero \
+             Emacs garbage collection.",
+        summary: "How LispM's lock-free Common Lisp CSP kernel bypasses Emacs's GIL, cutting UI \
+             freezes from 206.35 ms to 1.31 ms (157x faster) across parallel AI agents.",
+        keywords: "lispm-kernel, Emacs GIL, Emacs Lisp concurrency, Emacs single-threaded UI \
+             freeze, Common Lisp CSP, Communicating Sequential Processes, lock-free concurrency, \
+             Actor model vs CSP, eval_elisp, Single-OP AI agent harness, GNU Emacs performance, \
+             LispM",
+        date: Date {
+            year: 2026,
+            month: 11,
+            day: 23,
+        },
+        author: LISPM,
+        cover: Picture {
+            src: "/assets/blog/zero-lock-how-lispm-kernel-made-emacs-157x-faster/cover.webp",
+            alt: "Blueprint architecture diagram titled \"Zero Lock: How LispM-Kernel Made Emacs \
+                  157x Faster\". On the left, Cold Session Scan drops from 206.35 ms to 1.31 ms \
+                  (157x faster, 0 ms GC). On the right, Emacs talks via eval_elisp to a lock-free \
+                  CSP Scheduler, parallel Workers, immutable Snapshots, Flow Control and Frame Clock.",
+        },
+        card: "/assets/blog/zero-lock-how-lispm-kernel-made-emacs-157x-faster/card.png",
+        on_x: None,
+        body: include_str!("../../blog/zero-lock-how-lispm-kernel-made-emacs-157x-faster.md"),
+    },
     Post {
         slug: "your-agents-can-talk-to-each-other",
         title: "Your agents can talk to each other now, in LispM",
@@ -119,6 +160,8 @@ pub static POSTS: [Post; 3] = [
              it takes a Lisp Machine.",
         summary: "Claude Code, Codex, Hermes, Holon and OpenClaw can now message each other in \
              LispM, under one policy. How it works, and why it takes a Lisp Machine.",
+        keywords: "multi-agent Emacs, Claude Code Codex collaboration, Emacs MCP server, AI agent \
+             message bus, Hermes, Holon, OpenClaw, LispM Agent, GNU Emacs AI agent harness",
         date: Date {
             year: 2026,
             month: 10,
@@ -143,6 +186,8 @@ pub static POSTS: [Post; 3] = [
              experience what AI was like on Lisp Machines half a century ago.",
         summary: "Doctor, SHRDLU and MYCIN, classic AI of the 1960s and 1970s, run again in \
              LispM, from its App Store: what AI was like on Lisp Machines.",
+        keywords: "Classic AI Lisp Machine, ELIZA Doctor Emacs, SHRDLU blocks world, MYCIN expert \
+             system, 1970s AI LispM App Store, Common Lisp Emacs, LispM",
         date: Date {
             year: 2026,
             month: 10,
@@ -167,6 +212,8 @@ pub static POSTS: [Post; 3] = [
              almost perfect realization of the Lisp Machines of the 1970s.",
         summary: "Connecting agents to Emacs, I wondered: why not an Emacs-native agent? With \
              Emacs's introspection it could nearly realize the Lisp Machines of the 1970s.",
+        keywords: "Lisp Machine AI agent, Emacs-native AI agent, Symbolics Lisp Machine, GNU \
+             Emacs introspection, org-mode AI chat, Elisp tool use, LispM",
         date: Date {
             year: 2026,
             month: 10,
@@ -192,15 +239,6 @@ mod tests {
     /// Returns the file in the checkout served at `path`, a path from the root.
     fn served(path: &str) -> std::path::PathBuf {
         Path::new(env!("CARGO_MANIFEST_DIR")).join(path.trim_start_matches('/'))
-    }
-
-    /// Returns the paths from the root a post's Markdown names, in `(` `)`.
-    fn named_paths(body: &str) -> Vec<&str> {
-        body.split("](")
-            .skip(1)
-            .filter_map(|rest| rest.split([')', ' ']).next())
-            .filter(|path| path.starts_with('/'))
-            .collect()
     }
 
     #[test]
@@ -240,7 +278,11 @@ mod tests {
                 "the title is the page's: {}",
                 post.slug
             );
-            assert!(!post.description.is_empty() && !post.cover.alt.is_empty());
+            assert!(
+                !post.description.is_empty()
+                    && !post.keywords.is_empty()
+                    && !post.cover.alt.is_empty()
+            );
             for path in [post.cover.src, post.card]
                 .into_iter()
                 .chain(named_paths(post.body))

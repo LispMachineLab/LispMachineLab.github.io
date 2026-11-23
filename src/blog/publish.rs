@@ -244,15 +244,18 @@ fn posting(post: &Post) -> String {
     let url = absolute(&post.path());
     format!(
         "{{\"@type\":\"BlogPosting\",\"@id\":{},\"headline\":{},\"description\":{},\
-         \"url\":{url},\"mainEntityOfPage\":{url},\"datePublished\":{},\"image\":{},\
-         \"author\":{},\"publisher\":{},\"isPartOf\":{{\"@id\":{}}},\"inLanguage\":\"en\"{}}}",
+         \"keywords\":{},\"url\":{url},\"mainEntityOfPage\":{url},\"datePublished\":{},\
+         \"image\":{},\"author\":{},\"publisher\":{},\"about\":{},\"isPartOf\":{{\"@id\":{}}},\
+         \"inLanguage\":\"en\"{}}}",
         json_string(&format!("{url}#article")),
         json_string(post.title),
         json_string(post.description),
+        json_string(post.keywords),
         json_string(&post.date.iso()),
         json_string(&absolute(post.card)),
         author(post.author),
         Node::Organization.reference(),
+        Node::Application.reference(),
         json_string(&blog_id()),
         post.on_x
             .map(|on_x| format!(",\"sameAs\":{}", json_string(on_x)))
@@ -363,11 +366,12 @@ fn post_page(post: &Post) -> String {
     let url = absolute(&post.path());
     format!(
         "{{\"@type\":\"WebPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
-         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"description\":{},\"keywords\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
          \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
          \"mainEntity\":[{{\"@id\":{}}}]}}",
         json_string(post.title),
         json_string(post.summary),
+        json_string(post.keywords),
         Node::WebSite.reference(),
         Node::Application.reference(),
         Node::Organization.reference(),
@@ -568,6 +572,10 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
         | Kind::Blog
         | Kind::Article(_)
         | Kind::Page(_) => {
+            let keywords = match head.kind {
+                Kind::Article(post) => post.keywords,
+                _ => KEYWORDS,
+            };
             let url = escape(&url);
             let [short, full] = LLMS.map(absolute);
             (
@@ -580,7 +588,7 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
                      \n    <link rel=\"llms-txt\" href=\"{short}\" />\
                      \n    <link rel=\"llms-full-txt\" href=\"{full}\" />\
                      \n    <link rel=\"sitemap\" type=\"application/xml\" href=\"{SITE}sitemap.xml\" />",
-                    keywords = escape(KEYWORDS),
+                    keywords = escape(keywords),
                 ),
             )
         }
@@ -715,10 +723,18 @@ pub fn sitemap() -> String {
     ]
     .into_iter()
     .chain(POSTS.iter().map(|post| {
+        let images = std::iter::once(post.cover.src)
+            .chain(
+                super::named_paths(post.body)
+                    .into_iter()
+                    .filter(|path| !path.ends_with(".mp4")),
+            )
+            .map(|path| path.trim_start_matches('/'))
+            .collect();
         (
             absolute(&post.path()),
             Some(post.date.iso()),
-            Vec::new(),
+            images,
             Vec::new(),
         )
     }))
@@ -942,6 +958,10 @@ mod tests {
                 "<meta name=\"author\" content=\"{}\" />",
                 escape(post.author.name)
             )));
+            assert!(html.contains(&format!(
+                "<meta name=\"keywords\" content=\"{}\" />",
+                escape(post.keywords)
+            )));
         }
         let html = document(&blog_head(), "", "");
         assert!(html.contains("<meta property=\"og:type\" content=\"website\" />"));
@@ -1085,6 +1105,12 @@ mod tests {
         assert!(map.contains("assets/video/desktop.mp4"));
         assert!(map.contains("assets/video/app-store-ai.mp4"));
         assert!(map.contains("assets/video/remote-pair.mp4"));
+        assert!(map.contains(
+            "<image:loc>https://lispm.ai/assets/blog/zero-lock-how-lispm-kernel-made-emacs-157x-faster/cover.webp</image:loc>"
+        ));
+        assert!(map.contains(
+            "<image:loc>https://lispm.ai/assets/blog/zero-lock-how-lispm-kernel-made-emacs-157x-faster/benchmark.webp</image:loc>"
+        ));
     }
 
     #[test]

@@ -109,7 +109,7 @@ const LISP_MACHINE: &str = "https://en.wikipedia.org/wiki/Lisp_machine";
 pub const KEYWORDS: &str = "Emacs AI agent harness, Emacs agent harness, GNU Emacs AI coding \
      agent, LispM, Lisp Machine, Emacs Lisp tool use, Elisp agent, org-mode AI chat, MCP Emacs, \
      Claude Code Emacs, Codex Emacs, Antigravity, Hermes, gptel alternative, agent-shell, \
-     FrontierHarness, Terminal-Bench";
+     FrontierHarness, Terminal-Bench, Common Lisp Emacs kernel, lispm-kernel, lock-free CSP";
 
 /// The JSON-LD nodes that every page names by id.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
