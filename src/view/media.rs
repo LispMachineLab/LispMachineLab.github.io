@@ -72,11 +72,18 @@ pub fn clip_loop(props: &ClipProps) -> Html {
     };
     let clip = props.clip;
     let playback = shown.0;
+    let (width, height) = clip.poster_size();
+    let video_src = format!("/{}", clip.video);
+    let poster_src = format!("/{}", clip.poster);
     html! {
         <>
-            <video ref={video} class="clip" src={clip.video} poster={clip.poster}
+            <video ref={video} class="clip" src={video_src} poster={poster_src.clone()}
                    muted=true loop=true playsinline=true preload="none" controls={playback.controls()}
-                   aria-label={clip.description} />
+                   aria-label={clip.description}>
+                <img class="still" src={poster_src} alt={clip.description}
+                     width={width.to_string()} height={height.to_string()}
+                     loading="lazy" decoding="async" />
+            </video>
             if playback.offers_play() {
                 <button type="button" class="play" onclick={start}>
                     <span class="play-icon" aria-hidden="true" />
@@ -100,7 +107,7 @@ pub struct PictureProps {
 pub fn still(props: &PictureProps) -> Html {
     let picture = props.picture;
     html! {
-        <img class="still" src={picture.image} alt={picture.description}
+        <img class="still" src={format!("/{}", picture.image)} alt={picture.description}
              width={picture.width.to_string()} height={picture.height.to_string()}
              loading="lazy" decoding="async" />
     }
@@ -125,10 +132,17 @@ pub fn film(props: &ClipProps) -> Html {
         })
     };
     let clip = props.clip;
+    let (width, height) = clip.poster_size();
+    let video_src = format!("/{}", clip.video);
+    let poster_src = format!("/{}", clip.poster);
     html! {
         <div class={classes!("film", started.then_some("started"))}>
-            <video ref={video} src={clip.video} poster={clip.poster} preload="none"
-                   playsinline=true controls={*started} aria-label={clip.description} />
+            <video ref={video} src={video_src} poster={poster_src.clone()} preload="none"
+                   playsinline=true controls={*started} aria-label={clip.description}>
+                <img class="still" src={poster_src} alt={clip.description}
+                     width={width.to_string()} height={height.to_string()}
+                     loading="lazy" decoding="async" />
+            </video>
             if !*started {
                 <button type="button" class="play" onclick={start}>
                     <span class="play-icon" aria-hidden="true" />

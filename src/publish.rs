@@ -15,11 +15,11 @@ use crate::content::{
     Anchor, BACKENDS, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD, BENCHMARK_ROWS,
     BENCHMARK_STATS, CHAPTERS, CREDITS, Chapter, Clip, DEFINITION, DESCRIPTION, DESKTOP_THEMES,
     DOWNLOAD, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPERIMENTAL, EXPERIMENTAL_BACK,
-    EXPERIMENTAL_HEADLINE, FILM, HOME_QUESTION_COUNT, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    IDEA_STAGES, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER, INSTALLER_DOES,
-    INSTALLER_SOURCE, INSTALLER_UPDATES, Illustration, LICENSE, Media, ORGANIZATION, OWN_EMACS,
-    OWN_EMACS_HEADLINE, PROJECTS, Platform, Point, Project, QUESTIONS, QUESTIONS_HEADLINE,
-    Question, REQUIREMENTS, SITE, TAGLINE, TITLE, X, illustrations,
+    EXPERIMENTAL_HEADLINE, EXPLORE_CARDS, FILM, HOME_QUESTION_COUNT, IDEA, IDEA_HEADLINE,
+    IDEA_POINTS, IDEA_STAGES, INSTALL_BACK, INSTALL_EXPERIMENTAL, INSTALLATION, INSTALLER,
+    INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Illustration, LICENSE, Media,
+    ORGANIZATION, OWN_EMACS, OWN_EMACS_HEADLINE, PROJECTS, Platform, Point, Project, QUESTIONS,
+    QUESTIONS_HEADLINE, Question, REQUIREMENTS, SITE, TAGLINE, TITLE, X, illustrations,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use crate::content::{Spotlight, Stage};
@@ -241,16 +241,51 @@ fn home_questions() -> String {
     format_questions(QUESTIONS.iter().take(HOME_QUESTION_COUNT))
 }
 
+/// Returns the unique screenshots and stills visibly rendered on the home page `/`:
+/// the three classic desktop themes, the four Classic Lisp Machine stages, and the
+/// pillar cards' screenshots.
+pub(crate) fn home_illustrations() -> Vec<Illustration> {
+    let mut list = Vec::new();
+    let mut push_unique = |item: Illustration| {
+        if !list
+            .iter()
+            .any(|existing: &Illustration| existing.media.still() == item.media.still())
+        {
+            list.push(item);
+        }
+    };
+    for theme in &DESKTOP_THEMES {
+        push_unique(Illustration {
+            headline: theme.title,
+            media: Media::Picture(theme.picture),
+        });
+    }
+    for stage in &IDEA_STAGES {
+        push_unique(Illustration {
+            headline: stage.headline,
+            media: stage.media,
+        });
+    }
+    for card in &EXPLORE_CARDS {
+        push_unique(Illustration {
+            headline: card.title,
+            media: Media::Picture(card.picture),
+        });
+    }
+    list
+}
+
 /// Returns the home page as a schema.org WebPage, about LispM.app, that is
 /// also a FAQPage for the core questions visibly rendered on `/`. It mentions
 /// Emacs and the Lisp Machine, so LispM is known apart from the machines of
-/// the 1970s that share its name, and names the videos rendered on `/`.
+/// the 1970s that share its name, and names the screenshots and videos rendered on `/`.
 fn home_page() -> String {
     format!(
         "{{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":{site},\"url\":{site},\"name\":{},\
          \"description\":{},\"keywords\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
          \"breadcrumb\":{{\"@id\":{}}},\"primaryImageOfPage\":{{\"@type\":\"ImageObject\",\
          \"url\":\"https://lispm.ai/assets/social/lispm-card.png\",\"width\":1200,\"height\":630}},\
+         \"image\":{},\
          \"speakable\":{},\
          \"mentions\":[{},{{\"@type\":\"Thing\",\"name\":\"Lisp machine\",\"sameAs\":{}}}],\
          \"video\":{},\"mainEntity\":{}}}",
@@ -260,6 +295,7 @@ fn home_page() -> String {
         Node::WebSite.reference(),
         Node::Application.reference(),
         json_string(&breadcrumb_id(SITE)),
+        json_array(home_illustrations().into_iter().map(screenshot)),
         speakable(&[
             "h1",
             ".hero .summary",
@@ -329,17 +365,12 @@ pub(crate) fn video((headline, clip): (&str, Clip)) -> String {
 
 /// Returns a clip or a still beside the chapters as a schema.org
 /// ImageObject: the still it shows first, a clip's poster or the picture,
-/// named by the headline it illustrates, its caption what it shows, and a
-/// picture's size.
-fn screenshot(illustration: Illustration) -> String {
-    let size = match illustration.media {
-        Media::Picture(picture) => {
-            format!(",\"width\":{},\"height\":{}", picture.width, picture.height)
-        }
-        Media::Loop(_) => String::new(),
-    };
+/// named by the headline it illustrates, its caption what it shows, and its
+/// dimensions in pixels.
+pub(crate) fn screenshot(illustration: Illustration) -> String {
+    let (width, height) = illustration.media.size();
     format!(
-        "{{\"@type\":\"ImageObject\",\"url\":{},\"name\":{},\"caption\":{}{size}}}",
+        "{{\"@type\":\"ImageObject\",\"url\":{},\"name\":{},\"caption\":{},\"width\":{width},\"height\":{height}}}",
         json_string(&format!("{SITE}{}", illustration.media.still())),
         json_string(illustration.headline),
         json_string(illustration.media.description()),
