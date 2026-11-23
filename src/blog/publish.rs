@@ -11,13 +11,15 @@ use super::feed::FEED;
 use super::markdown::escape;
 use super::{Author, CARD, DESCRIPTION, HEADLINE, LEAD, LISPM, POSTS, Post, absolute};
 use crate::content::{
-    AGENT, AGENT_DESCRIPTION, APPS, APPS_DESCRIPTION, BLOG, DESKTOP, DESKTOP_DESCRIPTION, FILM, QA,
-    QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE, REMOTE_DESCRIPTION, SITE, illustrations,
+    AGENT, AGENT_DESCRIPTION, AGENTS_SPOTLIGHTS, AGENTS_STAGES, APPS, APPS_DESCRIPTION, BLOG, Clip,
+    DESKTOP, DESKTOP_DESCRIPTION, DESKTOP_SPOTLIGHTS, DESKTOP_STAGES, DESKTOP_THEMES, DesktopTheme,
+    FILM, IDEA_STAGES, QA, QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE, REMOTE_DESCRIPTION,
+    REMOTE_STAGES, SITE, STORE_STAGES, Spotlight, Stage,
 };
 use crate::pages::{self, PAGES, Page};
 use crate::publish::{
-    Node, application, breadcrumb, breadcrumb_id, graph, json_array, json_string, organization,
-    questions, speakable, videos, website,
+    KEYWORDS, Node, application, breadcrumb, breadcrumb_id, graph, home_videos, json_array,
+    json_string, organization, questions, speakable, stage_videos, video, video_id, website,
 };
 
 /// Why the blog's pages could not be made.
@@ -104,7 +106,7 @@ const NAME: &str = "LispM Blog";
 
 /// Returns the head of the Agent page.
 pub fn agent_head() -> Head {
-    let headline = "LispM Agent: AI agents inside GNU Emacs — LispM";
+    let headline = "LispM Agent: Native GNU Emacs AI Agent Harness — LispM";
     Head {
         title: headline.to_owned(),
         headline,
@@ -117,7 +119,7 @@ pub fn agent_head() -> Head {
 
 /// Returns the head of the Desktop page.
 pub fn desktop_head() -> Head {
-    let headline = "LispM Desktop: Genera, Mac OS 9 & Win 3.2 — LispM";
+    let headline = "LispM Desktop: Genera, Mac OS 9 & Win 3.2 in Emacs — LispM";
     Head {
         title: headline.to_owned(),
         headline,
@@ -130,7 +132,7 @@ pub fn desktop_head() -> Head {
 
 /// Returns the head of the Apps page.
 pub fn apps_head() -> Head {
-    let headline = "LispM App Store: apps your agents can drive — LispM";
+    let headline = "LispM App Store: Emacs Apps & AI Agent Harnesses — LispM";
     Head {
         title: headline.to_owned(),
         headline,
@@ -143,7 +145,7 @@ pub fn apps_head() -> Head {
 
 /// Returns the head of the Remote page.
 pub fn remote_head() -> Head {
-    let headline = "LispM Remote: your agents in your pocket — LispM";
+    let headline = "LispM Remote: Emacs AI Agents on Your Phone — LispM";
     Head {
         title: headline.to_owned(),
         headline,
@@ -156,7 +158,7 @@ pub fn remote_head() -> Head {
 
 /// Returns the head of the questions page.
 pub fn questions_head() -> Head {
-    let headline = "Questions, answered: AI agents in Emacs — LispM";
+    let headline = "Emacs AI Agent Harness FAQ: Questions, Answered — LispM";
     Head {
         title: headline.to_owned(),
         headline,
@@ -274,16 +276,36 @@ fn blog() -> String {
     )
 }
 
-/// Returns a feature page at `path` as a schema.org WebPage of the site.
-fn feature_page(path: &str, name: &str, description: &str, selectors: &[&str]) -> String {
+/// Returns a feature page at `path` as a schema.org WebPage of the site,
+/// linking the `clips` visibly rendered on it.
+fn feature_page(
+    path: &str,
+    name: &str,
+    description: &str,
+    selectors: &[&str],
+    clips: &[(&str, Clip)],
+) -> String {
     let url = absolute(path);
+    let video_field = if clips.is_empty() {
+        String::new()
+    } else {
+        format!(
+            ",\"video\":{}",
+            json_array(
+                clips
+                    .iter()
+                    .map(|(_, clip)| format!("{{\"@id\":{}}}", json_string(&video_id(*clip))))
+            )
+        )
+    };
     format!(
         "{{\"@type\":\"WebPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
-         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
-         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
+         \"description\":{},\"keywords\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{}{video_field},\
          \"mainEntity\":[{}]}}",
         json_string(name),
         json_string(description),
+        json_string(KEYWORDS),
         Node::WebSite.reference(),
         Node::Application.reference(),
         Node::Organization.reference(),
@@ -299,11 +321,12 @@ fn questions_page() -> String {
     let url = absolute(QA);
     format!(
         "{{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
-         \"description\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
+         \"description\":{},\"keywords\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
          \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{},\
          \"mainEntity\":{}}}",
         json_string(QUESTIONS_HEADLINE),
         json_string(QUESTIONS_LEAD),
+        json_string(KEYWORDS),
         Node::WebSite.reference(),
         Node::Application.reference(),
         Node::Organization.reference(),
@@ -382,22 +405,28 @@ pub fn json_ld(kind: Kind) -> Option<String> {
     let nodes: Vec<String> = match kind {
         Kind::Agent => {
             let url = absolute(AGENT);
-            vec![
+            let clips = stage_videos(&AGENTS_STAGES, &AGENTS_SPOTLIGHTS);
+            let mut list = vec![
                 organization(),
                 website(),
                 application(),
                 breadcrumb(&url, &[("LispM", SITE), ("Agent", &url)]),
                 feature_page(
                     AGENT,
-                    "LispM Agent: Ask, and it gets done.",
+                    "LispM Agent: Native GNU Emacs AI Agent Harness",
                     AGENT_DESCRIPTION,
                     &["h1", ".lead", "#benchmark .lead", ".points"],
+                    &clips,
                 ),
-            ]
+            ];
+            list.extend(clips.into_iter().map(video));
+            list
         }
         Kind::Desktop => {
             let url = absolute(DESKTOP);
-            vec![
+            let mut clips = stage_videos(&IDEA_STAGES, &[]);
+            clips.extend(stage_videos(&DESKTOP_STAGES, &DESKTOP_SPOTLIGHTS));
+            let mut list = vec![
                 organization(),
                 website(),
                 application(),
@@ -407,27 +436,35 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     "LispM Desktop: Three classic desktops, one workspace for agents.",
                     DESKTOP_DESCRIPTION,
                     &["h1", ".lead", ".theme-cards"],
+                    &clips,
                 ),
-            ]
+            ];
+            list.extend(clips.into_iter().map(video));
+            list
         }
         Kind::Apps => {
             let url = absolute(APPS);
-            vec![
+            let clips = stage_videos(&STORE_STAGES, &[]);
+            let mut list = vec![
                 organization(),
                 website(),
                 application(),
                 breadcrumb(&url, &[("LispM", SITE), ("Apps", &url)]),
                 feature_page(
                     APPS,
-                    "LispM App Store: Apps your agents can drive.",
+                    "LispM App Store: Emacs Apps & AI Agent Harnesses",
                     APPS_DESCRIPTION,
                     &["h1", ".lead", ".points"],
+                    &clips,
                 ),
-            ]
+            ];
+            list.extend(clips.into_iter().map(video));
+            list
         }
         Kind::Remote => {
             let url = absolute(REMOTE);
-            vec![
+            let clips = stage_videos(&REMOTE_STAGES, &[]);
+            let mut list = vec![
                 organization(),
                 website(),
                 application(),
@@ -437,8 +474,11 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     "LispM Remote: Your agents, in your pocket.",
                     REMOTE_DESCRIPTION,
                     &["h1", ".lead", ".points"],
+                    &clips,
                 ),
-            ]
+            ];
+            list.extend(clips.into_iter().map(video));
+            list
         }
         Kind::Questions => {
             let url = absolute(QA);
@@ -533,12 +573,14 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
             (
                 "max-image-preview:large",
                 format!(
-                    "\n    <link rel=\"canonical\" href=\"{url}\" />\
+                    "\n    <meta name=\"keywords\" content=\"{keywords}\" />\
+                     \n    <link rel=\"canonical\" href=\"{url}\" />\
                      \n    <link rel=\"alternate\" hreflang=\"en\" href=\"{url}\" />\
                      \n    <link rel=\"alternate\" hreflang=\"x-default\" href=\"{url}\" />\
                      \n    <link rel=\"llms-txt\" href=\"{short}\" />\
                      \n    <link rel=\"llms-full-txt\" href=\"{full}\" />\
-                     \n    <link rel=\"sitemap\" type=\"application/xml\" href=\"{SITE}sitemap.xml\" />"
+                     \n    <link rel=\"sitemap\" type=\"application/xml\" href=\"{SITE}sitemap.xml\" />",
+                    keywords = escape(KEYWORDS),
                 ),
             )
         }
@@ -552,6 +594,7 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
          <title>{title}</title>\n    \
          <meta name=\"description\" content=\"{description}\" />\n    \
          <meta name=\"robots\" content=\"{robots}\" />\n    \
+         <meta name=\"referrer\" content=\"strict-origin-when-cross-origin\" />\n    \
          <meta name=\"theme-color\" content=\"#000000\" />{canonical}\n    \
          <link rel=\"alternate\" type=\"application/atom+xml\" title=\"{NAME}\" href=\"{FEED}\" />\n    \
          <meta property=\"og:site_name\" content=\"LispM\" />\n    \
@@ -581,18 +624,39 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
     )
 }
 
-/// Returns the stills the home page shows, top to bottom, each a path from
-/// the root: the film's poster, then each clip's poster and each picture
-/// beside the chapters.
-fn stills() -> impl Iterator<Item = &'static str> {
+/// Date the site's main and feature pages were last updated.
+const SITE_UPDATED: &str = "2026-11-23";
+
+/// Returns the stills visibly rendered on the home page: the film's poster
+/// and each still of `IDEA_STAGES`.
+fn home_stills() -> Vec<&'static str> {
     std::iter::once(FILM.poster)
-        .chain(illustrations().map(|illustration| illustration.media.still()))
+        .chain(IDEA_STAGES.iter().map(|stage| stage.media.still()))
+        .collect()
 }
 
-/// Returns the site's map: the home page, with the stills and videos it
-/// shows, the blog, as new as its latest post, the posts, and the pages that
-/// stand alone. Its pages only: llms.txt, the home page again in Markdown,
-/// is for language models, which find it at its known address.
+/// Returns the stills visibly rendered on a feature page (`themes`, `stages`,
+/// and `spotlights`).
+fn page_stills(
+    themes: &'static [DesktopTheme],
+    stages: &'static [Stage],
+    spotlights: &'static [Spotlight],
+) -> Vec<&'static str> {
+    themes
+        .iter()
+        .map(|theme| theme.picture.image)
+        .chain(stages.iter().map(|stage| stage.media.still()))
+        .chain(
+            spotlights
+                .iter()
+                .filter_map(|spotlight| spotlight.clip.map(|clip| clip.poster)),
+        )
+        .collect()
+}
+
+/// Returns the site's map: the home page and each dedicated feature page with
+/// the stills and videos visibly rendered on it, the blog (as new as its
+/// latest post), the posts, and the pages that stand alone.
 pub fn sitemap() -> String {
     let mut out = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
@@ -601,18 +665,47 @@ pub fn sitemap() -> String {
          xmlns:video=\"http://www.google.com/schemas/sitemap-video/1.1\">\n",
     );
     let latest = POSTS.iter().map(|post| post.date).max();
+    let mut desktop_stills = page_stills(&DESKTOP_THEMES, &IDEA_STAGES, &[]);
+    desktop_stills.extend(page_stills(&[], &DESKTOP_STAGES, &DESKTOP_SPOTLIGHTS));
+    let mut desktop_videos = stage_videos(&IDEA_STAGES, &[]);
+    desktop_videos.extend(stage_videos(&DESKTOP_STAGES, &DESKTOP_SPOTLIGHTS));
     let pages = [
         (
             absolute("/"),
-            None,
-            stills().collect(),
-            videos().collect::<Vec<_>>(),
+            Some(SITE_UPDATED.to_owned()),
+            home_stills(),
+            home_videos().collect::<Vec<_>>(),
         ),
-        (absolute(AGENT), None, Vec::new(), Vec::new()),
-        (absolute(DESKTOP), None, Vec::new(), Vec::new()),
-        (absolute(APPS), None, Vec::new(), Vec::new()),
-        (absolute(REMOTE), None, Vec::new(), Vec::new()),
-        (absolute(QA), None, Vec::new(), Vec::new()),
+        (
+            absolute(AGENT),
+            Some(SITE_UPDATED.to_owned()),
+            page_stills(&[], &AGENTS_STAGES, &AGENTS_SPOTLIGHTS),
+            stage_videos(&AGENTS_STAGES, &AGENTS_SPOTLIGHTS),
+        ),
+        (
+            absolute(DESKTOP),
+            Some(SITE_UPDATED.to_owned()),
+            desktop_stills,
+            desktop_videos,
+        ),
+        (
+            absolute(APPS),
+            Some(SITE_UPDATED.to_owned()),
+            page_stills(&[], &STORE_STAGES, &[]),
+            stage_videos(&STORE_STAGES, &[]),
+        ),
+        (
+            absolute(REMOTE),
+            Some(SITE_UPDATED.to_owned()),
+            page_stills(&[], &REMOTE_STAGES, &[]),
+            stage_videos(&REMOTE_STAGES, &[]),
+        ),
+        (
+            absolute(QA),
+            Some(SITE_UPDATED.to_owned()),
+            Vec::new(),
+            Vec::new(),
+        ),
         (
             absolute(BLOG),
             latest.map(|date| date.iso()),
@@ -629,11 +722,14 @@ pub fn sitemap() -> String {
             Vec::new(),
         )
     }))
-    .chain(
-        PAGES
-            .iter()
-            .map(|page| (absolute(page.path), None, Vec::new(), Vec::new())),
-    );
+    .chain(PAGES.iter().map(|page| {
+        (
+            absolute(page.path),
+            Some(SITE_UPDATED.to_owned()),
+            Vec::new(),
+            Vec::new(),
+        )
+    }));
     for (url, modified, images, clips) in pages {
         let _ = write!(out, "  <url>\n    <loc>{}</loc>\n", escape(&url));
         if let Some(modified) = modified {
@@ -950,33 +1046,32 @@ mod tests {
             )));
         }
         for page in &PAGES {
-            assert!(map.contains(&format!("<loc>{}</loc>\n  </url>", absolute(page.path))));
+            assert!(map.contains(&format!(
+                "<loc>{}</loc>\n    <lastmod>{SITE_UPDATED}</lastmod>\n  </url>",
+                absolute(page.path)
+            )));
         }
-        assert!(map.contains("<loc>https://lispm.ai/agent/</loc>\n  </url>"));
-        assert!(map.contains("<loc>https://lispm.ai/desktop/</loc>\n  </url>"));
-        assert!(map.contains("<loc>https://lispm.ai/apps/</loc>\n  </url>"));
-        assert!(map.contains("<loc>https://lispm.ai/lispm-remote/</loc>\n  </url>"));
-        assert!(map.contains("<loc>https://lispm.ai/qa/</loc>\n  </url>"));
+        for path in [AGENT, DESKTOP, APPS, REMOTE, QA] {
+            assert!(map.contains(&format!(
+                "<loc>{}</loc>\n    <lastmod>{SITE_UPDATED}</lastmod>",
+                absolute(path)
+            )));
+        }
         assert_eq!(map.matches("<url>").count(), 7 + POSTS.len() + PAGES.len());
     }
 
     #[test]
-    fn the_map_shows_the_home_pages_stills_there_only() {
+    fn the_map_attaches_stills_and_videos_to_the_pages_that_render_them() {
         let map = sitemap();
         let home = map.split("</url>").next().unwrap_or_default();
         assert!(home.contains("<loc>https://lispm.ai/</loc>"));
-        let mut shown = 0;
-        for still in stills() {
+        for still in home_stills() {
             assert!(
                 home.contains(&format!("<image:loc>{SITE}{still}</image:loc>")),
                 "{still}"
             );
-            shown += 1;
         }
-        assert!(shown > 1);
-        assert_eq!(map.matches("<image:image>").count(), shown);
-        let mut clips = 0;
-        for (headline, clip) in videos() {
+        for (headline, clip) in home_videos() {
             assert!(
                 home.contains(&format!(
                     "<video:content_loc>{SITE}{}</video:content_loc>",
@@ -984,10 +1079,12 @@ mod tests {
                 )),
                 "{headline}"
             );
-            clips += 1;
         }
-        assert!(clips > 1);
-        assert_eq!(map.matches("<video:video>").count(), clips);
+        assert!(!home.contains("assets/video/agent.mp4"));
+        assert!(map.contains("assets/video/agent.mp4"));
+        assert!(map.contains("assets/video/desktop.mp4"));
+        assert!(map.contains("assets/video/app-store-ai.mp4"));
+        assert!(map.contains("assets/video/remote-pair.mp4"));
     }
 
     #[test]

@@ -44,18 +44,18 @@ pub static PAGES: [Page; 3] = [
         path: DOWNLOAD,
         eyebrow: "Download",
         title: "Get LispM, or put it in your own Emacs.",
-        meta_title: "Download LispM for Mac, Linux & Emacs — LispM",
-        description: "Install LispM on macOS or GNU/Linux with one line, try LispM Experimental \
-             on GNU Emacs 32, or install LispM Agent, Desktop and Browser in your own Emacs.",
+        meta_title: "Download LispM: Emacs AI Agent Harness — LispM",
+        description: "Install LispM, the Emacs AI agent harness, on macOS or GNU/Linux in 1 line, \
+             try Emacs 32, or run LispM Agent, Desktop and Browser in your own Emacs.",
         body: include_str!("../pages/download.md"),
     },
     Page {
         path: "/mail/",
         eyebrow: "LispM Mail",
         title: "Your mail, in one window.",
-        meta_title: "Your mail, in one classic-style window — LispM Mail",
-        description: "LispM Mail puts your mail accounts in one classic-style window: a folder \
-             list, a table of messages you can sort, and the message you choose under it.",
+        meta_title: "LispM Mail: Classic Email Client in Emacs — LispM",
+        description: "LispM Mail puts 100% of your mail accounts in one classic Emacs window: \
+             folders, sortable messages and local storage sending 0 bytes externally.",
         body: include_str!("../pages/mail.md"),
     },
     Page {

@@ -8,10 +8,11 @@ use yew::prelude::*;
 use crate::content::{
     AGENT, APP_ICON, APPS, Anchor, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD,
     BENCHMARK_ROWS, BENCHMARK_STATS, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DOWNLOAD,
-    DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, FILM, IDEA, IDEA_HEADLINE, IDEA_POINTS,
-    IDEA_STAGES, INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES, Media,
-    ORGANIZATION, PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, REMOTE, REQUIREMENTS, SUMMARY,
-    Spotlight, Step, TAGLINE, X,
+    DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPLORE_CARDS, EXPLORE_EYEBROW,
+    EXPLORE_HEADLINE, EXPLORE_LEAD, FILM, HERO_EYEBROW, HOME_QUESTION_COUNT, IDEA, IDEA_HEADLINE,
+    IDEA_POINTS, IDEA_STAGES, INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES,
+    Media, ORGANIZATION, PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, QUESTIONS,
+    QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE, REQUIREMENTS, SUMMARY, Spotlight, Step, TAGLINE, X,
 };
 
 use crate::effects;
@@ -57,11 +58,13 @@ pub fn app() -> Html {
                 { hero() }
                 { idea() }
                 { benchmark() }
+                { explore() }
                 { for CHAPTERS
                     .iter()
                     .filter(|c| c.anchor == Anchor::Trust)
                     .map(chapter) }
                 { start() }
+                { home_questions() }
             </main>
             { footer(Place::Home) }
         </>
@@ -151,7 +154,7 @@ fn hero() -> Html {
     html! {
         <section class="hero" id="top">
             <img class="logo" src={LOGO} alt="" width="112" height="112" />
-            <p class="eyebrow">{ "LispM" }</p>
+            <p class="eyebrow">{ HERO_EYEBROW }</p>
             <h1>{ TAGLINE }</h1>
             <p class="summary">{ SUMMARY }</p>
             <div class="actions">
@@ -403,6 +406,52 @@ fn start() -> Html {
     }
 }
 
+/// Renders the home page's pillar hub cards linking directly to `/agent/`,
+/// `/desktop/`, `/apps/`, and `/lispm-remote/` with keyword-rich anchors.
+fn explore() -> Html {
+    html! {
+        <section class="section explore" id={Anchor::Explore.id()}>
+            <p class="eyebrow">{ EXPLORE_EYEBROW }</p>
+            <h2>{ EXPLORE_HEADLINE }</h2>
+            <p class="lead">{ EXPLORE_LEAD }</p>
+            <ul class="explore-grid">
+                { for EXPLORE_CARDS.iter().map(|card| html! {
+                    <li class="explore-card">
+                        <span class="eyebrow">{ card.eyebrow }</span>
+                        <h3><a href={card.path}>{ card.title }</a></h3>
+                        <p>{ card.text }</p>
+                    </li>
+                }) }
+            </ul>
+        </section>
+    }
+}
+
+/// Renders the core Emacs AI agent harness FAQ items on the home page,
+/// matching the home page's `FAQPage` JSON-LD and linking to the full `/qa/` page.
+fn home_questions() -> Html {
+    html! {
+        <section class="section questions" id={Anchor::Questions.id()}>
+            <p class="eyebrow">{ "FAQ" }</p>
+            <h2>{ QUESTIONS_HEADLINE }</h2>
+            <p class="lead">{ QUESTIONS_LEAD }</p>
+            <ul class="answers">
+                { for QUESTIONS.iter().take(HOME_QUESTION_COUNT).map(|question| html! {
+                    <li>
+                        <h3>{ question.question }</h3>
+                        <p>{ question.answer }</p>
+                    </li>
+                }) }
+            </ul>
+            <div class="actions">
+                <a class="button" href={QA}>
+                    { format!("Read all {} questions & answers", QUESTIONS.len()) }
+                </a>
+            </div>
+        </section>
+    }
+}
+
 /// Returns the footer of a page at `place`, linking the privacy policy as
 /// every page does; the home page's credits its film.
 pub(crate) fn footer(place: Place) -> Html {
@@ -426,6 +475,8 @@ pub(crate) fn footer(place: Place) -> Html {
                 <li><a href={DOWNLOAD}>{ "Download" }</a></li>
                 <li><a href={QA}>{ "Q&A" }</a></li>
                 <li><a href={BLOG}>{ "Blog" }</a></li>
+                <li><a href="/llms.txt">{ "llms.txt" }</a></li>
+                <li><a href="/llms-full.txt">{ "llms-full.txt" }</a></li>
                 <li><a href={PRIVACY}>{ "Privacy" }</a></li>
             </ul>
             <p>{ "Free software, under the GNU Affero General Public License, version 3 or later." }</p>
