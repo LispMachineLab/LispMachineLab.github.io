@@ -4,10 +4,11 @@ use super::*;
 use std::path::Path;
 
 /// Every section, top to bottom.
-const ALL: [Anchor; 10] = [
+const ALL: [Anchor; 11] = [
     Anchor::Film,
     Anchor::Idea,
     Anchor::Benchmark,
+    Anchor::Explore,
     Anchor::Agents,
     Anchor::Desktop,
     Anchor::Store,
@@ -276,6 +277,14 @@ fn everywhere_lispm_is_told_it_is_built_on_emacs_and_the_lisp_machine() {
             "{text}"
         );
     }
+    for text in [TITLE, DESCRIPTION, DEFINITION, SUMMARY, AGENT_DESCRIPTION] {
+        let lower = text.to_ascii_lowercase();
+        assert!(
+            lower.contains("emacs") && lower.contains("agent") && lower.contains("harness"),
+            "{text}"
+        );
+    }
+    assert!(HOME_QUESTION_COUNT > 0 && HOME_QUESTION_COUNT <= QUESTIONS.len());
     let first = QUESTIONS.first().map(|question| question.answer);
     assert!(first.is_some_and(|answer| answer.starts_with(DEFINITION)));
     for question in QUESTIONS {

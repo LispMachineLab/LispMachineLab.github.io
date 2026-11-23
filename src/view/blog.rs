@@ -80,13 +80,13 @@ pub fn agent() -> Html {
             <main class="desktop-page">
                 <header class="blog-head">
                     <p class="eyebrow">{ "LispM Agent" }</p>
-                    <h1>{ "Ask, and it gets done." }</h1>
+                    <h1>{ "An AI agent harness inside GNU Emacs." }</h1>
                     <p class="lead">
-                        { "Talk to a LispM agent in a chat laid out like Claude Code's. \
-                           Underneath, the conversation is an org document that is also the \
-                           model's context, its tools are Elisp functions, its approvals are TODO \
-                           entries, its memory is org files under git, and it evaluates Lisp in \
-                           the Emacs you are using." }
+                        { "LispM Agent is an open-source Emacs AI agent harness laid out like \
+                           Claude Code's chat. Underneath, 100% of the conversation is an org \
+                           document that serves as model context, its tools are Elisp and JSON MCP \
+                           functions, its approvals are 1-step TODO entries, and it evaluates live \
+                           Lisp inside GNU Emacs." }
                     </p>
                 </header>
                 <section class="section chapter" id="agent">
@@ -128,19 +128,19 @@ pub fn desktop() -> Html {
                     <p class="eyebrow">{ "LispM Desktop" }</p>
                     <h1>{ "Three classic desktops, one workspace for agents." }</h1>
                     <p class="lead">
-                        { "LispM Desktop turns GNU Emacs into a complete workstation ready from \
-                           the first start. Pick the classic system you know—Symbolics Open \
-                           Genera 2.0, Mac OS 9 Platinum & Dracula, or Windows 3.2—and work with \
-                           your files, coding agents, LispM Browser and native Alacritty terminals \
-                           in one place." }
+                        { "LispM Desktop turns GNU Emacs into a complete AI agent workstation in 7 \
+                           languages, ready from the first start. Switch in seconds between \
+                           Symbolics Open Genera 2.0, Mac OS 9 Platinum & Dracula, and Windows \
+                           3.2, with your files, coding agents, LispM Browser and Alacritty \
+                           terminals in one place." }
                     </p>
                 </header>
                 <section class="section desktop-themes" id="themes">
                     <p class="eyebrow">{ "Three Desktops" }</p>
                     <h2>{ "Which system do you know?" }</h2>
                     <p class="lead">
-                        { "At first start, or at any time in Control Panels → Appearance, switch \
-                           the entire workstation between three faithful classic interfaces." }
+                        { "At first start, or in seconds in Control Panels → Appearance, switch \
+                           100% of LispM Desktop between three faithful classic interfaces." }
                     </p>
                     <ul class="theme-cards">
                         { for DESKTOP_THEMES.iter().map(|theme| html! {
@@ -174,8 +174,9 @@ pub fn desktop() -> Html {
                     <p class="eyebrow">{ "Workspaces & Browser" }</p>
                     <h2>{ "A Finder, an editor, a WebKit browser and Chrome extensions." }</h2>
                     <p class="lead">
-                        { "Every project gets its own workspace with its files, agents, LispM \
-                           Office pixel desks and shells together, alongside LispM Browser." }
+                        { "In LispM Desktop, 100% of your projects get an isolated workspace with \
+                           files, AI agents, LispM Office pixel desks and shells alongside LispM \
+                           Browser." }
                     </p>
                     { subpage_stages(&DESKTOP_STAGES) }
                     { for DESKTOP_SPOTLIGHTS.iter().map(|spotlight| html! {
@@ -213,10 +214,10 @@ pub fn apps() -> Html {
                     <p class="eyebrow">{ "LispM App Store" }</p>
                     <h1>{ "Apps your agents can drive." }</h1>
                     <p class="lead">
-                        { "Apps, games and other projects' agents, each a click away. Every app \
-                           brings its manual as a skill so LispM's agents can work it for you; \
-                           ask for something no app does yet, and LispM finds one in the catalog \
-                           and asks before it installs it." }
+                        { "Install 100% open-source Emacs apps, games and external AI harnesses in \
+                           1 step. Every app brings its manual as a skill so LispM's agents can \
+                           drive it; ask for something no app does yet, and LispM searches the \
+                           catalog in seconds and asks before installing it." }
                     </p>
                 </header>
                 <section class="section chapter" id="store">
@@ -250,10 +251,10 @@ pub fn remote() -> Html {
                     <p class="eyebrow">{ "LispM Remote" }</p>
                     <h1>{ "Your agents, in your pocket." }</h1>
                     <p class="lead">
-                        { "Scan a QR code once. Then, from your phone, follow every agent, \
-                           approve what it waits on, send it the next task and open LispM's \
-                           windows redrawn on your screen, peer to peer over Rings Network with \
-                           no server in between." }
+                        { "Scan a QR code in seconds. From your phone over encrypted WebRTC, \
+                           follow 100% of your Emacs AI agents, approve waiting calls and view \
+                           LispM's windows peer to peer over Rings Network, relaying 0 bytes \
+                           through cloud servers." }
                     </p>
                 </header>
                 <section class="section chapter" id="remote">
