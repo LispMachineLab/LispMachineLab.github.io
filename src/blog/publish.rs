@@ -13,13 +13,14 @@ use super::{Author, CARD, DESCRIPTION, HEADLINE, LEAD, LISPM, POSTS, Post, absol
 use crate::content::{
     AGENT, AGENT_DESCRIPTION, AGENTS_SPOTLIGHTS, AGENTS_STAGES, APPS, APPS_DESCRIPTION, BLOG, Clip,
     DESKTOP, DESKTOP_DESCRIPTION, DESKTOP_SPOTLIGHTS, DESKTOP_STAGES, DESKTOP_THEMES, DesktopTheme,
-    FILM, IDEA_STAGES, QA, QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE, REMOTE_DESCRIPTION,
-    REMOTE_STAGES, SITE, STORE_STAGES, Spotlight, Stage,
+    FILM, IDEA_STAGES, Illustration, Media, QA, QUESTIONS_HEADLINE, QUESTIONS_LEAD, REMOTE,
+    REMOTE_DESCRIPTION, REMOTE_STAGES, SITE, STORE_STAGES, Spotlight, Stage,
 };
 use crate::pages::{self, PAGES, Page};
 use crate::publish::{
-    KEYWORDS, Node, application, breadcrumb, breadcrumb_id, graph, home_videos, json_array,
-    json_string, organization, questions, speakable, stage_videos, video, video_id, website,
+    KEYWORDS, Node, application, breadcrumb, breadcrumb_id, graph, home_illustrations, home_videos,
+    json_array, json_string, organization, questions, screenshot, speakable, stage_videos, video,
+    video_id, website,
 };
 
 /// Why the blog's pages could not be made.
@@ -279,16 +280,51 @@ fn blog() -> String {
     )
 }
 
+/// Returns the illustrations visibly rendered on a feature page (`themes`, `stages`,
+/// and `spotlights`).
+fn page_illustrations(
+    themes: &'static [DesktopTheme],
+    stages: &'static [Stage],
+    spotlights: &'static [Spotlight],
+) -> Vec<Illustration> {
+    themes
+        .iter()
+        .map(|theme| Illustration {
+            headline: theme.title,
+            media: Media::Picture(theme.picture),
+        })
+        .chain(stages.iter().map(|stage| Illustration {
+            headline: stage.headline,
+            media: stage.media,
+        }))
+        .chain(spotlights.iter().filter_map(|spotlight| {
+            spotlight.clip.map(|clip| Illustration {
+                headline: spotlight.headline,
+                media: Media::Loop(clip),
+            })
+        }))
+        .collect()
+}
+
 /// Returns a feature page at `path` as a schema.org WebPage of the site,
-/// linking the `clips` visibly rendered on it.
+/// linking the `images` and `clips` visibly rendered on it.
 fn feature_page(
     path: &str,
     name: &str,
     description: &str,
     selectors: &[&str],
+    images: &[Illustration],
     clips: &[(&str, Clip)],
 ) -> String {
     let url = absolute(path);
+    let image_field = if images.is_empty() {
+        String::new()
+    } else {
+        format!(
+            ",\"image\":{}",
+            json_array(images.iter().copied().map(screenshot))
+        )
+    };
     let video_field = if clips.is_empty() {
         String::new()
     } else {
@@ -304,7 +340,7 @@ fn feature_page(
     format!(
         "{{\"@type\":\"WebPage\",\"@id\":{quoted},\"url\":{quoted},\"name\":{},\
          \"description\":{},\"keywords\":{},\"inLanguage\":\"en\",\"isPartOf\":{},\"about\":{},\
-         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{}{video_field},\
+         \"publisher\":{},\"breadcrumb\":{{\"@id\":{}}},\"speakable\":{}{image_field}{video_field},\
          \"mainEntity\":[{}]}}",
         json_string(name),
         json_string(description),
@@ -409,6 +445,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
     let nodes: Vec<String> = match kind {
         Kind::Agent => {
             let url = absolute(AGENT);
+            let images = page_illustrations(&[], &AGENTS_STAGES, &AGENTS_SPOTLIGHTS);
             let clips = stage_videos(&AGENTS_STAGES, &AGENTS_SPOTLIGHTS);
             let mut list = vec![
                 organization(),
@@ -420,6 +457,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     "LispM Agent: Native GNU Emacs AI Agent Harness",
                     AGENT_DESCRIPTION,
                     &["h1", ".lead", "#benchmark .lead", ".points"],
+                    &images,
                     &clips,
                 ),
             ];
@@ -428,6 +466,12 @@ pub fn json_ld(kind: Kind) -> Option<String> {
         }
         Kind::Desktop => {
             let url = absolute(DESKTOP);
+            let mut images = page_illustrations(&DESKTOP_THEMES, &IDEA_STAGES, &[]);
+            images.extend(page_illustrations(
+                &[],
+                &DESKTOP_STAGES,
+                &DESKTOP_SPOTLIGHTS,
+            ));
             let mut clips = stage_videos(&IDEA_STAGES, &[]);
             clips.extend(stage_videos(&DESKTOP_STAGES, &DESKTOP_SPOTLIGHTS));
             let mut list = vec![
@@ -440,6 +484,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     "LispM Desktop: Three classic desktops, one workspace for agents.",
                     DESKTOP_DESCRIPTION,
                     &["h1", ".lead", ".theme-cards"],
+                    &images,
                     &clips,
                 ),
             ];
@@ -448,6 +493,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
         }
         Kind::Apps => {
             let url = absolute(APPS);
+            let images = page_illustrations(&[], &STORE_STAGES, &[]);
             let clips = stage_videos(&STORE_STAGES, &[]);
             let mut list = vec![
                 organization(),
@@ -459,6 +505,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     "LispM App Store: Emacs Apps & AI Agent Harnesses",
                     APPS_DESCRIPTION,
                     &["h1", ".lead", ".points"],
+                    &images,
                     &clips,
                 ),
             ];
@@ -467,6 +514,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
         }
         Kind::Remote => {
             let url = absolute(REMOTE);
+            let images = page_illustrations(&[], &REMOTE_STAGES, &[]);
             let clips = stage_videos(&REMOTE_STAGES, &[]);
             let mut list = vec![
                 organization(),
@@ -478,6 +526,7 @@ pub fn json_ld(kind: Kind) -> Option<String> {
                     "LispM Remote: Your agents, in your pocket.",
                     REMOTE_DESCRIPTION,
                     &["h1", ".lead", ".points"],
+                    &images,
                     &clips,
                 ),
             ];
@@ -633,13 +682,18 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
 }
 
 /// Date the site's main and feature pages were last updated.
-const SITE_UPDATED: &str = "2026-11-23";
+const SITE_UPDATED: &str = "2026-11-24";
 
-/// Returns the stills visibly rendered on the home page: the film's poster
-/// and each still of `IDEA_STAGES`.
+/// Returns the stills visibly rendered on the home page: the film's poster,
+/// the three classic desktop themes, each still of `IDEA_STAGES`, and the
+/// pillar cards' screenshots.
 fn home_stills() -> Vec<&'static str> {
     std::iter::once(FILM.poster)
-        .chain(IDEA_STAGES.iter().map(|stage| stage.media.still()))
+        .chain(
+            home_illustrations()
+                .into_iter()
+                .map(|item| item.media.still()),
+        )
         .collect()
 }
 

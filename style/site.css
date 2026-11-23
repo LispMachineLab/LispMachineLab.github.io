@@ -606,7 +606,7 @@ h3 {
 .explore-card {
   display: flex;
   flex-direction: column;
-  padding: 28px 26px;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 20px;
   background: var(--raised);
@@ -615,6 +615,28 @@ h3 {
 
 .explore-card:hover {
   border-color: var(--muted);
+}
+
+.explore-media {
+  display: block;
+  border-bottom: 1px solid var(--line);
+  background: #0a0a0a;
+}
+
+.explore-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.explore-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 24px 26px 28px;
 }
 
 .explore-card .eyebrow {
@@ -912,6 +934,7 @@ code {
   margin: 48px 0 0;
   padding: 0;
   list-style: none;
+  text-align: left;
 }
 
 @media (max-width: 960px) {

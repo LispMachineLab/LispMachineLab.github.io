@@ -117,7 +117,13 @@ fn every_clip_and_poster_is_in_the_assets() {
             "{}",
             clip.poster
         );
-        assert!(!clip.description.is_empty());
+        assert!(
+            clip.description.contains("LispM"),
+            "every clip alt/caption must name LispM: {}",
+            clip.description
+        );
+        let (w, h) = clip.poster_size();
+        assert!(w >= 1280 && h >= 720, "{}", clip.poster);
     }
 }
 
@@ -125,7 +131,7 @@ fn every_clip_and_poster_is_in_the_assets() {
 fn every_picture_is_in_the_assets_at_its_size() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let mut seen = 0;
-    for picture in pictures() {
+    for picture in pictures().chain(EXPLORE_CARDS.iter().map(|card| card.picture)) {
         let bytes = std::fs::read(root.join(picture.image)).unwrap_or_default();
         assert_eq!(
             crate::blog::size::webp(&bytes),
@@ -133,7 +139,11 @@ fn every_picture_is_in_the_assets_at_its_size() {
             "{}",
             picture.image
         );
-        assert!(!picture.description.is_empty());
+        assert!(
+            picture.description.contains("LispM"),
+            "every picture alt/caption must name LispM: {}",
+            picture.description
+        );
         seen += 1;
     }
     assert!(seen > 0);

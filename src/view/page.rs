@@ -7,8 +7,8 @@ use yew::prelude::*;
 
 use crate::content::{
     AGENT, APP_ICON, APPS, Anchor, BENCHMARK_EYEBROW, BENCHMARK_HEADLINE, BENCHMARK_LEAD,
-    BENCHMARK_ROWS, BENCHMARK_STATS, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DOWNLOAD,
-    DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPLORE_CARDS, EXPLORE_EYEBROW,
+    BENCHMARK_ROWS, BENCHMARK_STATS, BLOG, CHAPTERS, CREDITS, Chapter, DESKTOP, DESKTOP_THEMES,
+    DOWNLOAD, DOWNLOAD_HEADLINE, DOWNLOAD_LEAD, DOWNLOAD_STEPS, EXPLORE_CARDS, EXPLORE_EYEBROW,
     EXPLORE_HEADLINE, EXPLORE_LEAD, FILM, HERO_EYEBROW, HOME_QUESTION_COUNT, IDEA, IDEA_HEADLINE,
     IDEA_POINTS, IDEA_STAGES, INSTALLATION, INSTALLER_DOES, INSTALLER_SOURCE, INSTALLER_UPDATES,
     Media, ORGANIZATION, PLATFORMS, PRIVACY, PROJECTS, Platform, Point, QA, QUESTIONS,
@@ -153,7 +153,7 @@ fn download_button() -> Html {
 fn hero() -> Html {
     html! {
         <section class="hero" id="top">
-            <img class="logo" src={LOGO} alt="" width="112" height="112" />
+            <img class="logo" src={LOGO} alt="LispM rainbow lambda mark" width="112" height="112" />
             <p class="eyebrow">{ HERO_EYEBROW }</p>
             <h1>{ TAGLINE }</h1>
             <p class="summary">{ SUMMARY }</p>
@@ -190,6 +190,26 @@ fn idea() -> Html {
         <section class="section idea" id={Anchor::Idea.id()}>
             <h2>{ IDEA_HEADLINE }</h2>
             <p class="lead">{ IDEA }</p>
+            <ul class="theme-cards">
+                { for DESKTOP_THEMES.iter().map(|theme| html! {
+                    <li class="theme-card" id={theme.key}>
+                        <img
+                            class="theme-preview"
+                            src={format!("/{}", theme.picture.image)}
+                            alt={theme.picture.description}
+                            width={theme.picture.width.to_string()}
+                            height={theme.picture.height.to_string()}
+                            loading="lazy"
+                            decoding="async"
+                        />
+                        <div class="theme-body">
+                            <span class="eyebrow">{ theme.eyebrow }</span>
+                            <h3>{ theme.title }</h3>
+                            <p>{ theme.description }</p>
+                        </div>
+                    </li>
+                }) }
+            </ul>
             { for IDEA_STAGES.iter().map(|stage| html! {
                 <div class="story">
                     <div class="words">
@@ -365,7 +385,7 @@ fn download() -> Html {
     html! {
         <div class="download">
             <div class="app">
-                <img src={APP_ICON} alt="LispM's icon, the rainbow λ" width="128" height="128" />
+                <img src={format!("/{APP_ICON}")} alt="LispM's icon, the rainbow λ" width="128" height="128" />
                 <h3>{ "LispM" }</h3>
                 <dl class="systems">
                     { for Platform::ALL.iter().map(|platform| html! {
@@ -407,7 +427,8 @@ fn start() -> Html {
 }
 
 /// Renders the home page's pillar hub cards linking directly to `/agent/`,
-/// `/desktop/`, `/apps/`, and `/lispm-remote/` with keyword-rich anchors.
+/// `/desktop/`, `/apps/`, and `/lispm-remote/` with keyword-rich anchors
+/// and real LispM screenshots.
 fn explore() -> Html {
     html! {
         <section class="section explore" id={Anchor::Explore.id()}>
@@ -417,9 +438,22 @@ fn explore() -> Html {
             <ul class="explore-grid">
                 { for EXPLORE_CARDS.iter().map(|card| html! {
                     <li class="explore-card">
-                        <span class="eyebrow">{ card.eyebrow }</span>
-                        <h3><a href={card.path}>{ card.title }</a></h3>
-                        <p>{ card.text }</p>
+                        <a class="explore-media" href={card.path}>
+                            <img
+                                class="explore-preview"
+                                src={format!("/{}", card.picture.image)}
+                                alt={card.picture.description}
+                                width={card.picture.width.to_string()}
+                                height={card.picture.height.to_string()}
+                                loading="lazy"
+                                decoding="async"
+                            />
+                        </a>
+                        <div class="explore-body">
+                            <span class="eyebrow">{ card.eyebrow }</span>
+                            <h3><a href={card.path}>{ card.title }</a></h3>
+                            <p>{ card.text }</p>
+                        </div>
                     </li>
                 }) }
             </ul>

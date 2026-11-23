@@ -26,20 +26,34 @@ pub struct PostProps {
 /// with root-relative asset paths so it plays without WebAssembly.
 fn desktop_media(media: Media) -> Html {
     match media {
-        Media::Loop(clip) => html! {
-            <video
-                class="clip"
-                src={format!("/{}", clip.video)}
-                poster={format!("/{}", clip.poster)}
-                autoplay=true
-                muted=true
-                loop=true
-                playsinline=true
-                controls=true
-                preload="metadata"
-                aria-label={clip.description}
-            />
-        },
+        Media::Loop(clip) => {
+            let (width, height) = clip.poster_size();
+            let poster = format!("/{}", clip.poster);
+            html! {
+                <video
+                    class="clip"
+                    src={format!("/{}", clip.video)}
+                    poster={poster.clone()}
+                    autoplay=true
+                    muted=true
+                    loop=true
+                    playsinline=true
+                    controls=true
+                    preload="metadata"
+                    aria-label={clip.description}
+                >
+                    <img
+                        class="still"
+                        src={poster}
+                        alt={clip.description}
+                        width={width.to_string()}
+                        height={height.to_string()}
+                        loading="lazy"
+                        decoding="async"
+                    />
+                </video>
+            }
+        }
         Media::Picture(picture) => html! {
             <img
                 class="still"
@@ -347,7 +361,7 @@ fn teaser(post: &'static Post) -> Html {
     html! {
         <li>
             <a href={post.path()}>
-                <img src={post.cover.src} alt="" {width} {height} loading="lazy" decoding="async" />
+                <img src={post.cover.src} alt={post.cover.alt} {width} {height} loading="lazy" decoding="async" />
                 <div>
                     <p class="byline">{ date(post) }{ " · " }{ post.author.name }</p>
                     <h2>{ post.title }</h2>

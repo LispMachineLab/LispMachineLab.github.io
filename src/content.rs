@@ -90,12 +90,31 @@ pub enum Media {
     Picture(Picture),
 }
 
+impl Clip {
+    /// Returns the width and height in pixels of the clip's poster image.
+    pub const fn poster_size(self) -> (u32, u32) {
+        if matches!(self.poster.as_bytes(), b"assets/video/lispm-film.jpg") {
+            (1920, 1080)
+        } else {
+            (1280, 720)
+        }
+    }
+}
+
 impl Media {
     /// Returns the still it shows first: a clip's poster, or the picture.
     pub const fn still(self) -> &'static str {
         match self {
             Media::Loop(clip) => clip.poster,
             Media::Picture(picture) => picture.image,
+        }
+    }
+
+    /// Returns the width and height in pixels of the still it shows first.
+    pub const fn size(self) -> (u32, u32) {
+        match self {
+            Media::Loop(clip) => clip.poster_size(),
+            Media::Picture(picture) => (picture.width, picture.height),
         }
     }
 
@@ -304,8 +323,9 @@ const GAINED: Date = Date {
 pub const FILM: Clip = clip(
     "assets/video/lispm-film.mp4",
     "assets/video/lispm-film.jpg",
-    "A 57-second film: from the Lisp Machines to LispM Desktop, an agent fixing a failing test \
-     inside Emacs, Claude Code, Codex and Hermes side by side, and windows dragged off the desktop.",
+    "LispM 57-second keynote film: from 1970s Lisp Machines to LispM Desktop, a LispM Agent fixing \
+     a failing test inside GNU Emacs, Claude Code, Codex and Hermes side by side, and windows \
+     dragged off the desktop.",
     OPENED,
 );
 
@@ -361,8 +381,8 @@ pub const IDEA_STAGES: [Stage; 4] = [
         media: shown(
             "assets/video/genera-desktop.mp4",
             "assets/video/genera-desktop.jpg",
-            "LispM Desktop switches from Mac OS 9 Platinum to Symbolics Open Genera 2.0 monochrome \
-             Dynamic Windows, then closes the floating panes to reveal Dynamic Lisp Listener 1.",
+            "LispM Desktop switching from Mac OS 9 Platinum to Symbolics Open Genera 2.0 monochrome \
+             Dynamic Windows, then closing floating panes to reveal Dynamic Lisp Listener 1.",
             GAINED,
         ),
     },
@@ -375,9 +395,9 @@ pub const IDEA_STAGES: [Stage; 4] = [
         media: shown(
             "assets/video/genera-listener.mp4",
             "assets/video/genera-listener.jpg",
-            "In Dynamic Lisp Listener 1, a Lisp form is evaluated at the Command: prompt, followed \
-             by an English request to fix a failing test; the Who-Line switches to Agent Run and \
-             all three tests pass.",
+            "LispM Dynamic Lisp Listener 1 evaluating a Lisp form at the Command: prompt, followed \
+             by an English request for LispM Agent to fix a failing test as the Who-Line switches \
+             to Agent Run.",
             GAINED,
         ),
     },
@@ -390,9 +410,9 @@ pub const IDEA_STAGES: [Stage; 4] = [
         media: shown(
             "assets/video/genera-windows.mp4",
             "assets/video/genera-windows.jpg",
-            "Right-clicking opens the 1-bit System Menu to choose Create and Emacs, the pointer \
-             drags a dotted rubber-band outline across Dynamic Lisp Listener 1 to size and place \
-             the window, and Bury and Kill return to the Listener.",
+            "LispM Desktop in Symbolics Open Genera 2.0: right-clicking opens the 1-bit System Menu \
+             to choose Create and Emacs, sweeping a dotted rubber-band outline across Dynamic Lisp \
+             Listener 1 to size and place the window.",
             GAINED,
         ),
     },
@@ -403,8 +423,8 @@ pub const IDEA_STAGES: [Stage; 4] = [
         media: shown(
             "assets/video/genera-terminal.mp4",
             "assets/video/genera-terminal.jpg",
-            "Starting emacs -nw in a terminal opens Dynamic Lisp Listener 1 with the rainbow \
-             block-character lambda, Command: prompt and Who-Line, evaluating Lisp in text mode.",
+            "LispM running in a terminal with emacs -nw: Dynamic Lisp Listener 1 with the rainbow \
+             block-character lambda, Command: prompt and Who-Line evaluating Lisp in text mode.",
             GAINED,
         ),
     },
@@ -465,6 +485,8 @@ pub struct ExploreCard {
     pub path: &'static str,
     /// Self-contained summary with concrete technical bounds.
     pub text: &'static str,
+    /// Real screenshot of LispM shown at the top of the card.
+    pub picture: Picture,
 }
 
 /// Eyebrow over the home page's pillar hub section.
@@ -486,6 +508,13 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         text: "LispM Agent runs AI coding agents 100% inside GNU Emacs (#1 on FrontierHarness 1.0 \
                at 66.7% pass rate in 203.9 seconds) alongside Claude Code, Codex and Antigravity \
                over JSON and MCP.",
+        picture: Picture {
+            image: "assets/blog/your-agents-can-talk-to-each-other/claude-asks-codex.webp",
+            width: 2000,
+            height: 1121,
+            description: "LispM Agent on LispM Desktop in GNU Emacs with Claude Code and Codex \
+                          running side by side and reviewing code over LispM's JSON message bus.",
+        },
     },
     ExploreCard {
         eyebrow: "LispM Desktop",
@@ -494,6 +523,14 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         text: "LispM Desktop turns GNU Emacs into a complete AI agent workstation in 7 languages \
                with Symbolics Open Genera 2.0, Mac OS 9 Platinum and Windows 3.2 looks plus a \
                WebKit browser.",
+        picture: Picture {
+            image: "assets/screenshots/theme-genera.webp",
+            width: 2000,
+            height: 1050,
+            description: "LispM Desktop in the Symbolics Open Genera 2.0 Lisp Machine look: \
+                          Dynamic Lisp Listener 1, 1-bit Dynamic Windows, Who-Line and Mouse \
+                          Documentation Line.",
+        },
     },
     ExploreCard {
         eyebrow: "LispM App Store",
@@ -502,6 +539,13 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         text: "LispM App Store installs 100% open-source Emacs apps, skills, LispM Office, \
                external AI harnesses (Antigravity, Hermes, Holon, OpenClaw) and 1970s Classic AI \
                in 1 step.",
+        picture: Picture {
+            image: "assets/screenshots/lispm-office.webp",
+            width: 1720,
+            height: 1448,
+            description: "LispM Office in LispM Desktop showing the 8-room animated pixel office \
+                          and LispM Office Inspector tracking live AI coding agents in GNU Emacs.",
+        },
     },
     ExploreCard {
         eyebrow: "LispM Remote",
@@ -509,6 +553,13 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         path: REMOTE,
         text: "LispM Remote pairs your phone and GNU Emacs via QR code in seconds over encrypted \
                WebRTC on Rings Network, relaying 0 bytes through cloud servers.",
+        picture: Picture {
+            image: "assets/screenshots/theme-platinum.webp",
+            width: 2000,
+            height: 1068,
+            description: "LispM Desktop in the Mac OS 9 Platinum look with the rainbow lambda top \
+                          menu bar, pinstriped windows and desktop icons inside GNU Emacs.",
+        },
     },
 ];
 
@@ -724,8 +775,8 @@ pub const AGENTS_STAGES: [Stage; 5] = [
         media: shown(
             "assets/video/agent.mp4",
             "assets/video/agent.jpg",
-            "An agent is asked to fix a failing test: it reads the code, asks first, writes the fix, \
-             the tests pass, and it writes Emacs Lisp to open two files side by side.",
+            "LispM Agent fixing a failing test inside GNU Emacs: it reads the code, asks for approval, \
+             writes the fix, passes the tests, and evaluates Emacs Lisp to open two files side by side.",
             OPENED,
         ),
     },
@@ -736,7 +787,8 @@ pub const AGENTS_STAGES: [Stage; 5] = [
         media: shown(
             "assets/video/agents.mp4",
             "assets/video/agents.jpg",
-            "Claude Code, Codex and Hermes open beside a LispM agent, all running at once, listed in one sidebar.",
+            "LispM Desktop running Claude Code, Codex and Hermes beside a native LispM Agent, all \
+             active at once and listed in one Emacs sidebar.",
             OPENED,
         ),
     },
@@ -933,7 +985,7 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
         media: shown(
             "assets/video/desktop.mp4",
             "assets/video/desktop.jpg",
-            "LispM Desktop starts on its classic-style desktop, opens a project in Emacs, and shows its workspaces.",
+            "LispM Desktop starting on its classic-style desktop, opening a project in GNU Emacs, and showing its workspaces.",
             OPENED,
         ),
     },
@@ -945,7 +997,7 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
         media: shown(
             "assets/video/windows.mp4",
             "assets/video/windows.jpg",
-            "A window is dragged off the desktop, the desktop hides and comes back, and the theme turns to Dracula.",
+            "LispM Desktop in Coherence mode: a window is dragged off the desktop, the desktop hides and comes back, and the theme switches to Dracula.",
             OPENED,
         ),
     },
@@ -970,8 +1022,8 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
         media: shown(
             "assets/video/terminal-desktop.mp4",
             "assets/video/terminal-desktop.jpg",
-            "emacs -nw starts inside a terminal and opens the full LispM Desktop with graphical icons, \
-             menus and Conway's Game of Life running in a floating window.",
+            "LispM Desktop running inside a terminal via emacs -nw with graphical icons, menus and \
+             Conway's Game of Life in a floating window.",
             GAINED,
         ),
     },
@@ -984,8 +1036,8 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
             image: "assets/screenshots/kernel-panel.webp",
             width: 2000,
             height: 1094,
-            description: "Control Panels open on the Kernel tab, showing the LispM Kernel Common Lisp \
-                          runtime toggle and the Emacs Kernel selector between GNU Emacs 31.1 and GNU Emacs 32.",
+            description: "LispM Control Panels open on the Kernel tab, showing the LispM Kernel Common \
+                          Lisp runtime toggle and the Emacs Kernel selector between GNU Emacs 31.1 and GNU Emacs 32.",
         }),
     },
     Stage {
@@ -996,7 +1048,7 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
         media: shown(
             "assets/video/browser.mp4",
             "assets/video/browser.jpg",
-            "LispM Browser opens a page, goes to an address from the location field, and labels the links to follow them from the keyboard.",
+            "LispM Browser opening a page, navigating from the location field, and labeling links to follow them from the keyboard.",
             OPENED,
         ),
     },
@@ -1008,10 +1060,8 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
         media: shown(
             "assets/video/extensions.mp4",
             "assets/video/extensions.jpg",
-            "The puzzle piece on the browser's toolbar opens the Chrome Web Store in a tab, Add to \
-             LispM on Dark Reader's page adds it once the question in the minibuffer is answered, \
-             the Lisp machine article turns dark, and Dark Reader's own toolbar button opens its \
-             popup under it.",
+            "LispM Browser installing Dark Reader from the Chrome Web Store, turning the Lisp machine \
+             article dark, and opening Dark Reader's toolbar popup inside GNU Emacs.",
             OPENED,
         ),
     },
@@ -1072,7 +1122,7 @@ pub const STORE_STAGES: [Stage; 5] = [
             image: "assets/blog/three-old-ais-running-again/app-store-shrdlu.webp",
             width: 2000,
             height: 1125,
-            description: "The App Store on LispM's classic-style desktop: its categories, from News to \
+            description: "LispM App Store on LispM's classic-style desktop: its categories, from News to \
                           Classic AI, and SHRDLU's page, with its banner, what it does, and its \
                           Uninstall and Open buttons.",
         }),
@@ -1085,8 +1135,8 @@ pub const STORE_STAGES: [Stage; 5] = [
         media: shown(
             "assets/video/app-store-ai.mp4",
             "assets/video/app-store-ai.jpg",
-            "Asked in the LispM bar to install a news reader and show what is new in Lisp, LispM \
-             Agent finds Elfeed in the App Store, asks for approval, installs it, and opens the \
+            "LispM Agent asked in the LispM bar to install a news reader and show what is new in Lisp: \
+             it finds Elfeed in the LispM App Store, asks for approval, installs it, and opens the \
              headlines.",
             GAINED,
         ),
@@ -1098,8 +1148,8 @@ pub const STORE_STAGES: [Stage; 5] = [
         media: shown(
             "assets/video/classic-ai.mp4",
             "assets/video/classic-ai.jpg",
-            "SHRDLU in LispM: told to find a block taller than the one it holds and put it into the \
-             box, it plans the moves, and its hand carries the blocks across the table.",
+            "SHRDLU running in LispM Desktop: told to find a block taller than the one it holds and put \
+             it into the box, it plans the moves and carries the blocks across the table.",
             GAINED,
         ),
     },
@@ -1112,8 +1162,8 @@ pub const STORE_STAGES: [Stage; 5] = [
             image: "assets/screenshots/classic-ai-all.webp",
             width: 2000,
             height: 1125,
-            description: "SHRDLU, MYCIN and Doctor open side by side in three floating windows on \
-                          LispM Desktop.",
+            description: "LispM Desktop running SHRDLU, MYCIN and Doctor side by side in three floating \
+                          windows inside GNU Emacs.",
         }),
     },
     Stage {
@@ -1167,8 +1217,8 @@ pub const REMOTE_STAGES: [Stage; 3] = [
         media: shown(
             "assets/video/remote-pair.mp4",
             "assets/video/remote-pair.jpg",
-            "LispM Remote shows a QR code on the desktop, a phone scans it, both screens show the \
-             fingerprint 3981-CF90, and LispM approves the phone.",
+            "LispM Remote showing a QR code on LispM Desktop, a phone scanning it, both screens showing \
+             the fingerprint 3981-CF90, and LispM approving the phone.",
             GAINED,
         ),
     },
@@ -1179,8 +1229,8 @@ pub const REMOTE_STAGES: [Stage; 3] = [
         media: shown(
             "assets/video/remote-approve.mp4",
             "assets/video/remote-approve.jpg",
-            "On the phone, an agent works through a fix and asks to run make test; Allow is tapped, \
-             and all three tests pass.",
+            "LispM Remote on a phone: a LispM Agent works through a fix and asks to run make test; \
+             Allow is tapped on the phone, and all three tests pass.",
             GAINED,
         ),
     },
@@ -1191,8 +1241,8 @@ pub const REMOTE_STAGES: [Stage; 3] = [
         media: shown(
             "assets/video/remote-windows.mp4",
             "assets/video/remote-windows.jpg",
-            "The phone opens slug.el from LispM's windows, redrawn there, and the film says: no \
-             server in between, peer to peer over Rings, sealed end to end.",
+            "LispM Remote on a phone opening slug.el from LispM's Emacs windows, redrawn peer to peer \
+             over Rings Network WebRTC with no server in between.",
             GAINED,
         ),
     },
