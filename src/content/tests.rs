@@ -258,24 +258,57 @@ fn ids_are_named() {
 }
 
 #[test]
-fn frontier_harness_benchmark_rows_are_ranked_and_complete() {
+fn frontier_harness_benchmark_rows_are_complete_and_neutral() {
     assert_eq!(BENCHMARK_STATS.len(), 4);
     assert_eq!(BENCHMARK_ROWS.len(), 13);
+    assert_eq!(BENCHMARK_ROWS.iter().filter(|r| r.is_lispm).count(), 1);
     assert_eq!(
         BENCHMARK_ROWS
-            .first()
-            .map(|r| (r.rank, r.harness, r.pass_rate, r.is_lispm)),
-        Some((1, "LispM ★", "66.7%", true))
+            .iter()
+            .find(|r| r.is_lispm)
+            .map(|r| (r.harness, r.pass_rate, r.passed)),
+        Some(("LispM", "66.7%", "20/30"))
     );
-    for (i, row) in BENCHMARK_ROWS.iter().enumerate() {
-        assert_eq!(usize::from(row.rank), i + 1);
+    for row in BENCHMARK_ROWS {
         assert!(!row.harness.is_empty());
+        assert!(!row.harness.contains('★'), "{}", row.harness);
         assert!(row.pass_rate.ends_with('%'));
         assert!(row.passed.ends_with("/30"));
         assert!(row.median_cost.starts_with('$'));
         assert!(row.effective_cost.starts_with('$'));
         assert!(row.cache_hit.ends_with('%'));
         assert!(row.median_seconds > 0);
+    }
+}
+
+#[test]
+fn copy_stays_neutral_without_ranking_boasts() {
+    let texts = [
+        TITLE,
+        DESCRIPTION,
+        SUMMARY,
+        AGENT_DESCRIPTION,
+        BENCHMARK_HEADLINE,
+        BENCHMARK_LEAD,
+    ]
+    .into_iter()
+    .chain(BENCHMARK_STATS.iter().map(|s| s.detail))
+    .chain(EXPLORE_CARDS.iter().map(|c| c.text))
+    .chain(QUESTIONS.iter().map(|q| q.answer));
+    for text in texts {
+        let lower = text.to_ascii_lowercase();
+        for forbidden in ["#1", "#2", "★", "fastest", "100%"] {
+            assert!(!lower.contains(forbidden), "{forbidden} in {text}");
+        }
+    }
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let index = std::fs::read_to_string(root.join("index.html")).unwrap_or_default();
+    let lower_index = index.to_ascii_lowercase();
+    for forbidden in ["#1", "#2", "★", "fastest"] {
+        assert!(
+            !lower_index.contains(forbidden),
+            "{forbidden} in index.html"
+        );
     }
 }
 

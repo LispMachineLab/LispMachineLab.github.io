@@ -45,7 +45,7 @@ pub static PAGES: [Page; 3] = [
         eyebrow: "Download",
         title: "Get LispM, or put it in your own Emacs.",
         meta_title: "Download LispM: Emacs AI Agent Harness — LispM",
-        description: "Install LispM, the Emacs AI agent harness, on macOS or GNU/Linux in 1 line, \
+        description: "Install LispM, the Emacs AI agent harness, on macOS or GNU/Linux with one line, \
              try Emacs 32, or run LispM Agent, Desktop and Browser in your own Emacs.",
         body: include_str!("../pages/download.md"),
     },
@@ -54,8 +54,8 @@ pub static PAGES: [Page; 3] = [
         eyebrow: "LispM Mail",
         title: "Your mail, in one window.",
         meta_title: "LispM Mail: Classic Email Client in Emacs — LispM",
-        description: "LispM Mail puts 100% of your mail accounts in one classic Emacs window: \
-             folders, sortable messages and local storage sending 0 bytes externally.",
+        description: "LispM Mail puts your mail accounts in one classic Emacs window: folders, \
+             sortable messages and local storage with no external server.",
         body: include_str!("../pages/mail.md"),
     },
     Page {

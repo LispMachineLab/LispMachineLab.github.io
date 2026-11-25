@@ -630,7 +630,7 @@ fn markdown_screenshots() -> String {
     out
 }
 
-/// Returns the FrontierHarness 1.0 30-task benchmark summary and leaderboard
+/// Returns the FrontierHarness 1.0 30-task evaluation summary and table
 /// as a Markdown section for llms.txt.
 fn markdown_benchmark() -> String {
     let mut out = format!("## {BENCHMARK_EYEBROW}: {BENCHMARK_HEADLINE}\n\n{BENCHMARK_LEAD}\n\n");
@@ -642,14 +642,13 @@ fn markdown_benchmark() -> String {
         );
     }
     out.push_str(
-        "\n| # | Harness | Pass Rate | Median Cost / Pass | Effective Cost / Pass | Warm Cache Hit | Median Time |\n\
-         | --- | --- | --- | --- | --- | --- | --- |\n",
+        "\n| Harness | Pass Rate | Median Cost / Pass | Effective Cost / Pass | Warm Cache Hit | Median Time |\n\
+         | --- | --- | --- | --- | --- | --- |\n",
     );
     for row in &BENCHMARK_ROWS {
         let _ = writeln!(
             out,
-            "| {} | {} | {} ({}) | {} | {} | {} | {} |",
-            row.rank,
+            "| {} | {} ({}) | {} | {} | {} | {} |",
             row.harness,
             row.pass_rate,
             row.passed,

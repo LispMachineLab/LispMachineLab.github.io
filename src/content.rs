@@ -336,36 +336,35 @@ pub const HERO_EYEBROW: &str = "LispM · Emacs AI Agent Harness";
 pub const TAGLINE: &str = "A Lisp Machine for agents.";
 
 /// The paragraph under the tagline.
-pub const SUMMARY: &str = "LispM is an open-source Emacs AI agent harness (#1 on FrontierHarness \
-     1.0 at 66.7% pass rate). AI coding agents run 100% inside GNU Emacs: conversations are org \
-     documents, tools are Elisp, and Emacs itself is the harness.";
+pub const SUMMARY: &str = "LispM is an open-source Emacs AI agent harness. Its agents run inside \
+     GNU Emacs: conversations are org documents, tools are Elisp, and Emacs itself is the harness.";
 
 /// The headline of the idea.
 pub const IDEA_HEADLINE: &str =
     "The editor, the operating system and your Emacs AI agent harness, one world.";
 
 /// The paragraph under it.
-pub const IDEA: &str = "On a 1970s Lisp Machine, 100% of the editor and operating system lived as \
-     live Lisp objects. Born beside it at MIT in 1976, GNU Emacs has kept that live architecture \
-     for 50 years—and LispM turns it into the Emacs AI agent harness modern coding agents need.";
+pub const IDEA: &str = "On a 1970s Lisp Machine, the editor and the operating system lived together \
+     as live Lisp objects. Born beside it at MIT in 1976, GNU Emacs has kept that live \
+     architecture for fifty years—and LispM opens it up as an Emacs AI agent harness.";
 
 /// What makes LispM's agents what they are.
 pub const IDEA_POINTS: [Point; 4] = [
     Point {
         title: "Conversations are documents.",
-        text: "In LispM, 100% of each agent's chat is a live org-mode document in Emacs, and that document is its model context.",
+        text: "In LispM, each agent's chat is a live org-mode document in Emacs, and that document is its model context.",
     },
     Point {
         title: "Tools are Lisp.",
-        text: "A LispM agent's tools are native Elisp functions and JSON MCP tools, writing live Lisp in seconds to drive GNU Emacs itself.",
+        text: "A LispM agent's tools are native Elisp functions and MCP tools; it writes Lisp to combine them and drives GNU Emacs itself.",
     },
     Point {
         title: "Approvals are TODOs.",
-        text: "In LispM, every shell command or file edit pauses as a 1-step org-mode TODO entry until 100% approved by you.",
+        text: "In LispM, a shell command or file edit waits as an org-mode TODO entry until you approve it.",
     },
     Point {
         title: "Memory is git.",
-        text: "LispM stores 100% of what agents remember locally as plain-text org files under git, sending 0 bytes to third-party clouds.",
+        text: "What LispM's agents remember is stored locally as plain-text org files under git.",
     },
 ];
 
@@ -374,10 +373,10 @@ pub const IDEA_POINTS: [Point; 4] = [
 pub const IDEA_STAGES: [Stage; 4] = [
     Stage {
         headline: "Symbolics Open Genera, in 1-bit monochrome.",
-        text: "Switch LispM Desktop in 1 step to Symbolics Open Genera 2.0 and the top menu bar, \
-               desktop icons and Control Strip give way to a 1-bit monochrome Dynamic Windows \
-               workstation: paper-white headers, double-rule borders, 45° hatched scrollbars, a \
-               Who-Line and a 2-line inverse-video Mouse Documentation Line.",
+        text: "Switch LispM Desktop to Symbolics Open Genera 2.0 and the top menu bar, desktop \
+               icons and Control Strip give way to a 1-bit monochrome Dynamic Windows workstation: \
+               paper-white headers, double-rule borders, 45° hatched scrollbars, a Who-Line and a \
+               2-line inverse-video Mouse Documentation Line.",
         media: shown(
             "assets/video/genera-desktop.mp4",
             "assets/video/genera-desktop.jpg",
@@ -389,9 +388,8 @@ pub const IDEA_STAGES: [Stage; 4] = [
     Stage {
         headline: "Lisp and AI at one Command: prompt.",
         text: "In LispM's Dynamic Lisp Listener 1, type a Lisp form at Command: to evaluate it \
-               inline in seconds, or type a coding task in plain English at the very same \
-               prompt—the Who-Line switches from User Input to Agent Run as LispM edits the code \
-               and runs the tests.",
+               inline, or type a coding task in plain English at the very same prompt—the Who-Line \
+               switches from User Input to Agent Run as LispM edits the code and runs the tests.",
         media: shown(
             "assets/video/genera-listener.mp4",
             "assets/video/genera-listener.jpg",
@@ -404,9 +402,9 @@ pub const IDEA_STAGES: [Stage; 4] = [
     Stage {
         headline: "Create ▸ Emacs, sweep to size.",
         text: "Right-click anywhere in LispM to open the 1-bit Dynamic Windows System Menu, choose \
-               Create ▸ Emacs in 2 steps, and drag a dotted rubber-band outline across the screen \
-               to size and place the window—then click [Bury] or [Kill] on any frame header to \
-               return to the Listener.",
+               Create ▸ Emacs, and drag a dotted rubber-band outline across the screen to size and \
+               place the window—then click [Bury] or [Kill] on any frame header to return to the \
+               Listener.",
         media: shown(
             "assets/video/genera-windows.mp4",
             "assets/video/genera-windows.jpg",
@@ -418,7 +416,7 @@ pub const IDEA_STAGES: [Stage; 4] = [
     },
     Stage {
         headline: "The Lisp Machine in a terminal, too.",
-        text: "Start LispM with emacs -nw in any terminal or over SSH and 100% of Dynamic Lisp \
+        text: "Start LispM with emacs -nw in any terminal or over SSH and the same Dynamic Lisp \
                Listener 1, the block-character λ, Command: prompt and Who-Line run in text mode.",
         media: shown(
             "assets/video/genera-terminal.mp4",
@@ -437,15 +435,13 @@ pub struct BenchmarkStat {
     pub label: &'static str,
     /// The primary value.
     pub value: &'static str,
-    /// Ranking or context note under the value.
+    /// Context note under the value.
     pub detail: &'static str,
 }
 
-/// One row of the 13-harness FrontierHarness 1.0 leaderboard (30 tasks).
+/// One row of the 13-harness FrontierHarness 1.0 evaluation table (30 tasks).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct BenchmarkRow {
-    /// Leaderboard rank (1..=13).
-    pub rank: u8,
     /// Harness name.
     pub harness: &'static str,
     /// Pass rate percentage (e.g. `66.7%`).
@@ -469,10 +465,10 @@ pub struct BenchmarkRow {
 }
 
 /// Eyebrow over the FrontierHarness 1.0 benchmark section.
-pub const BENCHMARK_EYEBROW: &str = "FrontierHarness 1.0 Benchmark";
+pub const BENCHMARK_EYEBROW: &str = "FrontierHarness 1.0";
 
 /// Headline of the FrontierHarness 1.0 benchmark section.
-pub const BENCHMARK_HEADLINE: &str = "Tied for #1 pass rate. #1 fastest AI agent harness.";
+pub const BENCHMARK_HEADLINE: &str = "Measured on FrontierHarness 1.0.";
 
 /// A pillar card on the home page linking to one of LispM's dedicated pages.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -496,8 +492,9 @@ pub const EXPLORE_EYEBROW: &str = "Inside LispM";
 pub const EXPLORE_HEADLINE: &str = "Every layer of the Emacs AI agent harness.";
 
 /// Lead paragraph of the home page's pillar hub section.
-pub const EXPLORE_LEAD: &str = "LispM combines a 100% open-source GNU Emacs AI agent harness with \
-     3 classic workstation desktops, an App Store of agent-driven skills and WebRTC mobile control.";
+pub const EXPLORE_LEAD: &str = "LispM combines an open-source GNU Emacs AI agent harness with \
+     three classic workstation desktops, an App Store of agent-driven skills and peer-to-peer \
+     mobile control.";
 
 /// Pillar hub cards linking the home page to LispM's dedicated feature pages.
 pub const EXPLORE_CARDS: [ExploreCard; 4] = [
@@ -505,9 +502,9 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         eyebrow: "LispM Agent",
         title: "Native GNU Emacs AI Agent Harness",
         path: AGENT,
-        text: "LispM Agent runs AI coding agents 100% inside GNU Emacs (#1 on FrontierHarness 1.0 \
-               at 66.7% pass rate in 203.9 seconds) alongside Claude Code, Codex and Antigravity \
-               over JSON and MCP.",
+        text: "LispM Agent runs AI coding agents inside GNU Emacs—org-mode chats, Elisp tools and \
+               TODO approvals—alongside Claude Code, Codex and Antigravity over a local message \
+               bus and MCP.",
         picture: Picture {
             image: "assets/blog/your-agents-can-talk-to-each-other/claude-asks-codex.webp",
             width: 2000,
@@ -536,9 +533,8 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         eyebrow: "LispM App Store",
         title: "Emacs Apps, Skills & AI Harnesses",
         path: APPS,
-        text: "LispM App Store installs 100% open-source Emacs apps, skills, LispM Office, \
-               external AI harnesses (Antigravity, Hermes, Holon, OpenClaw) and 1970s Classic AI \
-               in 1 step.",
+        text: "LispM App Store installs open-source Emacs apps, skills, LispM Office, external AI \
+               harnesses (Antigravity, Hermes, Holon, OpenClaw) and 1970s Classic AI in one click.",
         picture: Picture {
             image: "assets/screenshots/lispm-office.webp",
             width: 1720,
@@ -551,8 +547,8 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
         eyebrow: "LispM Remote",
         title: "Peer-to-Peer Mobile Control via WebRTC",
         path: REMOTE,
-        text: "LispM Remote pairs your phone and GNU Emacs via QR code in seconds over encrypted \
-               WebRTC on Rings Network, relaying 0 bytes through cloud servers.",
+        text: "LispM Remote pairs your phone and GNU Emacs by QR code over encrypted peer-to-peer \
+               WebRTC on Rings Network, with no cloud server in between.",
         picture: Picture {
             image: "assets/screenshots/theme-platinum.webp",
             width: 2000,
@@ -564,27 +560,27 @@ pub const EXPLORE_CARDS: [ExploreCard; 4] = [
 ];
 
 /// Lead paragraph of the FrontierHarness 1.0 benchmark section.
-pub const BENCHMARK_LEAD: &str = "On the 30 official containerized tasks of the FrontierHarness 1.0 \
-     benchmark (Terminal-Bench 2.0 and DeepSWE), LispM ties for #1 in pass rate (66.7%, 20/30 tasks) \
-     while finishing successful tasks in a median of 3m 24s (203.9 seconds)—nearly twice as fast as \
-     the next fastest harness—on the Pareto efficiency frontier.";
+pub const BENCHMARK_LEAD: &str = "Evaluation results from running LispM alongside twelve other \
+     agent harnesses on the 30 containerized tasks of FrontierHarness 1.0 (Terminal-Bench 2.0 and \
+     DeepSWE) under standardized Kimi K3 pricing. Across these 30 tasks, LispM passed 20/30 \
+     (66.7%) with a median time of 3m 24s (203.9s) per passing task.";
 
 /// Headline metrics from the FrontierHarness 1.0 30-task evaluation.
 pub const BENCHMARK_STATS: [BenchmarkStat; 4] = [
     BenchmarkStat {
-        label: "Pass Rate (30 Official Tasks)",
+        label: "Pass Rate (30 Tasks)",
         value: "66.7%",
-        detail: "20 / 30 tasks passed — #1 tied with Codex",
+        detail: "20 / 30 containerized tasks passed",
     },
     BenchmarkStat {
-        label: "Median Time per Pass (Speed)",
+        label: "Median Time per Pass",
         value: "3m 24s",
-        detail: "203.9s — #1 fastest overall (2× faster than Codex)",
+        detail: "203.9s median wall-clock time",
     },
     BenchmarkStat {
         label: "Cost per Pass (Standardized)",
         value: "$0.08",
-        detail: "$0.0809 median · $1.98 effective (#2 lowest overall)",
+        detail: "$0.0809 median · $1.98 effective",
     },
     BenchmarkStat {
         label: "Warm Prompt-Cache Hit Rate",
@@ -593,11 +589,10 @@ pub const BENCHMARK_STATS: [BenchmarkStat; 4] = [
     },
 ];
 
-/// Full 13-harness leaderboard on the 30 official FrontierHarness 1.0 tasks.
+/// Full 13-harness evaluation table on the 30 FrontierHarness 1.0 tasks.
 pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
     BenchmarkRow {
-        rank: 1,
-        harness: "LispM ★",
+        harness: "LispM",
         pass_rate: "66.7%",
         passed: "20/30",
         pass_bar_pct: 67,
@@ -609,7 +604,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: true,
     },
     BenchmarkRow {
-        rank: 2,
         harness: "Codex",
         pass_rate: "66.7%",
         passed: "20/30",
@@ -622,7 +616,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 3,
         harness: "DSH (Creator)",
         pass_rate: "63.3%",
         passed: "19/30",
@@ -635,7 +628,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 4,
         harness: "Claude Code",
         pass_rate: "63.3%",
         passed: "19/30",
@@ -648,7 +640,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 5,
         harness: "Pi",
         pass_rate: "60.0%",
         passed: "18/30",
@@ -661,7 +652,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 6,
         harness: "DSH (Standard)",
         pass_rate: "60.0%",
         passed: "18/30",
@@ -674,7 +664,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 7,
         harness: "DSH (PTC)",
         pass_rate: "60.0%",
         passed: "18/30",
@@ -687,7 +676,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 8,
         harness: "Kimi Code",
         pass_rate: "56.7%",
         passed: "17/30",
@@ -700,7 +688,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 9,
         harness: "DSH (Minimal)",
         pass_rate: "56.7%",
         passed: "17/30",
@@ -713,7 +700,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 10,
         harness: "Oh My Pi",
         pass_rate: "56.7%",
         passed: "17/30",
@@ -726,7 +712,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 11,
         harness: "Exo Harness",
         pass_rate: "53.3%",
         passed: "16/30",
@@ -739,7 +724,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 12,
         harness: "Hermes",
         pass_rate: "50.0%",
         passed: "15/30",
@@ -752,7 +736,6 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
         is_lispm: false,
     },
     BenchmarkRow {
-        rank: 13,
         harness: "OpenCode",
         pass_rate: "50.0%",
         passed: "15/30",
@@ -770,8 +753,8 @@ pub const BENCHMARK_ROWS: [BenchmarkRow; 13] = [
 pub const AGENTS_STAGES: [Stage; 5] = [
     Stage {
         headline: "It works in your project.",
-        text: "LispM Agent reads your repository, writes the fix and runs tests in seconds inside \
-               an org-mode chat document, using 100% native Elisp tools.",
+        text: "LispM Agent reads your repository, writes the fix and runs tests inside an org-mode \
+               chat document, using native Elisp tools.",
         media: shown(
             "assets/video/agent.mp4",
             "assets/video/agent.jpg",
@@ -783,7 +766,7 @@ pub const AGENTS_STAGES: [Stage; 5] = [
     Stage {
         headline: "Every agent, one sidebar.",
         text: "Claude Code, Codex, Antigravity and Hermes run beside LispM's own Elisp agents, \
-               with 100% of active sessions organized in one Emacs sidebar to resume in seconds.",
+               with every session listed in one Emacs sidebar to resume where it left off.",
         media: shown(
             "assets/video/agents.mp4",
             "assets/video/agents.jpg",
@@ -794,8 +777,8 @@ pub const AGENTS_STAGES: [Stage; 5] = [
     },
     Stage {
         headline: "And they talk to each other.",
-        text: "In LispM, any agent asks another for a code review over a local JSON message bus \
-               and receives the reply in seconds, sharing LispM's skills and MCP tools.",
+        text: "In LispM, any agent can ask another for a code review over a local message bus \
+               and receive the reply as its next message, sharing LispM's skills and MCP tools.",
         media: Media::Picture(Picture {
             image: "assets/blog/your-agents-can-talk-to-each-other/claude-asks-codex.webp",
             width: 2000,
@@ -807,8 +790,8 @@ pub const AGENTS_STAGES: [Stage; 5] = [
     },
     Stage {
         headline: "Characters with a soul of their own.",
-        text: "In LispM's Characters app, configure an agent's name, pixel-art portrait, soul, \
-               role and HTTPS model in minutes—each character (@Ada, @Milo, @Juno) becomes an app \
+        text: "In LispM's Characters app, give an agent a name, pixel-art portrait, soul, \
+               role and model of its own—each character (@Ada, @Milo, @Juno) becomes an app \
                in Applications that you, Claude Code and Codex can message by name.",
         media: Media::Picture(Picture {
             image: "assets/screenshots/characters-ada.webp",
@@ -820,9 +803,10 @@ pub const AGENTS_STAGES: [Stage; 5] = [
     },
     Stage {
         headline: "An 8-room pixel office for every agent.",
-        text: "Press C-c O to open LispM Office, an 8-room animated pixel office tracking 100% of \
-               live agent sessions: working agents type at their laptops, idle agents hold coffee, \
-               waiting agents raise a hand, and clicking any desk opens its inspector and pending calls.",
+        text: "Press C-c O to open LispM Office, an 8-room animated pixel office where every \
+               live agent session has a desk: working agents type at their laptops, idle agents \
+               hold coffee, waiting agents raise a hand, and clicking any desk opens its inspector \
+               and pending calls.",
         media: Media::Picture(Picture {
             image: "assets/screenshots/lispm-office.webp",
             width: 1720,
@@ -836,10 +820,10 @@ pub const AGENTS_STAGES: [Stage; 5] = [
 /// The features of LispM Agent told at length on `/agent/`.
 pub const AGENTS_SPOTLIGHTS: [Spotlight; 1] = [Spotlight {
     headline: "LispM itself, one field away.",
-    text: "M-x ai, or the magnifying glass in the menu bar, drops one launcher field in seconds \
-           while your keyboard stays in the window you were in. As you type, LispM searches 100% \
-           of installed apps, control panels, skills and tools; anything else goes to LispM, a \
-           standing agent that keeps one conversation across restarts.",
+    text: "M-x ai, or the magnifying glass in the menu bar, drops one launcher field under the \
+           menu bar while your keyboard stays in the window you were in. As you type, LispM \
+           searches installed apps, control panels, skills and tools; anything else goes to LispM, \
+           a standing agent that keeps one conversation across restarts.",
     clip: Some(clip(
         "assets/video/lispm-bar.mp4",
         "assets/video/lispm-bar.jpg",
@@ -854,27 +838,27 @@ pub const AGENTS_SPOTLIGHTS: [Spotlight; 1] = [Spotlight {
 pub const AGENTS_POINTS: [Point; 6] = [
     Point {
         title: "LispM Office",
-        text: "Press C-c O for LispM Office, an 8-room pixel office tracking 100% of agent sessions: working agents type, idle agents hold coffee, waiting agents raise a hand, and clicking a desk inspects its work or approves a call.",
+        text: "Press C-c O for LispM Office, an 8-room pixel office where every agent session has a desk: working agents type, idle agents hold coffee, waiting agents raise a hand, and clicking a desk inspects its work or approves a call.",
     },
     Point {
         title: "Characters (@Ada)",
-        text: "Create persistent agents in LispM's Characters app in minutes with a name, portrait, soul and HTTPS model; each becomes its own desktop app that you, Claude Code and Codex can message by name (@Ada).",
+        text: "Create persistent agents in LispM's Characters app with a name, portrait, soul and model; each becomes its own desktop app that you, Claude Code and Codex can message by name (@Ada).",
     },
     Point {
         title: "Skills on demand",
-        text: "LispM's agents search Elisp tools, JSON MCP servers and app manuals on demand, loading only what a task needs to keep 100% of context focused.",
+        text: "LispM's agents search Elisp tools, MCP servers and app manuals on demand, loading only what a task needs to keep context focused.",
     },
     Point {
         title: "Memory that keeps itself",
-        text: "In LispM, long sessions are summed up during idle minutes, and growing memory consolidates 100% locally, one git commit at a time.",
+        text: "In LispM, long sessions are summed up while you are idle, and growing memory consolidates locally, one git commit at a time.",
     },
     Point {
         title: "Checked against Emacs",
-        text: "In LispM, Elisp code in a reply that names a function or file this Emacs lacks is checked in seconds and underlined with the exact reason.",
+        text: "In LispM, Elisp code in a reply that names a function or file this Emacs lacks is underlined and explains why.",
     },
     Point {
         title: "Woken by Emacs",
-        text: "In LispM, Emacs hooks and timers wake agents in seconds, and agents hand subtasks to each other.",
+        text: "In LispM, Emacs hooks and timers wake agents automatically, and agents hand subtasks to each other.",
     },
 ];
 
@@ -904,10 +888,11 @@ pub const DESKTOP_THEMES: [DesktopTheme; 3] = [
         key: "genera",
         eyebrow: "Classic Lisp Machine",
         title: "Symbolics Open Genera 2.0",
-        description: "A 1-bit monochrome Dynamic Windows workstation in LispM Desktop, 100% \
+        description: "A 1-bit monochrome Dynamic Windows workstation in LispM Desktop, \
                       independent of Mac OS and Windows. Instead of desktop icons or a top menu \
                       bar, LispM opens into a full-screen Dynamic Lisp Listener with a Command: \
-                      prompt, Zmacs buffers, a white Who-Line and a 2-line Mouse Documentation Line.",
+                      prompt, Zmacs buffers, a white Who-Line and a 2-line inverse-video Mouse \
+                      Documentation Line.",
         highlights: &[
             "Full-screen Dynamic Lisp Listener 1 root screen with Command: prompt and quick-action buttons",
             "Paper-white pane headers, 1-bit double-rule borders (3px outer, 2px gap, 1px inner) and 45° hatched scrollbars",
@@ -929,7 +914,7 @@ pub const DESKTOP_THEMES: [DesktopTheme; 3] = [
         key: "platinum",
         eyebrow: "Classic Mac OS",
         title: "Mac OS 9 Platinum & Dracula",
-        description: "Mac OS 9's Platinum appearance in LispM Desktop in 100% classic bevelled \
+        description: "Mac OS 9's Platinum appearance in LispM Desktop in classic bevelled \
                       greys or dark Dracula colours. A top menu bar beside the rainbow λ changes \
                       with the frontmost application, pinstriped title bars carry close, zoom and \
                       collapse boxes, and a collapsible Control Strip waits at the bottom left.",
@@ -953,7 +938,7 @@ pub const DESKTOP_THEMES: [DesktopTheme; 3] = [
         key: "win3",
         eyebrow: "Classic Win32",
         title: "Windows 3.2 Workstation",
-        description: "A Windows 3.2 and 3.1 workstation in LispM Desktop in 100% classic VGA grey \
+        description: "A Windows 3.2 and 3.1 workstation in LispM Desktop in classic VGA grey \
                       (#C0C0C0) with 3D bevels, navy (#000080) active title bars and white \
                       inactive captions, left control-menu boxes, minimize and maximize arrows, \
                       and 4-pixel notched sizing borders.",
@@ -979,9 +964,8 @@ pub const DESKTOP_THEMES: [DesktopTheme; 3] = [
 pub const DESKTOP_STAGES: [Stage; 7] = [
     Stage {
         headline: "Every project, a workspace.",
-        text: "LispM Desktop gives 100% of your projects an isolated workspace—Finder, editor, \
-               AI coding agents, Alacritty terminals and LispM Office together—plus remote \
-               projects over SSH.",
+        text: "LispM Desktop gives each project its own workspace—Finder, editor, AI coding \
+               agents, Alacritty terminals and LispM Office together—plus remote projects over SSH.",
         media: shown(
             "assets/video/desktop.mp4",
             "assets/video/desktop.jpg",
@@ -991,8 +975,8 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
     },
     Stage {
         headline: "Make it yours.",
-        text: "Switch LispM in seconds between Symbolics Open Genera, Mac OS 9 Platinum & Dracula, \
-               and Windows 3.2, drag windows onto your screen in Coherence mode, or adjust settings \
+        text: "Switch between Symbolics Open Genera, Mac OS 9 Platinum & Dracula, and Windows 3.2 \
+               at any time, drag windows onto your screen in Coherence mode, or adjust settings \
                from Control Panels and the Control Strip.",
         media: shown(
             "assets/video/windows.mp4",
@@ -1003,8 +987,8 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
     },
     Stage {
         headline: "Standalone Mac apps in your Dock.",
-        text: "Hide LispM's desktop in 1 step (C-c h) and open Stickies, the App Store, Tetris or \
-               any LispM app directly from the macOS Dock or Spotlight with its own Dock tile and \
+        text: "Hide LispM's desktop (C-c h) and open Stickies, the App Store, Tetris or any \
+               LispM app directly from the macOS Dock or Spotlight with its own Dock tile and \
                menu bar.",
         media: shown(
             "assets/video/standalone-apps.mp4",
@@ -1016,7 +1000,7 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
     },
     Stage {
         headline: "The full desktop, inside a terminal.",
-        text: "Start Emacs with emacs -nw in Kitty or Ghostty and 100% of LispM Desktop—its menu \
+        text: "Start Emacs with emacs -nw in Kitty or Ghostty and the full LispM Desktop—its menu \
                bar, desktop icons over the Kitty graphics protocol, floating windows and \
                games—runs inside your terminal.",
         media: shown(
@@ -1030,7 +1014,7 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
     Stage {
         headline: "Common Lisp beside Emacs, and GNU Emacs 31 & 32.",
         text: "In Control Panels → System → Kernel, turn on the LispM Kernel—a Common Lisp runtime \
-               keeping 100% of your sessions alive—and switch live in seconds between GNU Emacs \
+               running beside Emacs that keeps your sessions—and switch live between GNU Emacs \
                31.1 and experimental GNU Emacs 32.",
         media: Media::Picture(Picture {
             image: "assets/screenshots/kernel-panel.webp",
@@ -1042,9 +1026,9 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
     },
     Stage {
         headline: "The web, from the keyboard.",
-        text: "LispM Browser is a WebKit HTTPS browser inside Emacs with tabs, history and \
-               bookmarks: the location field takes an address or search, f labels every link in \
-               seconds, and typing a label follows it.",
+        text: "LispM Browser is a WebKit browser inside Emacs with tabs, history and bookmarks: \
+               the location field takes an address or search, f labels every link in sight, and \
+               typing a label follows it.",
         media: shown(
             "assets/video/browser.mp4",
             "assets/video/browser.jpg",
@@ -1054,9 +1038,9 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
     },
     Stage {
         headline: "Chrome extensions, inside Emacs.",
-        text: "On macOS 15.4+, LispM Browser installs Chrome Web Store extensions in seconds at \
-               lispm://extensions, with 100% service-worker support, toolbar popups and M-e \
-               keyboard actions for extensions like Dark Reader and Rabby.",
+        text: "On macOS 15.4 and later, LispM Browser runs Chrome Web Store extensions managed at \
+               lispm://extensions, with service-worker support, toolbar popups and M-e keyboard \
+               actions for extensions like Dark Reader and Rabby.",
         media: shown(
             "assets/video/extensions.mp4",
             "assets/video/extensions.jpg",
@@ -1070,9 +1054,9 @@ pub const DESKTOP_STAGES: [Stage; 7] = [
 /// The features of LispM Desktop told at length on `/desktop/`.
 pub const DESKTOP_SPOTLIGHTS: [Spotlight; 1] = [Spotlight {
     headline: "Focus Mode, a Lisp Machine's console.",
-    text: "Press C-c T in 1 step, or ask LispM, and the desktop gives way to LispM's terminal \
-           console: agent sessions on the left, a Lisp listener on the right and a Who-Line along \
-           the bottom, 100% from the keyboard. Leave Focus Mode and your desktop returns intact.",
+    text: "Press C-c T, or ask LispM, and the desktop gives way to LispM's terminal console: \
+           agent sessions on the left, a Lisp listener on the right and a Who-Line along the \
+           bottom, all from the keyboard. Leave Focus Mode and your desktop returns intact.",
     clip: Some(clip(
         "assets/video/focus-mode.mp4",
         "assets/video/focus-mode.jpg",
@@ -1087,19 +1071,19 @@ pub const DESKTOP_SPOTLIGHTS: [Spotlight; 1] = [Spotlight {
 pub const DESKTOP_POINTS: [Point; 6] = [
     Point {
         title: "Three classic desktops",
-        text: "Switch LispM Desktop in seconds between Symbolics Open Genera 2.0, Mac OS 9 Platinum & Dracula, and Windows 3.2, plus OS/2 Warp, phosphor and neon glass looks.",
+        text: "Switch LispM Desktop at any time between Symbolics Open Genera 2.0, Mac OS 9 Platinum & Dracula, and Windows 3.2, plus OS/2 Warp, phosphor and neon glass looks.",
     },
     Point {
         title: "Native Alacritty terminals",
-        text: "Each terminal in LispM Desktop runs on its own thread via a native Rust Alacritty module, redrawing 100% of visible panes without stalling Emacs.",
+        text: "Each terminal in LispM Desktop runs on its own thread via a native Rust Alacritty module, redrawing only visible panes so heavy output does not stall Emacs.",
     },
     Point {
         title: "Remote projects over SSH",
-        text: "Add a remote host in LispM's sidebar in seconds and open directories over TRAMP, launching remote shells and AI coding agents in one workspace.",
+        text: "Add a remote host in LispM's sidebar and open directories over TRAMP, launching remote shells and AI coding agents in one workspace.",
     },
     Point {
         title: "Control Panels & live kernels",
-        text: "Configure LispM's Appearance, Language, Keyboard, HTTPS proxy, Sandbox, Security, Apps and Kernel, switching live in seconds between GNU Emacs 31 and Emacs 32.",
+        text: "Configure LispM's Appearance, Language, Keyboard, Network proxy, Sandbox, Security, Apps and Kernel, switching live between GNU Emacs 31 and Emacs 32.",
     },
     Point {
         title: "Seven languages",
@@ -1107,7 +1091,7 @@ pub const DESKTOP_POINTS: [Point; 6] = [
     },
     Point {
         title: "Apps of their own",
-        text: "On macOS, 100% of apps in LispM also open from ~/Applications/LispM Apps via Spotlight or the Dock, each with its own Dock tile and menu bar.",
+        text: "On macOS, each app in LispM also opens from ~/Applications/LispM Apps via Spotlight or the Dock, with its own Dock tile and menu bar.",
     },
 ];
 
@@ -1115,9 +1099,9 @@ pub const DESKTOP_POINTS: [Point; 6] = [
 pub const STORE_STAGES: [Stage; 5] = [
     Stage {
         headline: "Every app, a page of its own.",
-        text: "In the LispM App Store, 100% of apps show their author, AGPL/free licence and \
-               dependencies. Clicking Get installs Homebrew or Cargo dependencies in 1 step, and \
-               uninstalling removes unused ones cleanly.",
+        text: "In the LispM App Store, each app shows its author, free licence and dependencies. \
+               Clicking Get installs what it needs via Homebrew or Cargo, and uninstalling removes \
+               unused dependencies cleanly.",
         media: Media::Picture(Picture {
             image: "assets/blog/three-old-ais-running-again/app-store-shrdlu.webp",
             width: 2000,
@@ -1129,9 +1113,9 @@ pub const STORE_STAGES: [Stage; 5] = [
     },
     Stage {
         headline: "No app for it yet? Ask anyway.",
-        text: "Ask LispM in M-x ai for a capability no installed app provides yet—like reading \
-               Lisp news—and the agent searches the LispM App Store in seconds, asks for 1-step \
-               approval before installing Elfeed, and opens the headlines.",
+        text: "Ask LispM in M-x ai for something no installed app provides yet—like reading Lisp \
+               news—and the agent searches the LispM App Store, asks before installing Elfeed, \
+               and opens the headlines.",
         media: shown(
             "assets/video/app-store-ai.mp4",
             "assets/video/app-store-ai.jpg",
@@ -1143,7 +1127,7 @@ pub const STORE_STAGES: [Stage; 5] = [
     },
     Stage {
         headline: "Three old AIs, running again.",
-        text: "LispM's Classic AI catalog restores 100% interactive Lisp landmarks: 1966 ELIZA \
+        text: "LispM's Classic AI catalog restores interactive Lisp landmarks: 1966 ELIZA \
                Doctor, 1970 blocks-world SHRDLU, and 1970s MYCIN showing every rule it evaluates.",
         media: shown(
             "assets/video/classic-ai.mp4",
@@ -1156,8 +1140,8 @@ pub const STORE_STAGES: [Stage; 5] = [
     Stage {
         headline: "Doctor, SHRDLU and MYCIN, side by side.",
         text: "Weizenbaum's 1966 Doctor, Winograd's 1970 SHRDLU and Stanford's 1970s MYCIN run \
-               side by side on LispM Desktop, each bundling a 100% native Elisp skill so modern \
-               AI agents can converse with them.",
+               side by side on LispM Desktop, each bundling an Elisp skill so modern AI agents can \
+               converse with them.",
         media: Media::Picture(Picture {
             image: "assets/screenshots/classic-ai-all.webp",
             width: 2000,
@@ -1168,8 +1152,8 @@ pub const STORE_STAGES: [Stage; 5] = [
     },
     Stage {
         headline: "Doom, drawn with OpenGL inside Emacs.",
-        text: "On LispM Experimental (GNU Emacs 32), LispM Doom renders classic Doom at 100% \
-               native speed inside an Emacs buffer using LispM GL's OpenGL surface.",
+        text: "On LispM Experimental (GNU Emacs 32), LispM Doom renders classic Doom at full speed \
+               inside an Emacs buffer using LispM GL's OpenGL surface.",
         media: shown(
             "assets/video/doom.mp4",
             "assets/video/doom.jpg",
@@ -1183,27 +1167,27 @@ pub const STORE_STAGES: [Stage; 5] = [
 pub const STORE_POINTS: [Point; 6] = [
     Point {
         title: "LispM Office (C-c O)",
-        text: "Installed by default in LispM: an 8-room animated pixel office tracking 100% of agent sessions where working agents type, waiting agents raise a hand, and clicking a desk approves calls.",
+        text: "Installed by default in LispM: an 8-room animated pixel office where every agent session has a desk, working agents type, waiting agents raise a hand, and clicking a desk approves calls.",
     },
     Point {
         title: "Skills come with apps",
-        text: "Install any app in LispM in 1 step and its manual arrives as an agent skill for RSS feeds, music, Stickies, mail, IRC, Slack, Telegram and security checks.",
+        text: "Install an app in LispM and its manual arrives as an agent skill for RSS feeds, music, Stickies, mail, IRC, Slack, Telegram and security checks.",
     },
     Point {
         title: "AI Harnesses",
-        text: "From the LispM App Store, external AI harnesses—Antigravity, Hermes, Holon and OpenClaw—join Claude Code, Codex and @Ada in 1 sidebar over LispM's JSON bus.",
+        text: "From the LispM App Store, external AI harnesses—Antigravity, Hermes, Holon and OpenClaw—join Claude Code, Codex and @Ada in one sidebar over LispM's local message bus.",
     },
     Point {
         title: "For every day",
-        text: "The LispM App Store includes 100% local daily apps: LispM Mail, Stickies, RSS feeds, music, MP4 and YouTube playback, calendar, IRC, Slack, Telegram and 1Password.",
+        text: "The LispM App Store includes local daily apps: LispM Mail, Stickies, RSS feeds, music, MP4 and YouTube playback, calendar, IRC, Slack, Telegram and 1Password.",
     },
     Point {
         title: "Classic AI",
-        text: "LispM restores 100% playable 1960s and 1970s AI landmarks inside GNU Emacs: Joseph Weizenbaum's 1966 Doctor, Terry Winograd's 1970 SHRDLU and Stanford's MYCIN.",
+        text: "LispM restores playable 1960s and 1970s AI landmarks inside GNU Emacs: Joseph Weizenbaum's 1966 Doctor, Terry Winograd's 1970 SHRDLU and Stanford's MYCIN.",
     },
     Point {
         title: "And games",
-        text: "Play 100% native Emacs games in LispM—Tetris, Solitaire, Conway's Game of Life and Dunnet—plus Doom rendered with OpenGL on LispM Experimental.",
+        text: "Play native Emacs games in LispM—Tetris, Solitaire, Conway's Game of Life and Dunnet—plus Doom rendered with OpenGL on LispM Experimental.",
     },
 ];
 
@@ -1211,9 +1195,9 @@ pub const STORE_POINTS: [Point; 6] = [
 pub const REMOTE_STAGES: [Stage; 3] = [
     Stage {
         headline: "Pair once.",
-        text: "LispM displays a QR code, your phone scans it in seconds at lispm.ai/remote, and \
-               both screens verify the same fingerprint over WebRTC—0 bytes to install on the \
-               phone and no router port to open.",
+        text: "LispM displays a QR code, your phone scans it at lispm.ai/remote, and both screens \
+               verify the same fingerprint over WebRTC—nothing to install on the phone and no \
+               router port to open.",
         media: shown(
             "assets/video/remote-pair.mp4",
             "assets/video/remote-pair.jpg",
@@ -1224,8 +1208,8 @@ pub const REMOTE_STAGES: [Stage; 3] = [
     },
     Stage {
         headline: "Approve from anywhere.",
-        text: "In LispM Remote, 100% of your Emacs AI agents appear as live phone chats: watch \
-               tool calls stream in seconds, tap 1-step approvals, and send the next prompt.",
+        text: "In LispM Remote, each Emacs AI agent appears as a live phone chat: watch tool \
+               calls as they run, approve pending calls, and send the next prompt.",
         media: shown(
             "assets/video/remote-approve.mp4",
             "assets/video/remote-approve.jpg",
@@ -1236,8 +1220,8 @@ pub const REMOTE_STAGES: [Stage; 3] = [
     },
     Stage {
         headline: "Every window, too.",
-        text: "LispM's Emacs windows render natively on your phone over encrypted WebRTC, \
-               streaming 0 bytes of heavy video.",
+        text: "LispM's Emacs windows redraw natively on your phone over encrypted WebRTC rather \
+               than streaming video.",
         media: shown(
             "assets/video/remote-windows.mp4",
             "assets/video/remote-windows.jpg",
@@ -1252,34 +1236,34 @@ pub const REMOTE_STAGES: [Stage; 3] = [
 pub const REMOTE_POINTS: [Point; 3] = [
     Point {
         title: "No server in between",
-        text: "LispM and your phone connect peer to peer over Rings Network WebRTC, relaying 0 bytes of session traffic through central cloud servers.",
+        text: "LispM and your phone connect peer to peer over Rings Network WebRTC, with no central cloud server relaying your session.",
     },
     Point {
         title: "Back by itself",
-        text: "When mobile connectivity drops and returns, LispM Remote reconnects over WebRTC in seconds with 0 extra QR scans.",
+        text: "When mobile connectivity drops and returns, LispM Remote reconnects over WebRTC automatically without scanning again.",
     },
     Point {
         title: "From the App Store",
-        text: "Install LispM Remote in 1 step from the LispM App Store, with 100% of its Rings node binary verified against a pinned SHA-256 checksum.",
+        text: "One click in the LispM App Store installs LispM Remote, with its Rings node binary verified against a pinned SHA-256 checksum.",
     },
 ];
 
 const TRUST_POINTS: [Point; 4] = [
     Point {
         title: "It asks first",
-        text: "In LispM, 100% of shell commands, file edits and package installs wait for your 1-step approval in Emacs, LispM Office or on your phone.",
+        text: "In LispM, shell commands, file edits and package installs wait for your approval in Emacs, LispM Office or on your phone. Read-only inspection runs without pausing.",
     },
     Point {
         title: "LispM Auth vault",
-        text: "LispM Auth encrypts 100% of secrets locally with Argon2id and XChaCha20-Poly1305 in a Common Lisp daemon, sending 0 bytes externally.",
+        text: "LispM Auth encrypts secrets locally with Argon2id and XChaCha20-Poly1305 in a standalone Common Lisp daemon.",
     },
     Point {
         title: "Sandboxed and checked",
-        text: "LispM isolates shell commands and JSON MCP servers inside an OS sandbox, audits Claude Code and Codex calls, and checks packages against OSV in seconds.",
+        text: "LispM isolates shell commands and MCP servers inside an OS sandbox, checks what Claude Code, Codex and its own agents run, and scans packages against OSV.",
     },
     Point {
         title: "Free software",
-        text: "Every part of LispM is 100% open source under the GNU AGPL, connecting directly to any OpenAI or Anthropic HTTPS endpoint with your own keys.",
+        text: "Every part of LispM is open source under the GNU AGPL, connecting directly to any OpenAI or Anthropic HTTPS endpoint with your own keys.",
     },
 ];
 
@@ -1291,9 +1275,9 @@ pub const CHAPTERS: [Chapter; 5] = [
         anchor: Anchor::Agents,
         eyebrow: "Agents",
         headline: "An AI agent harness inside GNU Emacs.",
-        lead: "Talk to a LispM agent in a chat laid out like Claude Code's. Underneath, 100% of \
-               the chat is an org document, its tools are Elisp and JSON MCP functions, and it \
-               evaluates live Lisp inside GNU Emacs.",
+        lead: "Talk to a LispM agent in a chat laid out like Claude Code's. Underneath, the chat \
+               is an org document, its tools are Elisp and MCP functions, and it evaluates live \
+               Lisp inside GNU Emacs.",
         stages: &AGENTS_STAGES,
         spotlights: &AGENTS_SPOTLIGHTS,
         points: &AGENTS_POINTS,
@@ -1303,9 +1287,9 @@ pub const CHAPTERS: [Chapter; 5] = [
         anchor: Anchor::Desktop,
         eyebrow: "Desktop",
         headline: "Three classic desktops, one workspace for agents.",
-        lead: "LispM Desktop ships 3 classic workstation interfaces—Symbolics Open Genera 2.0, \
-               Mac OS 9 Platinum & Dracula, and Windows 3.2—in 7 languages with a Finder, WebKit \
-               HTTPS browser and Alacritty terminals.",
+        lead: "LispM Desktop ships three classic workstation interfaces—Symbolics Open Genera \
+               2.0, Mac OS 9 Platinum & Dracula, and Windows 3.2—in seven languages with a Finder, \
+               WebKit browser and Alacritty terminals.",
         stages: &DESKTOP_STAGES,
         spotlights: &DESKTOP_SPOTLIGHTS,
         points: &DESKTOP_POINTS,
@@ -1315,8 +1299,8 @@ pub const CHAPTERS: [Chapter; 5] = [
         anchor: Anchor::Store,
         eyebrow: "App Store",
         headline: "Apps your agents can drive.",
-        lead: "Install 100% open-source Emacs apps, games and external AI harnesses in 1 step. \
-               Every app brings its manual as a skill so LispM's agents can drive it for you.",
+        lead: "Install open-source Emacs apps, games and external AI harnesses in one click. Every \
+               app brings its manual as a skill so LispM's agents can drive it for you.",
         stages: &STORE_STAGES,
         spotlights: &[],
         points: &STORE_POINTS,
@@ -1326,8 +1310,8 @@ pub const CHAPTERS: [Chapter; 5] = [
         anchor: Anchor::Remote,
         eyebrow: "LispM Remote",
         headline: "Your agents, in your pocket.",
-        lead: "Scan a QR code in seconds. From your phone over encrypted WebRTC, follow 100% of \
-               your Emacs agents, approve waiting tool calls and inspect LispM's windows anywhere.",
+        lead: "Scan a QR code once. From your phone over encrypted WebRTC, follow your Emacs \
+               agents, approve waiting tool calls and inspect LispM's windows anywhere.",
         stages: &REMOTE_STAGES,
         spotlights: &[],
         points: &REMOTE_POINTS,
@@ -1337,8 +1321,8 @@ pub const CHAPTERS: [Chapter; 5] = [
         anchor: Anchor::Trust,
         eyebrow: "Trust",
         headline: "You stay in charge.",
-        lead: "AI agents act on your machine, so LispM shows 100% of the steps they take and \
-               gates every risky command or file edit on your explicit approval.",
+        lead: "AI agents act on your machine, so LispM shows every step they take and gates risky \
+               commands or file edits on your explicit approval.",
         stages: &[],
         spotlights: &[],
         points: &TRUST_POINTS,
@@ -1450,15 +1434,15 @@ pub const TITLE: &str = "Emacs AI Agent Harness: A Lisp Machine for Agents — L
 
 /// What search engines show under the title, within the 160 characters
 /// they show: what LispM is, and the agents it runs.
-pub const DESCRIPTION: &str = "LispM is an Emacs AI agent harness built on GNU Emacs and the Lisp \
-     Machine: #1 on FrontierHarness 1.0, running Claude Code, Codex and Elisp on Mac and Linux.";
+pub const DESCRIPTION: &str = "LispM is an open-source Emacs AI agent harness built on GNU Emacs \
+     and the Lisp Machine: org-mode chats, Elisp tools, Claude Code and Codex on Mac and Linux.";
 
 /// What LispM is, in two sentences: the answer search engines, answer
 /// engines and language models are given everywhere they look, the page's
 /// first question, its JSON-LD and llms.txt.
 pub const DEFINITION: &str = "LispM is an open-source Emacs AI agent harness built on GNU Emacs \
-     and the ideas of the Lisp Machine, 50 years in the making. In LispM, AI coding agents live \
-     100% inside Emacs: conversations are org documents, tools are Elisp functions, and GNU Emacs \
+     and the ideas of the Lisp Machine, fifty years in the making. In LispM, AI coding agents \
+     live inside Emacs: conversations are org documents, tools are Elisp functions, and GNU Emacs \
      itself is the harness.";
 
 /// A question people ask about LispM, and its answer.
@@ -1476,7 +1460,7 @@ pub const QUESTIONS_HEADLINE: &str = "Emacs AI agent harness: questions, answere
 /// The paragraph under the questions' headline, and the description of the
 /// Q&A page for search engines.
 pub const QUESTIONS_LEAD: &str = "Answers to common questions about LispM, the Emacs AI agent \
-     harness: how 100% native coding agents run in GNU Emacs with org-mode and Elisp, models and Remote.";
+     harness: how native coding agents run in GNU Emacs with org-mode and Elisp, models and Remote.";
 
 /// Number of core harness questions shown directly on the home page (matching home FAQPage JSON-LD).
 pub const HOME_QUESTION_COUNT: usize = 5;
@@ -1485,15 +1469,15 @@ pub const HOME_QUESTION_COUNT: usize = 5;
 pub const AGENT: &str = "/agent/";
 
 /// The description of the Agent page for search engines, within 160 characters.
-pub const AGENT_DESCRIPTION: &str = "LispM Agent is an Emacs AI agent harness in GNU Emacs (#1 on \
-     FrontierHarness 1.0: 66.7% pass rate, 3m 24s): org-mode chats, Elisp tools, MCP and Claude Code.";
+pub const AGENT_DESCRIPTION: &str = "LispM Agent is an open-source Emacs AI agent harness in GNU \
+     Emacs: org-mode chats, Elisp tools, TODO approvals, MCP, Claude Code and Codex in one sidebar.";
 
 /// The Desktop page's path on the site.
 pub const DESKTOP: &str = "/desktop/";
 
 /// The description of the Desktop page for search engines, within 160 characters.
 pub const DESKTOP_DESCRIPTION: &str = "LispM Desktop turns GNU Emacs into an AI agent workstation \
-     with 3 classic desktops: Symbolics Open Genera 2.0, Mac OS 9 Platinum, Windows 3.2 and WebKit.";
+     with three classic desktops: Symbolics Open Genera 2.0, Mac OS 9 Platinum, Windows 3.2 and WebKit.";
 
 /// The Apps page's path on the site.
 pub const APPS: &str = "/apps/";
@@ -1517,114 +1501,113 @@ pub const QUESTIONS: [Question; 14] = [
     Question {
         question: "What is LispM?",
         answer: "LispM is an open-source Emacs AI agent harness built on GNU Emacs and the ideas \
-                 of the Lisp Machine, 50 years in the making. In LispM, AI coding agents live \
-                 100% inside Emacs: conversations are org documents, tools are Elisp functions, \
-                 and GNU Emacs itself is the harness. LispM runs free on macOS and GNU/Linux with \
-                 3 classic desktops, a WebKit browser, an App Store and LispM Remote.",
+                 of the Lisp Machine, fifty years in the making. In LispM, AI coding agents live \
+                 inside Emacs: conversations are org documents, tools are Elisp functions, and GNU \
+                 Emacs itself is the harness. LispM runs free on macOS and GNU/Linux with three \
+                 classic desktops, a WebKit browser, an App Store and LispM Remote.",
     },
     Question {
         question: "How does LispM perform on the FrontierHarness 1.0 benchmark?",
-        answer: "On the 30 official containerized tasks of the FrontierHarness 1.0 benchmark \
-                 (Terminal-Bench 2.0 and DeepSWE), LispM ties for #1 in pass rate at 66.7% (20/30 \
-                 tasks, alongside Codex at 66.7% and ahead of Claude Code at 63.3%) and ranks #1 \
-                 in speed with a median time per pass of 3m 24s (203.9 seconds)—nearly twice as \
-                 fast as Codex (6m 43s) and nearly three times as fast as Claude Code (9m 38s)—at \
-                 a median cost of $0.0809 per pass ($1.98 effective cost per pass) and an 83.2% \
-                 warm prompt-cache hit rate (94.2% normalized).",
+        answer: "On the 30 containerized tasks of FrontierHarness 1.0 (Terminal-Bench 2.0 and \
+                 DeepSWE) under standardized Kimi K3 pricing, LispM passed 20/30 tasks (66.7%) \
+                 with a median time per pass of 3m 24s (203.9s), a median cost of $0.0809 per \
+                 pass ($1.98 effective cost per pass), and an 83.2% warm prompt-cache hit rate \
+                 (94.2% normalized). The full 13-harness table is published on the home page and \
+                 /agent/.",
     },
     Question {
         question: "How does LispM compare with CLI harnesses and Emacs packages like gptel or agent-shell?",
-        answer: "Unlike terminal-only CLI wrappers or standalone chat buffers, LispM turns 100% of \
-                 GNU Emacs into a live Lisp AI agent harness while hosting CLI agents side by \
-                 side. Alongside workflows like gptel or agent-shell, LispM runs Claude Code, \
-                 Codex, Antigravity, Hermes, Holon and OpenClaw in one sidebar over a local JSON \
-                 and MCP message bus, while LispM's native Elisp agents evaluate live Lisp, gate \
-                 edits as org-mode TODOs and pass 66.7% of FrontierHarness 1.0 tasks in 203.9 \
-                 seconds.",
+        answer: "Unlike terminal-only CLI wrappers or standalone chat buffers, LispM turns GNU \
+                 Emacs itself into a live Lisp AI agent harness while hosting external CLI agents \
+                 side by side. Alongside workflows like gptel or agent-shell, LispM runs Claude \
+                 Code, Codex, Antigravity, Hermes, Holon and OpenClaw in one sidebar over a local \
+                 MCP message bus, while LispM's native agents evaluate live Elisp, keep chats as \
+                 org documents and gate edits as org-mode TODOs.",
     },
     Question {
         question: "Why build an AI agent harness on GNU Emacs and the Lisp Machine?",
-        answer: "An AI coding agent needs a live environment it can inspect and extend in seconds \
-                 while running. On 1970s Lisp Machines, and in GNU Emacs since 1976, 100% of \
-                 buffers, windows and commands are live Lisp objects with built-in documentation. \
-                 LispM exposes that introspectable architecture to agents: tools are Elisp \
-                 functions, conversations are org documents, approvals are 1-step TODOs, and \
-                 agents write Lisp to drive Emacs itself.",
+        answer: "An AI coding agent benefits from a live environment it can inspect and extend \
+                 while running. On 1970s Lisp Machines, and in GNU Emacs since 1976, buffers, \
+                 windows and commands are live Lisp objects with built-in documentation. LispM \
+                 exposes that introspectable architecture to agents: tools are Elisp functions, \
+                 conversations are org documents, approvals are TODOs, and agents write Lisp to \
+                 drive Emacs itself.",
     },
     Question {
         question: "Which AI coding agents and LLM models does LispM run?",
         answer: "LispM runs its own native Elisp agents, persistent Characters (@Ada) with custom \
                  souls and models, and external harnesses—Claude Code, Codex, Antigravity, Hermes, \
-                 Holon and OpenClaw—in 1 sidebar over a shared JSON message bus. LispM's agents \
+                 Holon and OpenClaw—in one sidebar over a shared local message bus. LispM's agents \
                  connect to any OpenAI or Anthropic HTTPS endpoint with your own API key, or any \
                  local or hosted LLM server.",
     },
     Question {
         question: "What are the three desktops in LispM Desktop?",
-        answer: "LispM Desktop includes 3 classic workstation interfaces in 7 languages that you \
-                 can switch in seconds in Control Panels → Appearance: Classic Lisp Machine \
-                 (Symbolics Open Genera 2.0, a 1-bit monochrome Dynamic Lisp Listener with \
+        answer: "LispM Desktop includes three classic workstation interfaces in seven languages \
+                 that you can switch at any time in Control Panels → Appearance: Classic Lisp \
+                 Machine (Symbolics Open Genera 2.0, a 1-bit monochrome Dynamic Lisp Listener with \
                  Command: prompt and Who-Line), Classic Mac OS (Mac OS 9 Platinum and Dracula \
                  with top menu bar and Control Strip), and Classic Win32 (Windows 3.2 in VGA grey \
-                 #C0C0C0 with navy captions), plus 100% keyboard Focus Mode (C-c T).",
+                 #C0C0C0 with navy captions), plus keyboard-driven Focus Mode (C-c T).",
     },
     Question {
         question: "How do agents talk to each other, and what is LispM Office?",
         answer: "In LispM, Claude Code, Codex, Antigravity, Hermes, Holon, OpenClaw, Characters \
-                 (@Ada) and LispM's own agents share one sidebar and a local JSON message bus \
-                 inside Emacs so any agent can request a review in seconds. Pressing C-c O opens \
-                 LispM Office, an 8-room pixel office tracking 100% of agent sessions where \
-                 waiting agents raise a hand and clicking a desk approves calls.",
+                 (@Ada) and LispM's own agents share one sidebar and a local message bus inside \
+                 Emacs so any agent can request a review or subtask. Pressing C-c O opens LispM \
+                 Office, an 8-room pixel office where every agent session has a desk, waiting \
+                 agents raise a hand, and clicking a desk inspects its work or approves calls.",
     },
     Question {
         question: "How does LispM keep agents safe on my computer?",
-        answer: "LispM requires your 1-step approval before any agent runs a shell command, edits \
-                 a file or installs a package, while read-only inspection runs cleanly. Commands \
-                 and JSON MCP servers execute inside an OS sandbox, and LispM Security checks \
-                 100% of agent actions, pins trusted tools and scans packages against OSV.",
+        answer: "LispM requires your approval before an agent runs a shell command, edits a file \
+                 or installs a package, while read-only inspection runs without pausing. Commands \
+                 and MCP servers execute inside an OS sandbox, and LispM Security checks agent \
+                 actions, pins trusted tools and scans packages against OSV.",
     },
     Question {
         question: "How does LispM Remote work without a cloud server?",
-        answer: "LispM Remote pairs your phone and computer via QR code in seconds at \
-                 lispm.ai/remote and connects them peer to peer over Rings Network WebRTC, \
-                 relaying 0 bytes through cloud servers. With no account or open router port, you \
-                 can read agent chats, tap 1-step tool approvals and view Emacs windows anywhere.",
+        answer: "LispM Remote pairs your phone and computer once via a QR code at lispm.ai/remote \
+                 and connects them peer to peer over Rings Network WebRTC, with no cloud server in \
+                 between. With no account or open router port, you can read agent chats, approve \
+                 waiting tool calls and view Emacs windows anywhere.",
     },
     Question {
         question: "What is LispM Browser, and does it run Chrome extensions?",
-        answer: "LispM Browser is a keyboard-driven WebKit HTTPS browser inside Emacs with tabs, \
-                 history, bookmarks and Vimium-style link hints in seconds. On macOS 15.4+, LispM \
-                 Browser runs Chrome Web Store extensions at lispm://extensions with 100% \
-                 service-worker support, toolbar popups and M-e actions for Dark Reader and Rabby.",
+        answer: "LispM Browser is a keyboard-driven WebKit browser inside Emacs with tabs, \
+                 history, bookmarks and Vimium-style link hints. On macOS 15.4 and later, LispM \
+                 Browser runs Chrome Web Store extensions at lispm://extensions with \
+                 service-worker support, toolbar popups and M-e actions for extensions like Dark \
+                 Reader and Rabby.",
     },
     Question {
         question: "What apps come in the LispM App Store?",
-        answer: "The LispM App Store installs 100% open-source Emacs apps, AI harnesses and \
-                 classic AI programs in 1 step via Homebrew or Cargo. Every app bundles its \
-                 manual as an agent skill: LispM Office, LispM Mail, Stickies, RSS feeds, MP4 and \
-                 YouTube playback, calendar, IRC, Slack, Telegram, 1Password, Doom, Doctor, \
-                 SHRDLU and MYCIN.",
+        answer: "The LispM App Store installs open-source Emacs apps, AI harnesses and classic AI \
+                 programs in one click via Homebrew or Cargo. Every app bundles its manual as an \
+                 agent skill: LispM Office, LispM Mail, Stickies, RSS feeds, MP4 and YouTube \
+                 playback, calendar, IRC, Slack, Telegram, 1Password, Doom, Doctor, SHRDLU and \
+                 MYCIN.",
     },
     Question {
         question: "Where does LispM store my data, memory and credentials?",
-        answer: "LispM runs 100% locally on your computer, keeping its files in ~/.lispm, agent \
-                 chats and memory as org documents under git, and mail in your local Emacs \
-                 directory with 0 bytes sent to third-party clouds. LispM Auth encrypts secrets \
-                 with Argon2id and XChaCha20-Poly1305 in a standalone Common Lisp daemon.",
+        answer: "LispM runs locally on your computer, keeping its files in ~/.lispm, agent chats \
+                 and memory as plain org documents under git, and mail in your local Emacs \
+                 directory. LispM Auth encrypts secrets locally with Argon2id and \
+                 XChaCha20-Poly1305 in a standalone Common Lisp daemon.",
     },
     Question {
         question: "What is the difference between LispM on Emacs 31 and LispM Experimental on Emacs 32?",
-        answer: "Standard LispM runs on GNU Emacs 31.1 on 100% of supported macOS and GNU/Linux \
-                 systems with automatic Software Update. LispM Experimental runs on development \
-                 builds of GNU Emacs 32 on macOS for OpenGL buffers like Doom, and you can switch \
-                 live between Emacs 31 and Emacs 32 in seconds in Control Panels → System → Kernel.",
+        answer: "Standard LispM runs on GNU Emacs 31.1 on macOS and GNU/Linux with automatic \
+                 Software Update. LispM Experimental runs on development builds of GNU Emacs 32 on \
+                 macOS for capabilities like OpenGL buffers for Doom, and you can switch live \
+                 between Emacs 31 and Emacs 32 in Control Panels → System → Kernel.",
     },
     Question {
         question: "Is LispM free, and can it run in my own Emacs?",
-        answer: "Yes—100% of LispM and its subprojects are free software under the GNU Affero \
-                 General Public License v3+ for macOS 11+ and Debian or Ubuntu GNU/Linux. GNU \
-                 Emacs 31.1 comes bundled in 1 step, or you can install LispM Agent, LispM \
-                 Desktop and LispM Browser directly inside your own Emacs 30.1+.",
+        answer: "Yes. LispM and its subprojects are free software under the GNU Affero General \
+                 Public License v3+ for macOS 11+ and Debian or Ubuntu GNU/Linux. GNU Emacs 31.1 \
+                 comes bundled, or you can install LispM Agent, LispM Desktop and LispM Browser \
+                 directly inside your own Emacs 30.1 or later.",
     },
 ];
 
@@ -1641,9 +1624,8 @@ pub const PRIVACY: &str = "/privacy/";
 pub const DOWNLOAD_HEADLINE: &str = "Get LispM.";
 
 /// The paragraph under it, for those who have never heard of Emacs.
-pub const DOWNLOAD_LEAD: &str = "One line installs LispM in minutes on a Mac or on GNU/Linux. GNU \
-     Emacs, the live Lisp environment 100% of LispM is built on, comes bundled: you need not know \
-     Emacs to begin.";
+pub const DOWNLOAD_LEAD: &str = "One line installs LispM on a Mac or on GNU/Linux. GNU Emacs, the \
+     live Lisp editor LispM is built on, comes bundled: you need not know Emacs to begin.";
 
 /// LispM's icon.
 pub const APP_ICON: &str = "assets/lispm-app.png";
@@ -1680,10 +1662,8 @@ impl Platform {
     /// Returns the releases and processors LispM runs on there.
     pub const fn requirements(self) -> &'static str {
         match self {
-            Platform::Mac => "LispM runs on macOS 11+ (100% Apple silicon or Intel).",
-            Platform::Linux => {
-                "LispM runs on Debian 12/13 or Ubuntu 22.04/24.04 (100% amd64 or arm64)."
-            }
+            Platform::Mac => "macOS 11 or later, on Apple silicon or Intel.",
+            Platform::Linux => "Debian 12 or 13, or Ubuntu 22.04 or 24.04, on amd64 or arm64.",
         }
     }
 
@@ -1746,14 +1726,12 @@ pub const INSTALL: Snippet = Snippet {
 pub const DOWNLOAD_STEPS: [Step; 3] = [
     Step {
         title: "Open a terminal.",
-        text: "On a Mac, open Terminal in seconds from Applications → Utilities (or press \
-               Command-Space and type Terminal) to install LispM.",
+        text: "On a Mac, Terminal is in Applications → Utilities (or press Command-Space and type Terminal).",
         snippet: None,
     },
     Step {
         title: "Paste this line, and press Return.",
-        text: "In 1 step, the same line installs LispM on a Mac and on GNU/Linux, where apt asks \
-               for your password.",
+        text: "The same line installs LispM on a Mac and on GNU/Linux, where apt asks for your password.",
         snippet: Some(INSTALL),
     },
     Step {
@@ -1785,7 +1763,7 @@ pub const EXPERIMENTAL_BACK: &str = "Run it again to update. Back to LispM on Em
 pub const INSTALL_BACK: &str = "curl -fsSL https://lispm.ai/install.sh | LISPM_EMACS=31 sh";
 
 /// What the line does on every system, after the link to the installer.
-pub const INSTALLER_DOES: &str = " keeps 100% of LispM's files locally in ~/.lispm.";
+pub const INSTALLER_DOES: &str = " keeps LispM's files locally in ~/.lispm.";
 
 /// How LispM stays up to date, after what the line does on each system.
 pub const INSTALLER_UPDATES: &str = "From then on Software Update brings each release by itself, \
