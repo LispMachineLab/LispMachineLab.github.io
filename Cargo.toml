@@ -1,6 +1,6 @@
 [package]
 name = "lispm-site"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2024"
 license = "AGPL-3.0-or-later"
 description = "LispM's website (lispm.ai): open-source Emacs AI agent harness and Lisp Machine for agents, built with Yew"

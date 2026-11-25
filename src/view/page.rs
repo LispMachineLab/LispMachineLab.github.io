@@ -224,8 +224,8 @@ fn idea() -> Html {
     }
 }
 
-/// Renders the FrontierHarness 1.0 30-task benchmark section: KPI cards,
-/// pass-rate and speed bar rankings, and the full 13-harness leaderboard table.
+/// Renders the FrontierHarness 1.0 30-task evaluation section: summary metrics,
+/// pass-rate and median-time bar charts, and the full 13-harness table.
 pub(crate) fn benchmark() -> Html {
     let mut by_speed = BENCHMARK_ROWS;
     by_speed.sort_by_key(|row| row.median_seconds);
@@ -245,7 +245,7 @@ pub(crate) fn benchmark() -> Html {
             </ul>
             <div class="benchmark-panels">
                 <div class="benchmark-panel">
-                    <h3>{ "Pass Rate (30 Official Tasks)" }</h3>
+                    <h3>{ "Pass Rate (30 Tasks)" }</h3>
                     <ol class="benchmark-bars">
                         { for BENCHMARK_ROWS.iter().map(|row| html! {
                             <li class={classes!("bar-row", row.is_lispm.then_some("is-lispm"))}>
@@ -262,7 +262,7 @@ pub(crate) fn benchmark() -> Html {
                     </ol>
                 </div>
                 <div class="benchmark-panel">
-                    <h3>{ "Median Time per Pass (Speed, lower is faster)" }</h3>
+                    <h3>{ "Median Time per Pass" }</h3>
                     <ol class="benchmark-bars">
                         { for by_speed.iter().map(|row| {
                             let width_pct = (row.median_seconds.saturating_mul(100) / 578).clamp(10, 100);
@@ -287,7 +287,6 @@ pub(crate) fn benchmark() -> Html {
                 <table class="benchmark-table">
                     <thead>
                         <tr>
-                            <th scope="col">{ "#" }</th>
                             <th scope="col">{ "Harness" }</th>
                             <th scope="col">{ "Pass Rate" }</th>
                             <th scope="col">{ "Median Cost / Pass" }</th>
@@ -299,7 +298,6 @@ pub(crate) fn benchmark() -> Html {
                     <tbody>
                         { for BENCHMARK_ROWS.iter().map(|row| html! {
                             <tr class={classes!(row.is_lispm.then_some("is-lispm"))}>
-                                <td>{ row.rank }</td>
                                 <td>{ row.harness }</td>
                                 <td>{ format!("{} ({})", row.pass_rate, row.passed) }</td>
                                 <td>{ row.median_cost }</td>

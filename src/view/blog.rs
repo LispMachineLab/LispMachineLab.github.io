@@ -97,10 +97,10 @@ pub fn agent() -> Html {
                     <h1>{ "An AI agent harness inside GNU Emacs." }</h1>
                     <p class="lead">
                         { "LispM Agent is an open-source Emacs AI agent harness laid out like \
-                           Claude Code's chat. Underneath, 100% of the conversation is an org \
-                           document that serves as model context, its tools are Elisp and JSON MCP \
-                           functions, its approvals are 1-step TODO entries, and it evaluates live \
-                           Lisp inside GNU Emacs." }
+                           Claude Code's chat. Underneath, the conversation is an org document \
+                           that serves as model context, its tools are Elisp and MCP functions, \
+                           its approvals are TODO entries, and it evaluates live Lisp inside GNU \
+                           Emacs." }
                     </p>
                 </header>
                 <section class="section chapter" id="agent">
@@ -142,19 +142,19 @@ pub fn desktop() -> Html {
                     <p class="eyebrow">{ "LispM Desktop" }</p>
                     <h1>{ "Three classic desktops, one workspace for agents." }</h1>
                     <p class="lead">
-                        { "LispM Desktop turns GNU Emacs into a complete AI agent workstation in 7 \
-                           languages, ready from the first start. Switch in seconds between \
-                           Symbolics Open Genera 2.0, Mac OS 9 Platinum & Dracula, and Windows \
-                           3.2, with your files, coding agents, LispM Browser and Alacritty \
-                           terminals in one place." }
+                        { "LispM Desktop turns GNU Emacs into a complete AI agent workstation in \
+                           seven languages, ready from the first start. Switch at any time \
+                           between Symbolics Open Genera 2.0, Mac OS 9 Platinum & Dracula, and \
+                           Windows 3.2, with your files, coding agents, LispM Browser and \
+                           Alacritty terminals in one place." }
                     </p>
                 </header>
                 <section class="section desktop-themes" id="themes">
                     <p class="eyebrow">{ "Three Desktops" }</p>
                     <h2>{ "Which system do you know?" }</h2>
                     <p class="lead">
-                        { "At first start, or in seconds in Control Panels → Appearance, switch \
-                           100% of LispM Desktop between three faithful classic interfaces." }
+                        { "At first start, or at any time in Control Panels → Appearance, switch \
+                           LispM Desktop between three classic workstation interfaces." }
                     </p>
                     <ul class="theme-cards">
                         { for DESKTOP_THEMES.iter().map(|theme| html! {
@@ -188,9 +188,8 @@ pub fn desktop() -> Html {
                     <p class="eyebrow">{ "Workspaces & Browser" }</p>
                     <h2>{ "A Finder, an editor, a WebKit browser and Chrome extensions." }</h2>
                     <p class="lead">
-                        { "In LispM Desktop, 100% of your projects get an isolated workspace with \
-                           files, AI agents, LispM Office pixel desks and shells alongside LispM \
-                           Browser." }
+                        { "In LispM Desktop, each project gets its own workspace with files, AI \
+                           agents, LispM Office pixel desks and shells alongside LispM Browser." }
                     </p>
                     { subpage_stages(&DESKTOP_STAGES) }
                     { for DESKTOP_SPOTLIGHTS.iter().map(|spotlight| html! {
@@ -228,10 +227,10 @@ pub fn apps() -> Html {
                     <p class="eyebrow">{ "LispM App Store" }</p>
                     <h1>{ "Apps your agents can drive." }</h1>
                     <p class="lead">
-                        { "Install 100% open-source Emacs apps, games and external AI harnesses in \
-                           1 step. Every app brings its manual as a skill so LispM's agents can \
+                        { "Install open-source Emacs apps, games and external AI harnesses in one \
+                           click. Every app brings its manual as a skill so LispM's agents can \
                            drive it; ask for something no app does yet, and LispM searches the \
-                           catalog in seconds and asks before installing it." }
+                           catalog and asks before installing it." }
                     </p>
                 </header>
                 <section class="section chapter" id="store">
@@ -265,10 +264,9 @@ pub fn remote() -> Html {
                     <p class="eyebrow">{ "LispM Remote" }</p>
                     <h1>{ "Your agents, in your pocket." }</h1>
                     <p class="lead">
-                        { "Scan a QR code in seconds. From your phone over encrypted WebRTC, \
-                           follow 100% of your Emacs AI agents, approve waiting calls and view \
-                           LispM's windows peer to peer over Rings Network, relaying 0 bytes \
-                           through cloud servers." }
+                        { "Scan a QR code once. From your phone over encrypted WebRTC, follow \
+                           your Emacs AI agents, approve waiting calls and view LispM's windows \
+                           peer to peer over Rings Network, with no cloud server in between." }
                     </p>
                 </header>
                 <section class="section chapter" id="remote">

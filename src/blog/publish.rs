@@ -682,7 +682,7 @@ pub fn document(head: &Head, links: &str, page: &str) -> String {
 }
 
 /// Date the site's main and feature pages were last updated.
-const SITE_UPDATED: &str = "2026-11-24";
+const SITE_UPDATED: &str = "2026-11-25";
 
 /// Returns the stills visibly rendered on the home page: the film's poster,
 /// the three classic desktop themes, each still of `IDEA_STAGES`, and the
